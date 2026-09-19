@@ -94,6 +94,7 @@ export default function Dashboard() {
             { label: 'Results & Grades', href: '/dashboard/results' },
             { label: 'Attendance', href: '/dashboard/attendance' },
             { label: 'Fees', href: '/dashboard/fees' },
+            { label: 'Send Notifications', href: '/dashboard/notifications' },
             { label: 'Messages', href: '/dashboard/messages' },
           ].map((item) => (
             <button
