@@ -87,6 +87,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 gap-3">
           {[
             { label: 'Manage Schools', href: '/dashboard/schools' },
+            { label: 'Manage Classes', href: '/dashboard/classes' },
             { label: 'Manage Courses', href: '/dashboard/courses' },
             { label: 'Manage Students', href: '/dashboard/students' },
             { label: 'Results & Grades', href: '/dashboard/results' },
