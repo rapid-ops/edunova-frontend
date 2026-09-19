@@ -10,6 +10,7 @@ export default function StudentDashboard() {
   const { user, logout } = useAuthStore();
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [fees, setFees] = useState<any[]>([]);
+  const [results, setResults] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
@@ -28,15 +29,26 @@ export default function StudentDashboard() {
 
   const fetchData = async () => {
     try {
-      const [enrollRes, feesRes, notifRes] = await Promise.all([
+      const [enrollRes, feesRes, notifRes, resultsRes] = await Promise.all([
         api.get(`/enrollments/student/${user?.id}`),
         api.get(`/fees/student/${user?.id}`),
         api.get(`/notifications/${user?.id}`),
+        api.get(`/results/student/${user?.id}`),
       ]);
       setEnrollments(enrollRes.data.enrollments);
       setFees(feesRes.data.fees.filter((f: any) => f.status !== 'paid'));
       setNotifications(notifRes.data.notifications.filter((n: any) => !n.is_read));
+      setResults(resultsRes.data.results);
     } catch (err) {}
+  };
+
+  const getGrade = (score: number, total: number) => {
+    const pct = (score / total) * 100;
+    if (pct >= 70) return { grade: 'A', color: 'text-green-400' };
+    if (pct >= 60) return { grade: 'B', color: 'text-blue-400' };
+    if (pct >= 50) return { grade: 'C', color: 'text-yellow-400' };
+    if (pct >= 45) return { grade: 'D', color: 'text-orange-400' };
+    return { grade: 'F', color: 'text-red-400' };
   };
 
   return (
@@ -54,7 +66,7 @@ export default function StudentDashboard() {
 
       <div className="max-w-4xl mx-auto p-6">
         {notifications.length > 0 && (
-          <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6">
+          <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-4">
             <p className="text-blue-400 font-medium text-sm mb-2">{notifications.length} new notifications</p>
             {notifications.slice(0, 2).map((n) => (
               <p key={n.id} className="text-gray-300 text-sm py-1">{n.title} — {n.body}</p>
@@ -63,7 +75,7 @@ export default function StudentDashboard() {
         )}
 
         {fees.length > 0 && (
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-6">
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-4">
             <p className="text-yellow-400 font-medium text-sm">{fees.length} pending fee(s)</p>
             {fees.map((f) => (
               <p key={f.id} className="text-gray-300 text-sm py-1">₦{Number(f.amount).toLocaleString()} — {f.description}</p>
@@ -71,7 +83,7 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        <p className="text-gray-400 mb-4">Welcome, <span className="text-white font-medium">{user?.full_name}</span></p>
+        <p className="text-gray-400 mb-6">Welcome, <span className="text-white font-medium">{user?.full_name}</span></p>
 
         <h2 className="font-semibold mb-3">My Courses</h2>
         {enrollments.length === 0 ? (
@@ -91,9 +103,33 @@ export default function StudentDashboard() {
           </div>
         )}
 
+        {results.length > 0 && (
+          <>
+            <h2 className="font-semibold mb-3">My Results</h2>
+            <div className="space-y-3 mb-6">
+              {results.map((r) => {
+                const { grade, color } = getGrade(r.score, r.total_marks);
+                return (
+                  <div key={r.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{r.assessment_title}</p>
+                      <p className="text-gray-500 text-xs capitalize mt-1">{r.type}</p>
+                      {r.feedback && <p className="text-gray-400 text-sm mt-1">{r.feedback}</p>}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-400">{r.score}/{r.total_marks}</p>
+                      <p className={`text-2xl font-bold ${color}`}>{grade}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
         <div className="grid grid-cols-1 gap-3">
           {[
-            { label: 'My Attendance', href: `/dashboard/attendance` },
+            { label: 'My Attendance', href: '/dashboard/attendance' },
             { label: 'Messages', href: '/dashboard/messages' },
           ].map((item) => (
             <button

@@ -23,15 +23,18 @@ export default function Dashboard() {
 
   const fetchStats = async () => {
     try {
-      const [schoolsRes, coursesRes] = await Promise.all([
+      const [schoolsRes, coursesRes, usersRes] = await Promise.all([
         api.get('/schools'),
         api.get('/courses/school/1'),
+        api.get('/auth/users/1'),
       ]);
-      setStats((prev) => ({
-        ...prev,
+      const users = usersRes.data.users;
+      setStats({
         schools: schoolsRes.data.schools.length,
         courses: coursesRes.data.courses.length,
-      }));
+        students: users.filter((u: any) => u.role === 'student').length,
+        teachers: users.filter((u: any) => u.role === 'teacher').length,
+      });
     } catch (err) {}
   };
 
@@ -43,18 +46,13 @@ export default function Dashboard() {
     } catch (err) {}
   };
 
-  const handleLogout = () => {
-    logout();
-    router.push('/auth/login');
-  };
-
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">Edunova</h1>
         <div className="flex items-center gap-4">
           <span className="text-gray-400 text-sm">{user?.full_name}</span>
-          <button onClick={handleLogout} className="text-sm text-red-400 hover:text-red-300">Logout</button>
+          <button onClick={() => { logout(); router.push('/auth/login'); }} className="text-sm text-red-400">Logout</button>
         </div>
       </div>
 
@@ -91,6 +89,7 @@ export default function Dashboard() {
             { label: 'Manage Schools', href: '/dashboard/schools' },
             { label: 'Manage Courses', href: '/dashboard/courses' },
             { label: 'Manage Students', href: '/dashboard/students' },
+            { label: 'Results & Grades', href: '/dashboard/results' },
             { label: 'Attendance', href: '/dashboard/attendance' },
             { label: 'Fees', href: '/dashboard/fees' },
             { label: 'Messages', href: '/dashboard/messages' },
