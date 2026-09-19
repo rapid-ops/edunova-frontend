@@ -88,6 +88,7 @@ export default function Dashboard() {
           {[
             { label: 'Manage Schools', href: '/dashboard/schools' },
             { label: 'Manage Classes', href: '/dashboard/classes' },
+            { label: 'Timetable', href: '/dashboard/timetable' },
             { label: 'Manage Courses', href: '/dashboard/courses' },
             { label: 'Manage Students', href: '/dashboard/students' },
             { label: 'Results & Grades', href: '/dashboard/results' },
