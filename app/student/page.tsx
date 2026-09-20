@@ -75,8 +75,11 @@ export default function StudentDashboard() {
         )}
 
         {fees.length > 0 && (
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-4">
-            <p className="text-yellow-400 font-medium text-sm">{fees.length} pending fee(s)</p>
+          <div
+            onClick={() => router.push('/payment')}
+            className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-4 cursor-pointer hover:border-yellow-400 transition"
+          >
+            <p className="text-yellow-400 font-medium text-sm">{fees.length} pending fee(s) — tap to pay</p>
             {fees.map((f) => (
               <p key={f.id} className="text-gray-300 text-sm py-1">₦{Number(f.amount).toLocaleString()} — {f.description}</p>
             ))}
@@ -130,6 +133,7 @@ export default function StudentDashboard() {
         <div className="grid grid-cols-1 gap-3">
           {[
             { label: 'Assignments', href: '/student/assignments' },
+            { label: 'Pay Fees', href: '/payment' },
             { label: 'My Attendance', href: '/dashboard/attendance' },
             { label: 'Messages', href: '/dashboard/messages' },
           ].map((item) => (
