@@ -129,6 +129,7 @@ export default function StudentDashboard() {
 
         <div className="grid grid-cols-1 gap-3">
           {[
+            { label: 'Assignments', href: '/student/assignments' },
             { label: 'My Attendance', href: '/dashboard/attendance' },
             { label: 'Messages', href: '/dashboard/messages' },
           ].map((item) => (
