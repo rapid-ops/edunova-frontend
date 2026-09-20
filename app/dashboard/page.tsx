@@ -91,6 +91,7 @@ export default function Dashboard() {
             { label: 'Timetable', href: '/dashboard/timetable' },
             { label: 'Manage Courses', href: '/dashboard/courses' },
             { label: 'Manage Students', href: '/dashboard/students' },
+            { label: 'Bulk Import Students', href: '/dashboard/import' },
             { label: 'Results & Grades', href: '/dashboard/results' },
             { label: 'Report Cards', href: '/dashboard/reportcard' },
             { label: 'Attendance', href: '/dashboard/attendance' },
