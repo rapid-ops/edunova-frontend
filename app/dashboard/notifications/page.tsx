@@ -9,8 +9,8 @@ export default function NotificationsPage() {
   const { user } = useAuthStore();
   const [users, setUsers] = useState<any[]>([]);
   const [tab, setTab] = useState<'broadcast' | 'direct'>('broadcast');
-  const [broadcastForm, setBroadcastForm] = useState({ title: '', body: '', type: 'general' });
-  const [directForm, setDirectForm] = useState({ user_id: '', title: '', body: '', type: 'general' });
+  const [broadcastForm, setBroadcastForm] = useState({ title: '', body: '', type: 'general', send_whatsapp: false });
+  const [directForm, setDirectForm] = useState({ user_id: '', title: '', body: '', type: 'general', send_whatsapp: false });
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
@@ -27,37 +27,39 @@ export default function NotificationsPage() {
 
   const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError(''); setSuccess('');
     try {
-      await api.post('/notifications/broadcast', {
-        school_id: 1,
-        ...broadcastForm,
-      });
-      setSuccess('Broadcast sent to all users');
-      setBroadcastForm({ title: '', body: '', type: 'general' });
+      await api.post('/notifications/broadcast', { school_id: 1, ...broadcastForm });
+      setSuccess(`Broadcast sent${broadcastForm.send_whatsapp ? ' via app + WhatsApp' : ''}`);
+      setBroadcastForm({ title: '', body: '', type: 'general', send_whatsapp: false });
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to send');
+      setError(err.response?.data?.error || 'Failed');
     }
   };
 
   const handleDirect = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError(''); setSuccess('');
     try {
-      await api.post('/notifications', {
-        school_id: 1,
-        ...directForm,
-      });
-      setSuccess('Notification sent');
-      setDirectForm({ user_id: '', title: '', body: '', type: 'general' });
+      await api.post('/notifications', { school_id: 1, ...directForm });
+      setSuccess(`Notification sent${directForm.send_whatsapp ? ' via app + WhatsApp' : ''}`);
+      setDirectForm({ user_id: '', title: '', body: '', type: 'general', send_whatsapp: false });
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to send');
+      setError(err.response?.data?.error || 'Failed');
     }
   };
 
   const types = ['general', 'assignment', 'fee', 'attendance', 'result', 'announcement'];
+
+  const Toggle = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
+    <button
+      type="button"
+      onClick={onChange}
+      className={`relative w-12 h-6 rounded-full transition ${checked ? 'bg-green-600' : 'bg-gray-700'}`}
+    >
+      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${checked ? 'left-7' : 'left-1'}`} />
+    </button>
+  );
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -72,7 +74,7 @@ export default function NotificationsPage() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${tab === t ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400 hover:text-white'}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${tab === t ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'}`}
             >
               {t === 'broadcast' ? 'Broadcast to All' : 'Send to Person'}
             </button>
@@ -84,92 +86,60 @@ export default function NotificationsPage() {
 
         {tab === 'broadcast' ? (
           <form onSubmit={handleBroadcast} className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
-            <p className="text-gray-400 text-sm">This will send a notification to every user in the school.</p>
             <div>
               <label className="text-gray-400 text-sm mb-1 block">Type</label>
-              <select
-                value={broadcastForm.type}
-                onChange={(e) => setBroadcastForm({ ...broadcastForm, type: e.target.value })}
-                className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none"
-              >
+              <select value={broadcastForm.type} onChange={(e) => setBroadcastForm({ ...broadcastForm, type: e.target.value })} className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none">
                 {types.map((t) => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
               </select>
             </div>
             <div>
               <label className="text-gray-400 text-sm mb-1 block">Title</label>
-              <input
-                value={broadcastForm.title}
-                onChange={(e) => setBroadcastForm({ ...broadcastForm, title: e.target.value })}
-                placeholder="e.g. School resumption notice"
-                className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
+              <input value={broadcastForm.title} onChange={(e) => setBroadcastForm({ ...broadcastForm, title: e.target.value })} className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" required />
             </div>
             <div>
               <label className="text-gray-400 text-sm mb-1 block">Message</label>
-              <textarea
-                value={broadcastForm.body}
-                onChange={(e) => setBroadcastForm({ ...broadcastForm, body: e.target.value })}
-                placeholder="Write your message here..."
-                rows={4}
-                className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                required
-              />
+              <textarea value={broadcastForm.body} onChange={(e) => setBroadcastForm({ ...broadcastForm, body: e.target.value })} rows={4} className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none resize-none" required />
             </div>
-            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-medium">
-              Send to All
-            </button>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Also send via WhatsApp</p>
+                <p className="text-gray-500 text-xs">Requires phone numbers on user profiles</p>
+              </div>
+              <Toggle checked={broadcastForm.send_whatsapp} onChange={() => setBroadcastForm({ ...broadcastForm, send_whatsapp: !broadcastForm.send_whatsapp })} />
+            </div>
+            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-medium">Send to All</button>
           </form>
         ) : (
           <form onSubmit={handleDirect} className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
             <div>
               <label className="text-gray-400 text-sm mb-1 block">Send To</label>
-              <select
-                value={directForm.user_id}
-                onChange={(e) => setDirectForm({ ...directForm, user_id: e.target.value })}
-                className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none"
-                required
-              >
+              <select value={directForm.user_id} onChange={(e) => setDirectForm({ ...directForm, user_id: e.target.value })} className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none" required>
                 <option value="">Select person</option>
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>{u.full_name} ({u.role})</option>
-                ))}
+                {users.map((u) => <option key={u.id} value={u.id}>{u.full_name} ({u.role})</option>)}
               </select>
             </div>
             <div>
               <label className="text-gray-400 text-sm mb-1 block">Type</label>
-              <select
-                value={directForm.type}
-                onChange={(e) => setDirectForm({ ...directForm, type: e.target.value })}
-                className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none"
-              >
+              <select value={directForm.type} onChange={(e) => setDirectForm({ ...directForm, type: e.target.value })} className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none">
                 {types.map((t) => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
               </select>
             </div>
             <div>
               <label className="text-gray-400 text-sm mb-1 block">Title</label>
-              <input
-                value={directForm.title}
-                onChange={(e) => setDirectForm({ ...directForm, title: e.target.value })}
-                placeholder="e.g. Fee payment reminder"
-                className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
+              <input value={directForm.title} onChange={(e) => setDirectForm({ ...directForm, title: e.target.value })} className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" required />
             </div>
             <div>
               <label className="text-gray-400 text-sm mb-1 block">Message</label>
-              <textarea
-                value={directForm.body}
-                onChange={(e) => setDirectForm({ ...directForm, body: e.target.value })}
-                placeholder="Write your message here..."
-                rows={4}
-                className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                required
-              />
+              <textarea value={directForm.body} onChange={(e) => setDirectForm({ ...directForm, body: e.target.value })} rows={4} className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none resize-none" required />
             </div>
-            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-medium">
-              Send Notification
-            </button>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Also send via WhatsApp</p>
+                <p className="text-gray-500 text-xs">Requires phone number on user profile</p>
+              </div>
+              <Toggle checked={directForm.send_whatsapp} onChange={() => setDirectForm({ ...directForm, send_whatsapp: !directForm.send_whatsapp })} />
+            </div>
+            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-medium">Send Notification</button>
           </form>
         )}
       </div>
