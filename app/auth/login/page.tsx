@@ -66,6 +66,15 @@ export default function LoginPage() {
               required
             />
           </div>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => router.push('/auth/forgot-password')}
+              className="text-blue-400 hover:text-blue-300 text-sm"
+            >
+              Forgot password?
+            </button>
+          </div>
           <button
             type="submit"
             disabled={loading}
@@ -78,10 +87,7 @@ export default function LoginPage() {
         <div className="mt-6 text-center">
           <p className="text-gray-500 text-sm">
             New school?{' '}
-            <button
-              onClick={() => router.push('/onboarding')}
-              className="text-blue-400 hover:text-blue-300"
-            >
+            <button onClick={() => router.push('/onboarding')} className="text-blue-400 hover:text-blue-300">
               Register your school
             </button>
           </p>
