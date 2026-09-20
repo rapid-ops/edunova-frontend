@@ -74,6 +74,18 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-gray-500 text-sm">
+            New school?{' '}
+            <button
+              onClick={() => router.push('/onboarding')}
+              className="text-blue-400 hover:text-blue-300"
+            >
+              Register your school
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
