@@ -51,7 +51,7 @@ export default function Dashboard() {
       <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">Edunova</h1>
         <div className="flex items-center gap-4">
-          <span className="text-gray-400 text-sm">{user?.full_name}</span>
+          <button onClick={() => router.push('/profile')} className="text-gray-400 hover:text-white text-sm">Profile</button>
           <button onClick={() => { logout(); router.push('/auth/login'); }} className="text-sm text-red-400">Logout</button>
         </div>
       </div>
@@ -92,6 +92,7 @@ export default function Dashboard() {
             { label: 'Manage Courses', href: '/dashboard/courses' },
             { label: 'Manage Students', href: '/dashboard/students' },
             { label: 'Results & Grades', href: '/dashboard/results' },
+            { label: 'Report Cards', href: '/dashboard/reportcard' },
             { label: 'Attendance', href: '/dashboard/attendance' },
             { label: 'Fees', href: '/dashboard/fees' },
             { label: 'Send Notifications', href: '/dashboard/notifications' },
