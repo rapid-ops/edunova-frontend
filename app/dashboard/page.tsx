@@ -10,6 +10,7 @@ export default function Dashboard() {
   const { user, logout } = useAuthStore();
   const [stats, setStats] = useState({ schools: 0, courses: 0, students: 0, teachers: 0 });
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [subscription, setSubscription] = useState<any>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -18,6 +19,7 @@ export default function Dashboard() {
       joinRoom(user.id);
       fetchStats();
       fetchNotifications();
+      fetchSubscription();
     }
   }, [user]);
 
@@ -46,6 +48,13 @@ export default function Dashboard() {
     } catch (err) {}
   };
 
+  const fetchSubscription = async () => {
+    try {
+      const res = await api.get('/subscription/school/1');
+      setSubscription(res.data.subscription);
+    } catch (err) {}
+  };
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
@@ -57,6 +66,17 @@ export default function Dashboard() {
       </div>
 
       <div className="max-w-6xl mx-auto p-6">
+        {subscription && subscription.status === 'trial' && (
+          <div
+            onClick={() => router.push('/subscription')}
+            className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-6 cursor-pointer hover:border-yellow-400 transition"
+          >
+            <p className="text-yellow-400 font-medium text-sm">
+              Trial period — expires {new Date(subscription.trial_ends_at).toLocaleDateString()}. Tap to subscribe.
+            </p>
+          </div>
+        )}
+
         {notifications.length > 0 && (
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6">
             <p className="text-blue-400 font-medium text-sm mb-2">Notifications ({notifications.length})</p>
@@ -99,6 +119,7 @@ export default function Dashboard() {
             { label: 'Fees', href: '/dashboard/fees' },
             { label: 'Send Notifications', href: '/dashboard/notifications' },
             { label: 'Messages', href: '/dashboard/messages' },
+            { label: 'Subscription', href: '/subscription' },
           ].map((item) => (
             <button
               key={item.label}
