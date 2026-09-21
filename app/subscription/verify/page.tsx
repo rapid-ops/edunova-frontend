@@ -1,9 +1,10 @@
 'use client';
+import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 
-export default function SubscriptionVerifyPage() {
+function SubscriptionVerifyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'failed'>('loading');
@@ -37,18 +38,24 @@ export default function SubscriptionVerifyPage() {
           <>
             <p className="text-green-400 text-2xl font-bold">Subscription Active!</p>
             <p className="text-gray-400 text-sm mt-2 capitalize">{plan} plan activated</p>
-            <p className="text-gray-500 text-sm mt-1">Redirecting to dashboard...</p>
+            <p className="text-gray-500 text-sm mt-1">Redirecting...</p>
           </>
         )}
         {status === 'failed' && (
           <>
             <p className="text-red-400 text-2xl font-bold">Payment Failed</p>
-            <button onClick={() => router.push('/subscription')} className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg text-sm">
-              Try Again
-            </button>
+            <button onClick={() => router.push('/subscription')} className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg text-sm">Try Again</button>
           </>
         )}
       </div>
     </div>
+  );
+}
+
+export default function SubscriptionVerifyPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-950 flex items-center justify-center text-white">Loading...</div>}>
+      <SubscriptionVerifyContent />
+    </Suspense>
   );
 }
