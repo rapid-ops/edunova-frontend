@@ -23,12 +23,14 @@ export default function Dashboard() {
     }
   }, [user]);
 
+  const schoolId = user?.school_id || 1;
+
   const fetchStats = async () => {
     try {
       const [schoolsRes, coursesRes, usersRes] = await Promise.all([
         api.get('/schools'),
-        api.get('/courses/school/1'),
-        api.get('/auth/users/1'),
+        api.get(`/courses/school/${schoolId}`),
+        api.get(`/auth/users/${schoolId}`),
       ]);
       const users = usersRes.data.users;
       setStats({
@@ -50,7 +52,7 @@ export default function Dashboard() {
 
   const fetchSubscription = async () => {
     try {
-      const res = await api.get('/subscription/school/1');
+      const res = await api.get(`/subscription/school/${schoolId}`);
       setSubscription(res.data.subscription);
     } catch (err) {}
   };
@@ -67,13 +69,8 @@ export default function Dashboard() {
 
       <div className="max-w-6xl mx-auto p-6">
         {subscription && subscription.status === 'trial' && (
-          <div
-            onClick={() => router.push('/subscription')}
-            className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-6 cursor-pointer hover:border-yellow-400 transition"
-          >
-            <p className="text-yellow-400 font-medium text-sm">
-              Trial period — expires {new Date(subscription.trial_ends_at).toLocaleDateString()}. Tap to subscribe.
-            </p>
+          <div onClick={() => router.push('/subscription')} className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-6 cursor-pointer hover:border-yellow-400 transition">
+            <p className="text-yellow-400 font-medium text-sm">Trial period — expires {new Date(subscription.trial_ends_at).toLocaleDateString()}. Tap to subscribe.</p>
           </div>
         )}
 
