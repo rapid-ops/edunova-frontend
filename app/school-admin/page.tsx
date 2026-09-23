@@ -34,12 +34,11 @@ export default function SchoolAdminDashboard() {
         api.get(`/schools/${schoolId}`),
       ]);
       const users = usersRes.data.users;
-      const fees = feesRes.data.fees;
       setStats({
         courses: coursesRes.data.courses.length,
         students: users.filter((u: any) => u.role === 'student').length,
         teachers: users.filter((u: any) => u.role === 'teacher').length,
-        fees_pending: fees.filter((f: any) => f.status === 'pending').length,
+        fees_pending: feesRes.data.fees.filter((f: any) => f.status === 'pending').length,
       });
       setSchool(schoolRes.data.school);
       const notifRes = await api.get(`/notifications/${user?.id}`);
@@ -63,7 +62,7 @@ export default function SchoolAdminDashboard() {
       <div className="max-w-4xl mx-auto p-6">
         {notifications.length > 0 && (
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6">
-            <p className="text-blue-400 font-medium text-sm mb-2">{notifications.length} unread notifications</p>
+            <p className="text-blue-400 font-medium text-sm mb-2">{notifications.length} unread</p>
             {notifications.slice(0, 2).map((n) => (
               <p key={n.id} className="text-gray-300 text-sm py-1">{n.title} — {n.body}</p>
             ))}
@@ -97,7 +96,7 @@ export default function SchoolAdminDashboard() {
             { label: 'Fees', href: '/dashboard/fees' },
             { label: 'Send Notifications', href: '/dashboard/notifications' },
             { label: 'Messages', href: '/dashboard/messages' },
-            { label: 'School Website', href: school?.subdomain ? `/school/${school.subdomain}` : '#' },
+            { label: 'School Website', href: '/dashboard/website' },
             { label: 'Subscription', href: '/subscription' },
           ].map((item) => (
             <button key={item.label} onClick={() => router.push(item.href)} className="w-full bg-gray-900 border border-gray-800 hover:border-blue-500 text-left px-5 py-4 rounded-xl text-sm font-medium transition">

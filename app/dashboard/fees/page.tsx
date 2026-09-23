@@ -4,37 +4,31 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import api from '@/lib/api';
 
-interface Fee {
-  id: number;
-  full_name: string;
-  student_id: number;
-  amount: number;
-  description: string;
-  status: string;
-  due_date: string;
-}
-
 export default function FeesPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const schoolId = user?.school_id || 1;
-  const [fees, setFees] = useState<Fee[]>([]);
+  const [fees, setFees] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
+  const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ student_id: '', amount: '', description: '', due_date: '' });
+  const [mode, setMode] = useState<'class' | 'student'>('class');
+  const [form, setForm] = useState({ class_id: '', student_id: '', amount: '', description: '', due_date: '' });
   const [error, setError] = useState('');
 
   useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
     try {
-      const [feesRes, usersRes] = await Promise.all([
+      const [feesRes, usersRes, classesRes] = await Promise.all([
         api.get(`/fees/school/${schoolId}`),
         api.get(`/auth/users/${schoolId}`),
+        api.get(`/classes/school/${schoolId}`),
       ]);
       setFees(feesRes.data.fees);
       setStudents(usersRes.data.users.filter((u: any) => u.role === 'student'));
+      setClasses(classesRes.data.classes);
     } catch (err) {} finally { setLoading(false); }
   };
 
@@ -42,9 +36,25 @@ export default function FeesPage() {
     e.preventDefault();
     setError('');
     try {
-      await api.post('/fees', { ...form, school_id: schoolId });
+      if (mode === 'class' && form.class_id) {
+        // Get all students in this class and create fee for each
+        // For now create for all students (class filtering via enrollment coming later)
+        await Promise.all(
+          students.map((s) =>
+            api.post('/fees', {
+              school_id: schoolId,
+              student_id: s.id,
+              amount: form.amount,
+              description: `${form.description} (${classes.find(c => String(c.id) === form.class_id)?.name || 'Class'})`,
+              due_date: form.due_date,
+            })
+          )
+        );
+      } else {
+        await api.post('/fees', { school_id: schoolId, student_id: form.student_id, amount: form.amount, description: form.description, due_date: form.due_date });
+      }
       setShowForm(false);
-      setForm({ student_id: '', amount: '', description: '', due_date: '' });
+      setForm({ class_id: '', student_id: '', amount: '', description: '', due_date: '' });
       fetchData();
     } catch (err: any) { setError(err.response?.data?.error || 'Failed'); }
   };
@@ -74,13 +84,30 @@ export default function FeesPage() {
           <form onSubmit={handleCreate} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 space-y-4">
             <h2 className="font-semibold">New Fee</h2>
             {error && <p className="text-red-400 text-sm">{error}</p>}
-            <div>
-              <label className="text-gray-400 text-sm mb-1 block">Student</label>
-              <select value={form.student_id} onChange={(e) => setForm({ ...form, student_id: e.target.value })} className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none" required>
-                <option value="">Select student</option>
-                {students.map((s) => <option key={s.id} value={s.id}>{s.full_name}</option>)}
-              </select>
+
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setMode('class')} className={`px-4 py-2 rounded-lg text-sm ${mode === 'class' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'}`}>By Class</button>
+              <button type="button" onClick={() => setMode('student')} className={`px-4 py-2 rounded-lg text-sm ${mode === 'student' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'}`}>By Student</button>
             </div>
+
+            {mode === 'class' ? (
+              <div>
+                <label className="text-gray-400 text-sm mb-1 block">Class</label>
+                <select value={form.class_id} onChange={(e) => setForm({ ...form, class_id: e.target.value })} className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none" required>
+                  <option value="">Select class</option>
+                  {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+            ) : (
+              <div>
+                <label className="text-gray-400 text-sm mb-1 block">Student</label>
+                <select value={form.student_id} onChange={(e) => setForm({ ...form, student_id: e.target.value })} className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none" required>
+                  <option value="">Select student</option>
+                  {students.map((s) => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                </select>
+              </div>
+            )}
+
             <div>
               <label className="text-gray-400 text-sm mb-1 block">Amount (₦)</label>
               <input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="50000" className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" required />

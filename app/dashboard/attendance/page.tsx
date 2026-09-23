@@ -1,37 +1,40 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/auth.store';
 import api from '@/lib/api';
-
-interface AttendanceRecord {
-  id: number;
-  full_name: string;
-  student_id: number;
-  date: string;
-  status: string;
-}
 
 export default function AttendancePage() {
   const router = useRouter();
-  const [records, setRecords] = useState<AttendanceRecord[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [classId, setClassId] = useState('1');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const { user } = useAuthStore();
+  const schoolId = user?.school_id || 1;
+  const [classes, setClasses] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
+  const [classId, setClassId] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [marking, setMarking] = useState<Record<number, string>>({});
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchStudents();
+    fetchClasses();
   }, []);
 
   useEffect(() => {
-    if (classId && date) fetchRecords();
-  }, [classId, date]);
+    if (classId) fetchStudents();
+  }, [classId]);
+
+  const fetchClasses = async () => {
+    try {
+      const res = await api.get(`/classes/school/${schoolId}`);
+      setClasses(res.data.classes);
+      if (res.data.classes.length > 0) setClassId(String(res.data.classes[0].id));
+    } catch (err) {}
+  };
 
   const fetchStudents = async () => {
     try {
-      const res = await api.get('/auth/users/1');
+      const res = await api.get(`/auth/users/${schoolId}`);
       const s = res.data.users.filter((u: any) => u.role === 'student');
       setStudents(s);
       const initial: Record<number, string> = {};
@@ -40,22 +43,13 @@ export default function AttendancePage() {
     } catch (err) {}
   };
 
-  const fetchRecords = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get(`/attendance/class/${classId}?date=${date}`);
-      setRecords(res.data.records);
-    } catch (err) {} finally {
-      setLoading(false);
-    }
-  };
-
   const handleSave = async () => {
+    setLoading(true);
     try {
       await Promise.all(
         students.map((s) =>
           api.post('/attendance', {
-            school_id: 1,
+            school_id: schoolId,
             student_id: s.id,
             class_id: classId,
             date,
@@ -65,41 +59,46 @@ export default function AttendancePage() {
       );
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-      fetchRecords();
-    } catch (err) {}
+    } catch (err) {} finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/dashboard')} className="text-gray-400 hover:text-white">←</button>
+          <button onClick={() => router.back()} className="text-gray-400 hover:text-white">←</button>
           <h1 className="text-xl font-bold">Attendance</h1>
         </div>
         <button
           onClick={handleSave}
-          className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg"
+          disabled={loading || students.length === 0}
+          className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg disabled:opacity-50"
         >
-          {saved ? 'Saved!' : 'Save'}
+          {saved ? 'Saved!' : loading ? 'Saving...' : 'Save'}
         </button>
       </div>
 
       <div className="max-w-4xl mx-auto p-6">
         <div className="flex gap-4 mb-6">
           <div className="flex-1">
+            <label className="text-gray-400 text-sm mb-1 block">Class</label>
+            <select
+              value={classId}
+              onChange={(e) => setClassId(e.target.value)}
+              className="w-full bg-gray-900 border border-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none"
+            >
+              {classes.length === 0 && <option value="">No classes yet</option>}
+              {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div className="flex-1">
             <label className="text-gray-400 text-sm mb-1 block">Date</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="text-gray-400 text-sm mb-1 block">Class ID</label>
-            <input
-              value={classId}
-              onChange={(e) => setClassId(e.target.value)}
               className="w-full bg-gray-900 border border-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none"
             />
           </div>

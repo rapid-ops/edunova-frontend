@@ -1,29 +1,14 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
-
-interface School {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  subdomain: string;
-  logo_url: string;
-}
-
-interface Course {
-  id: number;
-  title: string;
-  description: string;
-  teacher_name: string;
-}
 
 export default function SchoolWebsite() {
   const { subdomain } = useParams();
-  const [school, setSchool] = useState<School | null>(null);
-  const [courses, setCourses] = useState<Course[]>([]);
+  const router = useRouter();
+  const [school, setSchool] = useState<any>(null);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [config, setConfig] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -36,6 +21,16 @@ export default function SchoolWebsite() {
       const res = await api.get(`/schools/subdomain/${subdomain}`);
       const s = res.data.school;
       setSchool(s);
+
+      if (s.external_website_url) {
+        window.location.href = s.external_website_url;
+        return;
+      }
+
+      if (s.website_config) {
+        setConfig(JSON.parse(s.website_config));
+      }
+
       const coursesRes = await api.get(`/courses/school/${s.id}`);
       setCourses(coursesRes.data.courses.filter((c: any) => c.is_published));
     } catch (err) {
@@ -45,57 +40,39 @@ export default function SchoolWebsite() {
     }
   };
 
-  if (loading) return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <p className="text-gray-400">Loading...</p>
-    </div>
-  );
+  if (loading) return <div className="min-h-screen bg-white flex items-center justify-center"><p className="text-gray-400">Loading...</p></div>;
+  if (notFound) return <div className="min-h-screen bg-white flex items-center justify-center"><p className="text-gray-500">School not found.</p></div>;
 
-  if (notFound) return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <p className="text-gray-500">School not found.</p>
-    </div>
-  );
+  const primaryColor = config.primary_color || '#1d4ed8';
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      {/* Header */}
-      <header className="bg-blue-700 text-white px-6 py-8">
+      <header style={{ backgroundColor: primaryColor }} className="text-white px-6 py-8">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-3xl font-bold">{school?.name}</h1>
-          <p className="text-blue-200 mt-1">{school?.address}</p>
+          <p className="mt-1 opacity-80">{config.tagline || school?.address}</p>
         </div>
       </header>
 
-      {/* Nav */}
-      <nav className="bg-blue-800 text-white px-6 py-3">
+      <nav style={{ backgroundColor: primaryColor }} className="opacity-90 text-white px-6 py-3">
         <div className="max-w-5xl mx-auto flex gap-6 text-sm">
           {['Home', 'Courses', 'About', 'Contact'].map((n) => (
-            <a key={n} href={`#${n.toLowerCase()}`} className="hover:text-blue-200 transition">{n}</a>
+            <a key={n} href={`#${n.toLowerCase()}`} className="hover:opacity-70 transition">{n}</a>
           ))}
         </div>
       </nav>
 
-      {/* Hero */}
-      <section id="home" className="bg-gradient-to-br from-blue-50 to-white px-6 py-16">
+      <section id="home" className="px-6 py-16 bg-gray-50">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-4xl font-bold text-blue-800 mb-4">Welcome to {school?.name}</h2>
-          <p className="text-gray-600 text-lg max-w-2xl">
-            Providing quality education and shaping the leaders of tomorrow.
-            Join us in our journey of academic excellence.
-          </p>
+          <h2 className="text-4xl font-bold mb-4" style={{ color: primaryColor }}>Welcome to {school?.name}</h2>
+          <p className="text-gray-600 text-lg max-w-2xl">{config.about || 'Providing quality education and shaping the leaders of tomorrow.'}</p>
           <div className="flex gap-4 mt-8">
-            <a href="#courses" className="bg-blue-700 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-800 transition">
-              View Courses
-            </a>
-            <a href="#contact" className="border border-blue-700 text-blue-700 px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition">
-              Contact Us
-            </a>
+            <a href="#courses" style={{ backgroundColor: primaryColor }} className="text-white px-6 py-3 rounded-lg font-medium">View Courses</a>
+            <a href="#contact" style={{ borderColor: primaryColor, color: primaryColor }} className="border px-6 py-3 rounded-lg font-medium">Contact Us</a>
           </div>
         </div>
       </section>
 
-      {/* Courses */}
       <section id="courses" className="px-6 py-16 bg-white">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-bold mb-2">Our Courses</h2>
@@ -108,9 +85,7 @@ export default function SchoolWebsite() {
                 <div key={c.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition">
                   <h3 className="font-semibold text-lg">{c.title}</h3>
                   <p className="text-gray-500 text-sm mt-1">{c.description}</p>
-                  {c.teacher_name && (
-                    <p className="text-blue-600 text-sm mt-2">Instructor: {c.teacher_name}</p>
-                  )}
+                  {c.teacher_name && <p className="text-sm mt-2" style={{ color: primaryColor }}>Instructor: {c.teacher_name}</p>}
                 </div>
               ))}
             </div>
@@ -118,32 +93,26 @@ export default function SchoolWebsite() {
         </div>
       </section>
 
-      {/* About */}
       <section id="about" className="px-6 py-16 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-bold mb-4">About Us</h2>
-          <p className="text-gray-600 max-w-2xl">
-            {school?.name} is committed to delivering world-class education in a nurturing environment.
-            Our dedicated staff and modern curriculum prepare students for success in academics and life.
-          </p>
+          <p className="text-gray-600 max-w-2xl">{config.about || `${school?.name} is committed to delivering world-class education in a nurturing environment.`}</p>
         </div>
       </section>
 
-      {/* Contact */}
       <section id="contact" className="px-6 py-16 bg-white">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-bold mb-6">Contact Us</h2>
           <div className="space-y-3 text-gray-600">
-            <p>Email: <a href={`mailto:${school?.email}`} className="text-blue-600">{school?.email}</a></p>
-            <p>Phone: <span className="text-gray-800">{school?.phone}</span></p>
-            <p>Address: <span className="text-gray-800">{school?.address}</span></p>
+            <p>Email: <a href={`mailto:${config.email || school?.email}`} style={{ color: primaryColor }}>{config.email || school?.email}</a></p>
+            <p>Phone: <span className="text-gray-800">{config.phone || school?.phone}</span></p>
+            <p>Address: <span className="text-gray-800">{config.address || school?.address}</span></p>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-blue-900 text-blue-200 px-6 py-6 text-center text-sm">
-        <p>© {new Date().getFullYear()} {school?.name}. Powered by <span className="text-white font-medium">Edunova</span></p>
+      <footer style={{ backgroundColor: primaryColor }} className="text-white px-6 py-6 text-center text-sm opacity-90">
+        <p>© {new Date().getFullYear()} {school?.name}. Powered by <span className="font-medium">Edunova</span></p>
       </footer>
     </div>
   );
