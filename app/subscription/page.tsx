@@ -51,16 +51,16 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center gap-3">
-        <button onClick={() => router.push('/dashboard')} className="text-gray-400 hover:text-white">←</button>
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
+        <button onClick={() => router.push('/dashboard')} className="text-gray-500 hover:text-gray-900">←</button>
         <h1 className="text-xl font-bold">Subscription</h1>
       </div>
 
       <div className="max-w-4xl mx-auto p-6">
         {subscription && (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-8">
-            <p className="text-gray-400 text-sm">Current Status</p>
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-8">
+            <p className="text-gray-500 text-sm">Current Status</p>
             <p className={`text-xl font-bold capitalize mt-1 ${getStatusColor(subscription.status)}`}>
               {subscription.status} — {subscription.plan} plan
             </p>
@@ -78,23 +78,23 @@ export default function SubscriptionPage() {
         )}
 
         {loading ? (
-          <p className="text-gray-400">Loading...</p>
+          <p className="text-gray-500">Loading...</p>
         ) : (
           <div className="space-y-4">
             <h2 className="font-semibold text-lg">Choose a Plan</h2>
             {PLANS.map((plan, i) => (
-              <div key={plan.key} className={`bg-gray-900 border rounded-xl p-6 ${i === 1 ? 'border-blue-500' : 'border-gray-800'}`}>
+              <div key={plan.key} className={`bg-white border rounded-xl p-6 ${i === 1 ? 'border-blue-500' : 'border-gray-200'}`}>
                 {i === 1 && <p className="text-blue-400 text-xs font-medium mb-2">MOST POPULAR</p>}
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="font-bold text-lg">{plan.name}</h3>
-                    <p className="text-gray-400 text-sm">{plan.description}</p>
+                    <p className="text-gray-500 text-sm">{plan.description}</p>
                   </div>
                   <p className="text-xl font-bold text-blue-400">{plan.price}</p>
                 </div>
                 <div className="space-y-2 mb-4">
                   {plan.features.map((f) => (
-                    <p key={f} className="text-gray-300 text-sm">✓ {f}</p>
+                    <p key={f} className="text-gray-600 text-sm">✓ {f}</p>
                   ))}
                 </div>
                 <button
@@ -102,8 +102,8 @@ export default function SubscriptionPage() {
                   disabled={paying === plan.key || subscription?.plan === plan.key && subscription?.status === 'active'}
                   className={`w-full py-3 rounded-lg text-sm font-medium transition disabled:opacity-50 ${
                     i === 1
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                      : 'bg-gray-800 hover:bg-gray-700 text-white'
+                      ? 'bg-blue-600 hover:bg-blue-700 text-gray-900'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
                   }`}
                 >
                   {paying === plan.key ? 'Redirecting...' :

@@ -71,9 +71,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center gap-3">
-        <button onClick={() => router.push(getRoleRoute())} className="text-gray-400 hover:text-white">←</button>
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
+        <button onClick={() => router.push(getRoleRoute())} className="text-gray-500 hover:text-gray-900">←</button>
         <h1 className="text-xl font-bold">Profile Settings</h1>
       </div>
 
@@ -82,7 +82,7 @@ export default function ProfilePage() {
         {error && <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-lg">{error}</div>}
 
         {/* Avatar */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
           <h2 className="font-semibold mb-4">Profile Picture</h2>
           <div className="flex items-center gap-4 mb-4">
             <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-xl font-bold overflow-hidden">
@@ -94,7 +94,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <p className="font-medium">{user?.full_name}</p>
-              <p className="text-gray-400 text-sm capitalize">{user?.role?.replace('_', ' ')}</p>
+              <p className="text-gray-500 text-sm capitalize">{user?.role?.replace('_', ' ')}</p>
             </div>
           </div>
           <FileUpload
@@ -106,38 +106,38 @@ export default function ProfilePage() {
         </div>
 
         {/* Profile Info */}
-        <form onSubmit={handleProfileUpdate} className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+        <form onSubmit={handleProfileUpdate} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
           <h2 className="font-semibold">Personal Information</h2>
           <div>
-            <label className="text-gray-400 text-sm mb-1 block">Full Name</label>
+            <label className="text-gray-500 text-sm mb-1 block">Full Name</label>
             <input
               value={form.full_name}
               onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-              className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
           <div>
-            <label className="text-gray-400 text-sm mb-1 block">Email</label>
+            <label className="text-gray-500 text-sm mb-1 block">Email</label>
             <input
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm disabled:opacity-50"
+            className="bg-blue-600 hover:bg-blue-700 text-gray-900 px-6 py-2 rounded-lg text-sm disabled:opacity-50"
           >
             Save Changes
           </button>
         </form>
 
         {/* Password */}
-        <form onSubmit={handlePasswordUpdate} className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+        <form onSubmit={handlePasswordUpdate} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
           <h2 className="font-semibold">Change Password</h2>
           {[
             { key: 'current_password', label: 'Current Password' },
@@ -145,12 +145,12 @@ export default function ProfilePage() {
             { key: 'confirm_password', label: 'Confirm New Password' },
           ].map((f) => (
             <div key={f.key}>
-              <label className="text-gray-400 text-sm mb-1 block">{f.label}</label>
+              <label className="text-gray-500 text-sm mb-1 block">{f.label}</label>
               <input
                 type="password"
                 value={(passwordForm as any)[f.key]}
                 onChange={(e) => setPasswordForm({ ...passwordForm, [f.key]: e.target.value })}
-                className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="••••••••"
                 required
               />
@@ -159,19 +159,19 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm disabled:opacity-50"
+            className="bg-blue-600 hover:bg-blue-700 text-gray-900 px-6 py-2 rounded-lg text-sm disabled:opacity-50"
           >
             Update Password
           </button>
         </form>
 
         {/* Danger zone */}
-        <div className="bg-gray-900 border border-red-500/20 rounded-xl p-6">
+        <div className="bg-white border border-red-500/20 rounded-xl p-6">
           <h2 className="font-semibold text-red-400 mb-2">Danger Zone</h2>
-          <p className="text-gray-400 text-sm mb-4">Sign out of your account on this device.</p>
+          <p className="text-gray-500 text-sm mb-4">Sign out of your account on this device.</p>
           <button
             onClick={() => { logout(); router.push('/auth/login'); }}
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-sm"
+            className="bg-red-600 hover:bg-red-700 text-gray-900 px-6 py-2 rounded-lg text-sm"
           >
             Sign Out
           </button>

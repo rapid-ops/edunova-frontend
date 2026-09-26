@@ -40,21 +40,21 @@ export default function SchoolWebsite() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-white flex items-center justify-center"><p className="text-gray-400">Loading...</p></div>;
+  if (loading) return <div className="min-h-screen bg-white flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>;
   if (notFound) return <div className="min-h-screen bg-white flex items-center justify-center"><p className="text-gray-500">School not found.</p></div>;
 
   const primaryColor = config.primary_color || '#1d4ed8';
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <header style={{ backgroundColor: primaryColor }} className="text-white px-6 py-8">
+      <header style={{ backgroundColor: primaryColor }} className="text-gray-900 px-6 py-8">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-3xl font-bold">{school?.name}</h1>
           <p className="mt-1 opacity-80">{config.tagline || school?.address}</p>
         </div>
       </header>
 
-      <nav style={{ backgroundColor: primaryColor }} className="opacity-90 text-white px-6 py-3">
+      <nav style={{ backgroundColor: primaryColor }} className="opacity-90 text-gray-900 px-6 py-3">
         <div className="max-w-5xl mx-auto flex gap-6 text-sm">
           {['Home', 'Courses', 'About', 'Contact'].map((n) => (
             <a key={n} href={`#${n.toLowerCase()}`} className="hover:opacity-70 transition">{n}</a>
@@ -67,7 +67,7 @@ export default function SchoolWebsite() {
           <h2 className="text-4xl font-bold mb-4" style={{ color: primaryColor }}>Welcome to {school?.name}</h2>
           <p className="text-gray-600 text-lg max-w-2xl">{config.about || 'Providing quality education and shaping the leaders of tomorrow.'}</p>
           <div className="flex gap-4 mt-8">
-            <a href="#courses" style={{ backgroundColor: primaryColor }} className="text-white px-6 py-3 rounded-lg font-medium">View Courses</a>
+            <a href="#courses" style={{ backgroundColor: primaryColor }} className="text-gray-900 px-6 py-3 rounded-lg font-medium">View Courses</a>
             <a href="#contact" style={{ borderColor: primaryColor, color: primaryColor }} className="border px-6 py-3 rounded-lg font-medium">Contact Us</a>
           </div>
         </div>
@@ -78,7 +78,7 @@ export default function SchoolWebsite() {
           <h2 className="text-2xl font-bold mb-2">Our Courses</h2>
           <p className="text-gray-500 mb-8">Explore our published curriculum</p>
           {courses.length === 0 ? (
-            <p className="text-gray-400">No published courses yet.</p>
+            <p className="text-gray-500">No published courses yet.</p>
           ) : (
             <div className="grid grid-cols-1 gap-4">
               {courses.map((c) => (
@@ -111,7 +111,7 @@ export default function SchoolWebsite() {
         </div>
       </section>
 
-      <footer style={{ backgroundColor: primaryColor }} className="text-white px-6 py-6 text-center text-sm opacity-90">
+      <footer style={{ backgroundColor: primaryColor }} className="text-gray-900 px-6 py-6 text-center text-sm opacity-90">
         <p>© {new Date().getFullYear()} {school?.name}. Powered by <span className="font-medium">Edunova</span></p>
       </footer>
     </div>

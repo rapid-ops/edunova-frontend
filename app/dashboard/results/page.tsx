@@ -80,16 +80,16 @@ export default function ResultsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center gap-3">
-        <button onClick={() => router.push('/dashboard')} className="text-gray-400 hover:text-white">←</button>
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
+        <button onClick={() => router.push('/dashboard')} className="text-gray-500 hover:text-gray-900">←</button>
         <h1 className="text-xl font-bold">Results & Grades</h1>
       </div>
 
       <div className="max-w-4xl mx-auto p-6">
         {!selected ? (
           <>
-            <p className="text-gray-400 mb-4">Select an assessment to grade</p>
+            <p className="text-gray-500 mb-4">Select an assessment to grade</p>
             {assessments.length === 0 ? (
               <p className="text-gray-500 text-sm">No assessments found.</p>
             ) : (
@@ -98,7 +98,7 @@ export default function ResultsPage() {
                   <button
                     key={a.id}
                     onClick={() => handleSelectAssessment(a)}
-                    className="w-full bg-gray-900 border border-gray-800 hover:border-blue-500 text-left px-5 py-4 rounded-xl transition"
+                    className="w-full bg-white border border-gray-200 hover:border-blue-500 text-left px-5 py-4 rounded-xl transition"
                   >
                     <p className="font-medium">{a.title}</p>
                     <p className="text-gray-500 text-sm mt-1 capitalize">{a.type} · {a.total_marks} marks</p>
@@ -109,20 +109,20 @@ export default function ResultsPage() {
           </>
         ) : (
           <>
-            <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-white text-sm mb-4">← Back to assessments</button>
+            <button onClick={() => setSelected(null)} className="text-gray-500 hover:text-gray-900 text-sm mb-4">← Back to assessments</button>
             <h2 className="font-semibold text-lg mb-1">{selected.title}</h2>
             <p className="text-gray-500 text-sm mb-6 capitalize">{selected.type} · {selected.total_marks} marks</p>
 
-            <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 space-y-4">
+            <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-6 mb-6 space-y-4">
               <h3 className="font-medium">Add / Update Result</h3>
               {error && <p className="text-red-400 text-sm">{error}</p>}
               {success && <p className="text-green-400 text-sm">{success}</p>}
               <div>
-                <label className="text-gray-400 text-sm mb-1 block">Student</label>
+                <label className="text-gray-500 text-sm mb-1 block">Student</label>
                 <select
                   value={form.student_id}
                   onChange={(e) => setForm({ ...form, student_id: e.target.value })}
-                  className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none"
+                  className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none"
                   required
                 >
                   <option value="">Select student</option>
@@ -132,26 +132,26 @@ export default function ResultsPage() {
                 </select>
               </div>
               <div>
-                <label className="text-gray-400 text-sm mb-1 block">Score (out of {selected.total_marks})</label>
+                <label className="text-gray-500 text-sm mb-1 block">Score (out of {selected.total_marks})</label>
                 <input
                   type="number"
                   max={selected.total_marks}
                   value={form.score}
                   onChange={(e) => setForm({ ...form, score: e.target.value })}
-                  className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
               <div>
-                <label className="text-gray-400 text-sm mb-1 block">Feedback (optional)</label>
+                <label className="text-gray-500 text-sm mb-1 block">Feedback (optional)</label>
                 <textarea
                   value={form.feedback}
                   onChange={(e) => setForm({ ...form, feedback: e.target.value })}
                   rows={2}
-                  className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none resize-none"
+                  className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none resize-none"
                 />
               </div>
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm">
+              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-gray-900 px-6 py-2 rounded-lg text-sm">
                 Save Result
               </button>
             </form>
@@ -164,10 +164,10 @@ export default function ResultsPage() {
                 {results.map((r) => {
                   const { grade, color } = getGrade(r.score, selected.total_marks);
                   return (
-                    <div key={r.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+                    <div key={r.id} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between">
                       <div>
                         <p className="font-medium">{r.student_name}</p>
-                        <p className="text-gray-400 text-sm mt-1">{r.feedback || 'No feedback'}</p>
+                        <p className="text-gray-500 text-sm mt-1">{r.feedback || 'No feedback'}</p>
                       </div>
                       <div className="text-right">
                         <p className="font-bold">{r.score}/{selected.total_marks}</p>

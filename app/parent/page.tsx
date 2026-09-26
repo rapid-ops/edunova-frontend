@@ -59,14 +59,14 @@ export default function ParentDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold">Parent Portal</h1>
           <p className="text-gray-500 text-xs">Edunova</p>
         </div>
         <div className="flex items-center gap-4">
-          <button onClick={() => router.push('/profile')} className="text-gray-400 text-sm">Profile</button>
+          <button onClick={() => router.push('/profile')} className="text-gray-500 text-sm">Profile</button>
           <button onClick={() => { logout(); router.push('/auth/login'); }} className="text-sm text-red-400">Logout</button>
         </div>
       </div>
@@ -76,13 +76,13 @@ export default function ParentDashboard() {
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-4">
             <p className="text-blue-400 font-medium text-sm mb-2">{notifications.length} new notifications</p>
             {notifications.slice(0, 2).map((n) => (
-              <p key={n.id} className="text-gray-300 text-sm py-1">{n.title} — {n.body}</p>
+              <p key={n.id} className="text-gray-600 text-sm py-1">{n.title} — {n.body}</p>
             ))}
           </div>
         )}
 
         {children.length === 0 ? (
-          <p className="text-gray-400">No children linked to your account yet. Contact the school admin.</p>
+          <p className="text-gray-500">No children linked to your account yet. Contact the school admin.</p>
         ) : (
           <>
             {children.length > 1 && (
@@ -91,7 +91,7 @@ export default function ParentDashboard() {
                   <button
                     key={c.id}
                     onClick={() => selectChild(c)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${selected?.id === c.id ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'}`}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${selected?.id === c.id ? 'bg-blue-600 text-gray-900' : 'bg-white text-gray-500'}`}
                   >
                     {c.full_name}
                   </button>
@@ -101,13 +101,13 @@ export default function ParentDashboard() {
 
             {selected && childData && (
               <div className="space-y-6">
-                <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+                <div className="bg-white border border-gray-200 rounded-xl p-5">
                   <h2 className="font-semibold text-lg">{selected.full_name}</h2>
-                  <p className="text-gray-400 text-sm">{selected.email}</p>
+                  <p className="text-gray-500 text-sm">{selected.email}</p>
                 </div>
 
                 {/* Attendance */}
-                <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+                <div className="bg-white border border-gray-200 rounded-xl p-5">
                   <h3 className="font-semibold mb-3">Attendance</h3>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="text-center">
@@ -127,7 +127,7 @@ export default function ParentDashboard() {
 
                 {/* Results */}
                 {childData.results?.length > 0 && (
-                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+                  <div className="bg-white border border-gray-200 rounded-xl p-5">
                     <h3 className="font-semibold mb-3">Academic Results</h3>
                     <div className="space-y-3">
                       {childData.results.map((r: any) => {
@@ -139,7 +139,7 @@ export default function ParentDashboard() {
                               <p className="text-gray-500 text-xs capitalize">{r.type}</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm text-gray-400">{r.score}/{r.total_marks}</p>
+                              <p className="text-sm text-gray-500">{r.score}/{r.total_marks}</p>
                               <p className={`text-lg font-bold ${color}`}>{grade}</p>
                             </div>
                           </div>
@@ -151,14 +151,14 @@ export default function ParentDashboard() {
 
                 {/* Fees */}
                 {childData.fees?.length > 0 && (
-                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+                  <div className="bg-white border border-gray-200 rounded-xl p-5">
                     <h3 className="font-semibold mb-3">Fees</h3>
                     <div className="space-y-2">
                       {childData.fees.map((f: any) => (
                         <div key={f.id} className="flex items-center justify-between">
                           <div>
                             <p className="text-sm">{f.description}</p>
-                            <p className="text-gray-400 text-sm">₦{Number(f.amount).toLocaleString()}</p>
+                            <p className="text-gray-500 text-sm">₦{Number(f.amount).toLocaleString()}</p>
                           </div>
                           <span className={`text-xs px-2 py-1 rounded-full ${f.status === 'paid' ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'}`}>
                             {f.status}
@@ -171,11 +171,11 @@ export default function ParentDashboard() {
 
                 {/* Courses */}
                 {childData.enrollments?.length > 0 && (
-                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+                  <div className="bg-white border border-gray-200 rounded-xl p-5">
                     <h3 className="font-semibold mb-3">Enrolled Courses</h3>
                     <div className="space-y-2">
                       {childData.enrollments.map((e: any) => (
-                        <p key={e.id} className="text-sm text-gray-300">{e.course_title}</p>
+                        <p key={e.id} className="text-sm text-gray-600">{e.course_title}</p>
                       ))}
                     </div>
                   </div>
@@ -188,7 +188,7 @@ export default function ParentDashboard() {
         <div className="mt-6">
           <button
             onClick={() => router.push('/dashboard/messages')}
-            className="w-full bg-gray-900 border border-gray-800 hover:border-blue-500 text-left px-5 py-4 rounded-xl text-sm font-medium transition"
+            className="w-full bg-white border border-gray-200 hover:border-blue-500 text-left px-5 py-4 rounded-xl text-sm font-medium transition"
           >
             Message School →
           </button>

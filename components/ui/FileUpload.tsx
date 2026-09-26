@@ -51,16 +51,16 @@ export default function FileUpload({ endpoint, label, accept, onSuccess, extraDa
 
   return (
     <div className="w-full">
-      {label && <label className="text-gray-400 text-sm mb-1 block">{label}</label>}
+      {label && <label className="text-gray-500 text-sm mb-1 block">{label}</label>}
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-xl px-6 py-8 text-center cursor-pointer transition ${
-          isDragActive ? 'border-blue-500 bg-blue-500/5' : 'border-gray-700 hover:border-gray-600'
+          isDragActive ? 'border-blue-500 bg-blue-500/5' : 'border-gray-200 hover:border-gray-300'
         }`}
       >
         <input {...getInputProps()} />
         {uploading ? (
-          <p className="text-gray-400 text-sm">Uploading...</p>
+          <p className="text-gray-500 text-sm">Uploading...</p>
         ) : uploaded ? (
           <div>
             <p className="text-green-400 text-sm">Uploaded successfully</p>
@@ -70,7 +70,7 @@ export default function FileUpload({ endpoint, label, accept, onSuccess, extraDa
           </div>
         ) : (
           <div>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-500 text-sm">
               {isDragActive ? 'Drop file here' : 'Tap or drag file to upload'}
             </p>
             <p className="text-gray-600 text-xs mt-1">Max 10MB</p>

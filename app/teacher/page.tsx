@@ -37,14 +37,14 @@ export default function TeacherDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold">Teacher Portal</h1>
           <p className="text-gray-500 text-xs">Edunova</p>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-gray-400 text-sm">{user?.full_name}</span>
+          <span className="text-gray-500 text-sm">{user?.full_name}</span>
           <button onClick={() => { logout(); router.push('/auth/login'); }} className="text-sm text-red-400">Logout</button>
         </div>
       </div>
@@ -54,12 +54,12 @@ export default function TeacherDashboard() {
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6">
             <p className="text-blue-400 font-medium text-sm mb-2">{notifications.length} new notifications</p>
             {notifications.slice(0, 2).map((n) => (
-              <p key={n.id} className="text-gray-300 text-sm py-1">{n.title} — {n.body}</p>
+              <p key={n.id} className="text-gray-600 text-sm py-1">{n.title} — {n.body}</p>
             ))}
           </div>
         )}
 
-        <p className="text-gray-400 mb-4">Welcome, <span className="text-white font-medium">{user?.full_name}</span></p>
+        <p className="text-gray-500 mb-4">Welcome, <span className="text-gray-900 font-medium">{user?.full_name}</span></p>
 
         <h2 className="font-semibold mb-3">My Courses</h2>
         {courses.length === 0 ? (
@@ -70,10 +70,10 @@ export default function TeacherDashboard() {
               <div
                 key={c.id}
                 onClick={() => router.push(`/dashboard/courses/${c.id}`)}
-                className="bg-gray-900 border border-gray-800 hover:border-blue-500 rounded-xl p-4 cursor-pointer transition"
+                className="bg-white border border-gray-200 hover:border-blue-500 rounded-xl p-4 cursor-pointer transition"
               >
                 <h3 className="font-medium">{c.title}</h3>
-                <p className="text-gray-400 text-sm mt-1">{c.description}</p>
+                <p className="text-gray-500 text-sm mt-1">{c.description}</p>
                 <span className={`text-xs mt-2 inline-block px-2 py-1 rounded-full ${c.is_published ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'}`}>
                   {c.is_published ? 'Published' : 'Draft'}
                 </span>
@@ -90,7 +90,7 @@ export default function TeacherDashboard() {
             <button
               key={item.label}
               onClick={() => router.push(item.href)}
-              className="w-full bg-gray-900 border border-gray-800 hover:border-blue-500 text-left px-5 py-4 rounded-xl text-sm font-medium transition"
+              className="w-full bg-white border border-gray-200 hover:border-blue-500 text-left px-5 py-4 rounded-xl text-sm font-medium transition"
             >
               {item.label} →
             </button>

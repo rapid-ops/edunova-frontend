@@ -37,9 +37,9 @@ export default function AssignmentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center gap-3">
-        <button onClick={() => router.push('/student')} className="text-gray-400 hover:text-white">←</button>
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
+        <button onClick={() => router.push('/student')} className="text-gray-500 hover:text-gray-900">←</button>
         <h1 className="text-xl font-bold">Assignments</h1>
       </div>
 
@@ -47,16 +47,16 @@ export default function AssignmentsPage() {
         {!selected ? (
           <>
             {loading ? (
-              <p className="text-gray-400">Loading...</p>
+              <p className="text-gray-500">Loading...</p>
             ) : assessments.length === 0 ? (
-              <p className="text-gray-400">No assignments yet.</p>
+              <p className="text-gray-500">No assignments yet.</p>
             ) : (
               <div className="space-y-3">
                 {assessments.map((a) => (
                   <div
                     key={a.id}
                     onClick={() => setSelected(a)}
-                    className="bg-gray-900 border border-gray-800 hover:border-blue-500 rounded-xl p-5 cursor-pointer transition"
+                    className="bg-white border border-gray-200 hover:border-blue-500 rounded-xl p-5 cursor-pointer transition"
                   >
                     <div className="flex items-start justify-between">
                       <div>
@@ -77,7 +77,7 @@ export default function AssignmentsPage() {
           </>
         ) : (
           <div>
-            <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-white text-sm mb-4">← Back</button>
+            <button onClick={() => setSelected(null)} className="text-gray-500 hover:text-gray-900 text-sm mb-4">← Back</button>
             <h2 className="font-semibold text-lg mb-1">{selected.title}</h2>
             <p className="text-gray-500 text-sm mb-6">{selected.course_title} · {selected.total_marks} marks</p>
 

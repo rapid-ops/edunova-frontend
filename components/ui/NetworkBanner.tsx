@@ -28,7 +28,7 @@ export default function NetworkBanner() {
 
   return (
     <div className={`fixed top-0 left-0 right-0 z-50 text-center text-sm py-2 px-4 ${
-      isOnline ? 'bg-green-600 text-white' : 'bg-yellow-600 text-white'
+      isOnline ? 'bg-green-600 text-gray-900' : 'bg-yellow-600 text-gray-900'
     }`}>
       {!isOnline && 'You are offline. Data will sync when connected.'}
       {isOnline && syncing && 'Syncing offline data...'}

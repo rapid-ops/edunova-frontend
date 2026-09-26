@@ -52,14 +52,14 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold">Student Portal</h1>
           <p className="text-gray-500 text-xs">Edunova</p>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-gray-400 text-sm">{user?.full_name}</span>
+          <span className="text-gray-500 text-sm">{user?.full_name}</span>
           <button onClick={() => { logout(); router.push('/auth/login'); }} className="text-sm text-red-400">Logout</button>
         </div>
       </div>
@@ -69,7 +69,7 @@ export default function StudentDashboard() {
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-4">
             <p className="text-blue-400 font-medium text-sm mb-2">{notifications.length} new notifications</p>
             {notifications.slice(0, 2).map((n) => (
-              <p key={n.id} className="text-gray-300 text-sm py-1">{n.title} — {n.body}</p>
+              <p key={n.id} className="text-gray-600 text-sm py-1">{n.title} — {n.body}</p>
             ))}
           </div>
         )}
@@ -81,12 +81,12 @@ export default function StudentDashboard() {
           >
             <p className="text-yellow-400 font-medium text-sm">{fees.length} pending fee(s) — tap to pay</p>
             {fees.map((f) => (
-              <p key={f.id} className="text-gray-300 text-sm py-1">₦{Number(f.amount).toLocaleString()} — {f.description}</p>
+              <p key={f.id} className="text-gray-600 text-sm py-1">₦{Number(f.amount).toLocaleString()} — {f.description}</p>
             ))}
           </div>
         )}
 
-        <p className="text-gray-400 mb-6">Welcome, <span className="text-white font-medium">{user?.full_name}</span></p>
+        <p className="text-gray-500 mb-6">Welcome, <span className="text-gray-900 font-medium">{user?.full_name}</span></p>
 
         <h2 className="font-semibold mb-3">My Courses</h2>
         {enrollments.length === 0 ? (
@@ -97,7 +97,7 @@ export default function StudentDashboard() {
               <div
                 key={e.id}
                 onClick={() => router.push(`/dashboard/courses/${e.course_id}`)}
-                className="bg-gray-900 border border-gray-800 hover:border-blue-500 rounded-xl p-4 cursor-pointer transition"
+                className="bg-white border border-gray-200 hover:border-blue-500 rounded-xl p-4 cursor-pointer transition"
               >
                 <h3 className="font-medium">{e.course_title}</h3>
                 <p className="text-gray-500 text-xs mt-1">Enrolled {new Date(e.enrolled_at).toLocaleDateString()}</p>
@@ -113,14 +113,14 @@ export default function StudentDashboard() {
               {results.map((r) => {
                 const { grade, color } = getGrade(r.score, r.total_marks);
                 return (
-                  <div key={r.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+                  <div key={r.id} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between">
                     <div>
                       <p className="font-medium">{r.assessment_title}</p>
                       <p className="text-gray-500 text-xs capitalize mt-1">{r.type}</p>
-                      {r.feedback && <p className="text-gray-400 text-sm mt-1">{r.feedback}</p>}
+                      {r.feedback && <p className="text-gray-500 text-sm mt-1">{r.feedback}</p>}
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-400">{r.score}/{r.total_marks}</p>
+                      <p className="text-sm text-gray-500">{r.score}/{r.total_marks}</p>
                       <p className={`text-2xl font-bold ${color}`}>{grade}</p>
                     </div>
                   </div>
@@ -140,7 +140,7 @@ export default function StudentDashboard() {
             <button
               key={item.label}
               onClick={() => router.push(item.href)}
-              className="w-full bg-gray-900 border border-gray-800 hover:border-blue-500 text-left px-5 py-4 rounded-xl text-sm font-medium transition"
+              className="w-full bg-white border border-gray-200 hover:border-blue-500 text-left px-5 py-4 rounded-xl text-sm font-medium transition"
             >
               {item.label} →
             </button>

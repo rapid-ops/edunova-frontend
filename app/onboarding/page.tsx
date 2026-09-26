@@ -61,11 +61,11 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center px-4">
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold">Edunova</h1>
-          <p className="text-gray-400 mt-1">Set up your school in minutes</p>
+          <p className="text-gray-500 mt-1">Set up your school in minutes</p>
         </div>
 
         {/* Step indicator */}
@@ -73,14 +73,14 @@ export default function OnboardingPage() {
           {STEPS.map((s, i) => (
             <div key={s} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition ${
-                i < step ? 'bg-green-600 text-white' :
-                i === step ? 'bg-blue-600 text-white' :
-                'bg-gray-800 text-gray-500'
+                i < step ? 'bg-green-600 text-gray-900' :
+                i === step ? 'bg-blue-600 text-gray-900' :
+                'bg-gray-100 text-gray-500'
               }`}>
                 {i < step ? '✓' : i + 1}
               </div>
               {i < STEPS.length - 1 && (
-                <div className={`w-12 h-0.5 ${i < step ? 'bg-green-600' : 'bg-gray-800'}`} />
+                <div className={`w-12 h-0.5 ${i < step ? 'bg-green-600' : 'bg-gray-100'}`} />
               )}
             </div>
           ))}
@@ -93,7 +93,7 @@ export default function OnboardingPage() {
         )}
 
         {step === 0 && (
-          <form onSubmit={handleSchoolSubmit} className="bg-gray-900 rounded-2xl p-6 space-y-4">
+          <form onSubmit={handleSchoolSubmit} className="bg-white rounded-2xl p-6 space-y-4">
             <h2 className="font-semibold text-lg">School Information</h2>
             {[
               { key: 'name', label: 'School Name', placeholder: 'Greenfield Academy' },
@@ -103,12 +103,12 @@ export default function OnboardingPage() {
               { key: 'subdomain', label: 'Subdomain', placeholder: 'greenfield (your-school.edunova.com)' },
             ].map((f) => (
               <div key={f.key}>
-                <label className="text-gray-400 text-sm mb-1 block">{f.label}</label>
+                <label className="text-gray-500 text-sm mb-1 block">{f.label}</label>
                 <input
                   value={(schoolForm as any)[f.key]}
                   onChange={(e) => setSchoolForm({ ...schoolForm, [f.key]: e.target.value })}
                   placeholder={f.placeholder}
-                  className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
@@ -116,7 +116,7 @@ export default function OnboardingPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition disabled:opacity-50"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-gray-900 py-3 rounded-lg font-medium transition disabled:opacity-50"
             >
               {loading ? 'Creating...' : 'Continue'}
             </button>
@@ -124,9 +124,9 @@ export default function OnboardingPage() {
         )}
 
         {step === 1 && (
-          <form onSubmit={handleAdminSubmit} className="bg-gray-900 rounded-2xl p-6 space-y-4">
+          <form onSubmit={handleAdminSubmit} className="bg-white rounded-2xl p-6 space-y-4">
             <h2 className="font-semibold text-lg">Create Admin Account</h2>
-            <p className="text-gray-400 text-sm">This will be the main administrator for {school?.name}</p>
+            <p className="text-gray-500 text-sm">This will be the main administrator for {school?.name}</p>
             {[
               { key: 'full_name', label: 'Full Name', placeholder: 'John Doe', type: 'text' },
               { key: 'email', label: 'Email', placeholder: 'admin@greenfield.edu.ng', type: 'email' },
@@ -134,13 +134,13 @@ export default function OnboardingPage() {
               { key: 'confirm_password', label: 'Confirm Password', placeholder: '••••••••', type: 'password' },
             ].map((f) => (
               <div key={f.key}>
-                <label className="text-gray-400 text-sm mb-1 block">{f.label}</label>
+                <label className="text-gray-500 text-sm mb-1 block">{f.label}</label>
                 <input
                   type={f.type}
                   value={(adminForm as any)[f.key]}
                   onChange={(e) => setAdminForm({ ...adminForm, [f.key]: e.target.value })}
                   placeholder={f.placeholder}
-                  className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
@@ -148,7 +148,7 @@ export default function OnboardingPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition disabled:opacity-50"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-gray-900 py-3 rounded-lg font-medium transition disabled:opacity-50"
             >
               {loading ? 'Creating...' : 'Create Account'}
             </button>
@@ -156,17 +156,17 @@ export default function OnboardingPage() {
         )}
 
         {step === 2 && (
-          <div className="bg-gray-900 rounded-2xl p-8 text-center">
+          <div className="bg-white rounded-2xl p-8 text-center">
             <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-green-400 text-2xl">✓</span>
             </div>
             <h2 className="text-xl font-bold mb-2">You're all set!</h2>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-gray-500 text-sm mb-6">
               {school?.name} has been created on Edunova. Login with your admin account to get started.
             </p>
             <button
               onClick={() => router.push('/auth/login')}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-gray-900 py-3 rounded-lg font-medium transition"
             >
               Go to Login
             </button>

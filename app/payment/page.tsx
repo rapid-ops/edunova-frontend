@@ -41,14 +41,14 @@ function PaymentContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center gap-3">
-        <button onClick={() => router.push('/student')} className="text-gray-400 hover:text-white">←</button>
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
+        <button onClick={() => router.push('/student')} className="text-gray-500 hover:text-gray-900">←</button>
         <h1 className="text-xl font-bold">Pay Fees</h1>
       </div>
       <div className="max-w-2xl mx-auto p-6">
         {loading ? (
-          <p className="text-gray-400">Loading...</p>
+          <p className="text-gray-500">Loading...</p>
         ) : fees.length === 0 ? (
           <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6 text-center">
             <p className="text-green-400 font-medium">All fees paid</p>
@@ -56,7 +56,7 @@ function PaymentContent() {
         ) : (
           <div className="space-y-4">
             {fees.map((f) => (
-              <div key={f.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+              <div key={f.id} className="bg-white border border-gray-200 rounded-xl p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="font-semibold">{f.description}</h3>
@@ -68,7 +68,7 @@ function PaymentContent() {
                 <button
                   onClick={() => handlePay(f)}
                   disabled={paying === f.id}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg text-sm font-medium disabled:opacity-50"
+                  className="w-full bg-green-600 hover:bg-green-700 text-gray-900 py-3 rounded-lg text-sm font-medium disabled:opacity-50"
                 >
                   {paying === f.id ? 'Redirecting...' : 'Pay Now'}
                 </button>
@@ -83,7 +83,7 @@ function PaymentContent() {
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-950 flex items-center justify-center text-white">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-900">Loading...</div>}>
       <PaymentContent />
     </Suspense>
   );

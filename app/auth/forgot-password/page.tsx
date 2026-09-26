@@ -44,27 +44,27 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-gray-900 rounded-2xl p-8">
-        <button onClick={() => router.push('/auth/login')} className="text-gray-400 hover:text-white text-sm mb-6 block">← Back to login</button>
-        <h1 className="text-xl font-bold text-white mb-1">Reset Password</h1>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl p-8">
+        <button onClick={() => router.push('/auth/login')} className="text-gray-500 hover:text-gray-900 text-sm mb-6 block">← Back to login</button>
+        <h1 className="text-xl font-bold text-gray-900 mb-1">Reset Password</h1>
 
         {error && <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-lg my-4">{error}</div>}
 
         {step === 'email' && (
           <form onSubmit={handleEmailSubmit} className="space-y-4 mt-4">
             <div>
-              <label className="text-gray-400 text-sm mb-1 block">Email address</label>
+              <label className="text-gray-500 text-sm mb-1 block">Email address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="you@school.com"
                 required
               />
             </div>
-            <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-medium disabled:opacity-50">
+            <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-gray-900 py-3 rounded-lg text-sm font-medium disabled:opacity-50">
               {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
           </form>
@@ -72,30 +72,30 @@ export default function ForgotPasswordPage() {
 
         {step === 'reset' && (
           <form onSubmit={handleResetSubmit} className="space-y-4 mt-4">
-            <p className="text-gray-400 text-sm">Enter your new password below.</p>
+            <p className="text-gray-500 text-sm">Enter your new password below.</p>
             <div>
-              <label className="text-gray-400 text-sm mb-1 block">New Password</label>
+              <label className="text-gray-500 text-sm mb-1 block">New Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="••••••••"
                 required
               />
             </div>
             <div>
-              <label className="text-gray-400 text-sm mb-1 block">Confirm Password</label>
+              <label className="text-gray-500 text-sm mb-1 block">Confirm Password</label>
               <input
                 type="password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="••••••••"
                 required
               />
             </div>
-            <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-medium disabled:opacity-50">
+            <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-gray-900 py-3 rounded-lg text-sm font-medium disabled:opacity-50">
               {loading ? 'Resetting...' : 'Reset Password'}
             </button>
           </form>
@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
         {step === 'done' && (
           <div className="text-center mt-6">
             <p className="text-green-400 font-medium mb-4">Password reset successful</p>
-            <button onClick={() => router.push('/auth/login')} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm">Go to Login</button>
+            <button onClick={() => router.push('/auth/login')} className="bg-blue-600 text-gray-900 px-6 py-2 rounded-lg text-sm">Go to Login</button>
           </div>
         )}
       </div>

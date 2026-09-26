@@ -56,9 +56,9 @@ export default function WebsitePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-gray-400 hover:text-white">←</button>
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
+        <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-900">←</button>
         <h1 className="text-xl font-bold">School Website</h1>
       </div>
 
@@ -66,32 +66,32 @@ export default function WebsitePage() {
         {success && <div className="bg-green-500/10 border border-green-500/30 text-green-400 text-sm px-4 py-3 rounded-lg mb-4">{success}</div>}
 
         <div className="flex gap-2 mb-6">
-          <button onClick={() => setMode('builder')} className={`px-4 py-2 rounded-lg text-sm font-medium ${mode === 'builder' ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'}`}>Build Website</button>
-          <button onClick={() => setMode('external')} className={`px-4 py-2 rounded-lg text-sm font-medium ${mode === 'external' ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400'}`}>Use Existing Website</button>
+          <button onClick={() => setMode('builder')} className={`px-4 py-2 rounded-lg text-sm font-medium ${mode === 'builder' ? 'bg-blue-600 text-gray-900' : 'bg-white text-gray-500'}`}>Build Website</button>
+          <button onClick={() => setMode('external')} className={`px-4 py-2 rounded-lg text-sm font-medium ${mode === 'external' ? 'bg-blue-600 text-gray-900' : 'bg-white text-gray-500'}`}>Use Existing Website</button>
         </div>
 
         {mode === 'external' ? (
-          <form onSubmit={handleSave} className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+          <form onSubmit={handleSave} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
             <h2 className="font-semibold">Link Your Existing Website</h2>
-            <p className="text-gray-400 text-sm">Students and parents will be redirected to your website.</p>
+            <p className="text-gray-500 text-sm">Students and parents will be redirected to your website.</p>
             <div>
-              <label className="text-gray-400 text-sm mb-1 block">Website URL</label>
+              <label className="text-gray-500 text-sm mb-1 block">Website URL</label>
               <input
                 value={externalUrl}
                 onChange={(e) => setExternalUrl(e.target.value)}
                 placeholder="https://yourschool.edu.ng"
-                className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
-            <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-medium disabled:opacity-50">
+            <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-gray-900 py-3 rounded-lg text-sm font-medium disabled:opacity-50">
               {loading ? 'Saving...' : 'Save'}
             </button>
           </form>
         ) : (
-          <form onSubmit={handleSave} className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+          <form onSubmit={handleSave} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
             <h2 className="font-semibold">Customize Your School Website</h2>
-            <p className="text-gray-400 text-sm">Your website will be live at: <span className="text-blue-400">{`edunova-frontend-gkaj.vercel.app/school/${school?.subdomain}`}</span></p>
+            <p className="text-gray-500 text-sm">Your website will be live at: <span className="text-blue-400">{`edunova-frontend-gkaj.vercel.app/school/${school?.subdomain}`}</span></p>
 
             {[
               { key: 'tagline', label: 'Tagline', placeholder: 'Shaping tomorrow\'s leaders today' },
@@ -101,40 +101,40 @@ export default function WebsitePage() {
               { key: 'email', label: 'Email', placeholder: 'info@school.edu.ng' },
             ].map((f) => (
               <div key={f.key}>
-                <label className="text-gray-400 text-sm mb-1 block">{f.label}</label>
+                <label className="text-gray-500 text-sm mb-1 block">{f.label}</label>
                 {f.key === 'about' ? (
                   <textarea
                     value={(form as any)[f.key]}
                     onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                     placeholder={f.placeholder}
                     rows={3}
-                    className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none resize-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none resize-none focus:ring-2 focus:ring-blue-500"
                   />
                 ) : (
                   <input
                     value={(form as any)[f.key]}
                     onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                     placeholder={f.placeholder}
-                    className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 )}
               </div>
             ))}
 
             <div>
-              <label className="text-gray-400 text-sm mb-1 block">Primary Color</label>
+              <label className="text-gray-500 text-sm mb-1 block">Primary Color</label>
               <div className="flex items-center gap-3">
                 <input type="color" value={form.primary_color} onChange={(e) => setForm({ ...form, primary_color: e.target.value })} className="w-12 h-12 rounded-lg cursor-pointer bg-transparent border-0" />
-                <span className="text-gray-400 text-sm">{form.primary_color}</span>
+                <span className="text-gray-500 text-sm">{form.primary_color}</span>
               </div>
             </div>
 
             <div className="flex gap-3">
-              <button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm disabled:opacity-50">
+              <button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-gray-900 px-6 py-2 rounded-lg text-sm disabled:opacity-50">
                 {loading ? 'Saving...' : 'Save & Publish'}
               </button>
               {school?.subdomain && (
-                <a href={`/school/${school.subdomain}`} target="_blank" className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-lg text-sm">
+                <a href={`/school/${school.subdomain}`} target="_blank" className="bg-gray-100 hover:bg-gray-200 text-gray-900 px-6 py-2 rounded-lg text-sm">
                   Preview
                 </a>
               )}

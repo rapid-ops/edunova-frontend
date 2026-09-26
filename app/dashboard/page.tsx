@@ -58,11 +58,11 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">Edunova</h1>
         <div className="flex items-center gap-4">
-          <button onClick={() => router.push('/profile')} className="text-gray-400 hover:text-white text-sm">Profile</button>
+          <button onClick={() => router.push('/profile')} className="text-gray-500 hover:text-gray-900 text-sm">Profile</button>
           <button onClick={() => { logout(); router.push('/auth/login'); }} className="text-sm text-red-400">Logout</button>
         </div>
       </div>
@@ -78,14 +78,14 @@ export default function Dashboard() {
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6">
             <p className="text-blue-400 font-medium text-sm mb-2">Notifications ({notifications.length})</p>
             {notifications.slice(0, 3).map((n) => (
-              <div key={n.id} className="text-sm text-gray-300 py-1 border-b border-blue-500/10 last:border-0">
+              <div key={n.id} className="text-sm text-gray-600 py-1 border-b border-blue-500/10 last:border-0">
                 <span className="font-medium">{n.title}</span> — {n.body}
               </div>
             ))}
           </div>
         )}
 
-        <p className="text-gray-400 mb-6">Welcome back, <span className="text-white font-medium">{user?.full_name}</span></p>
+        <p className="text-gray-500 mb-6">Welcome back, <span className="text-gray-900 font-medium">{user?.full_name}</span></p>
 
         <div className="grid grid-cols-2 gap-4 mb-8">
           {[
@@ -94,8 +94,8 @@ export default function Dashboard() {
             { label: 'Students', value: stats.students },
             { label: 'Teachers', value: stats.teachers },
           ].map((s) => (
-            <div key={s.label} className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-              <p className="text-gray-400 text-sm">{s.label}</p>
+            <div key={s.label} className="bg-white rounded-xl p-4 border border-gray-200">
+              <p className="text-gray-500 text-sm">{s.label}</p>
               <p className="text-3xl font-bold mt-1">{s.value}</p>
             </div>
           ))}
@@ -121,7 +121,7 @@ export default function Dashboard() {
             <button
               key={item.label}
               onClick={() => router.push(item.href)}
-              className="w-full bg-gray-900 border border-gray-800 hover:border-blue-500 text-left px-5 py-4 rounded-xl text-sm font-medium transition"
+              className="w-full bg-white border border-gray-200 hover:border-blue-500 text-left px-5 py-4 rounded-xl text-sm font-medium transition"
             >
               {item.label} →
             </button>
