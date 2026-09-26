@@ -1,0 +1,45 @@
+'use client';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+const API = process.env.NEXT_PUBLIC_URL;
+interface Competency { id: number; name: string; description: string; course_count: number; }
+export default function CompetenciesPage() {
+  const router = useRouter();
+  const [list, setList] = useState<Competency[]>([]);
+  const [form, setForm] = useState({ name: '', description: '' });
+  const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : {};
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const isAdmin = ['school_admin','super_admin'].includes(user.role);
+  const load = () => fetch(`${API}/api/competencies/school/${user.school_id}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()).then(d => { setList(d.competencies || []); setLoading(false); });
+  useEffect(() => { load(); }, []);
+  const create = async () => { if (!form.name.trim()) return; await fetch(`${API}/api/competencies`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ ...form, school_id: user.school_id }) }); setForm({ name: '', description: '' }); setShowForm(false); load(); };
+  const del = async (id: number) => { await fetch(`${API}/api/competencies/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); load(); };
+  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
+      <div className="max-w-3xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4"><button onClick={() => router.back()} className="text-sm text-blue-600 hover:underline">← Back</button><h1 className="text-xl font-bold">Competencies</h1></div>
+          {isAdmin && <button onClick={() => setShowForm(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">+ Add</button>}
+        </div>
+        {showForm && isAdmin && (
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6 space-y-3">
+            <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Competency name" className="w-full bg-gray-100 rounded-lg px-4 py-3 text-sm outline-none" />
+            <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Description" rows={2} className="w-full bg-gray-100 rounded-lg px-4 py-3 text-sm outline-none resize-none" />
+            <div className="flex gap-3"><button onClick={create} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">Save</button><button onClick={() => setShowForm(false)} className="bg-gray-100 text-gray-500 px-4 py-2 rounded-lg text-sm">Cancel</button></div>
+          </div>
+        )}
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          {list.length === 0 ? <div className="p-12 text-center text-gray-400">No competencies yet.</div> : list.map(c => (
+            <div key={c.id} className="flex items-center justify-between px-5 py-4 border-b border-gray-100 last:border-0">
+              <div><div className="font-medium text-gray-900">{c.name}</div><div className="text-xs text-gray-400">{c.description} · {c.course_count} course{Number(c.course_count) !== 1 ? 's' : ''}</div></div>
+              {isAdmin && <button onClick={() => del(c.id)} className="text-red-400 text-sm hover:text-red-600">Delete</button>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
