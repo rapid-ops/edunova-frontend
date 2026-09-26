@@ -13,6 +13,7 @@ interface AuthStore {
   token: string | null;
   setAuth: (user: User, token: string) => void;
   logout: () => void;
+  hydrate: () => void;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -27,5 +28,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     set({ user: null, token: null });
+  },
+  hydrate: () => {
+    try {
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      if (token && user) set({ token, user: JSON.parse(user) });
+    } catch {}
   },
 }));

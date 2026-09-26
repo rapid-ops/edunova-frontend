@@ -1,26 +1,20 @@
-'use client';
-import { useEffect } from 'react';
-import { useAuthStore } from '@/store/auth.store';
-import { registerServiceWorker } from '@/lib/sw-register';
-import NetworkBanner from '@/components/ui/NetworkBanner';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
+import HydrateAuth from '@/components/HydrateAuth';
+
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'Edunova',
+  description: 'Nigerian School LMS',
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const setAuth = useAuthStore((s) => s.setAuth);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    if (token && user) {
-      setAuth(JSON.parse(user), token);
-    }
-    registerServiceWorker();
-  }, []);
-
   return (
     <html lang="en">
-      <body>
-        <NetworkBanner />
+      <body className={inter.className}>
+        <HydrateAuth />
         {children}
       </body>
     </html>
