@@ -5,126 +5,96 @@ import { useAuthStore } from '@/store/auth.store';
 import { joinRoom } from '@/lib/socket';
 import api from '@/lib/api';
 
-export default function Dashboard() {
+export default function SuperAdminDashboard() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const [stats, setStats] = useState({ schools: 0, courses: 0, students: 0, teachers: 0 });
+  const [stats, setStats] = useState({ schools: 0, total_students: 0, total_teachers: 0, open_tickets: 0 });
+  const [tickets, setTickets] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
-  const [subscription, setSubscription] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) { router.push('/auth/login'); return; }
     if (user) {
+      if (user.role === 'school_admin') { router.replace('/school-admin'); return; }
+      if (user.role === 'teacher') { router.replace('/teacher'); return; }
+      if (user.role === 'student') { router.replace('/student'); return; }
+      if (user.role === 'parent') { router.replace('/parent'); return; }
       joinRoom(user.id);
-      fetchStats();
-      fetchNotifications();
-      fetchSubscription();
+      fetchData();
     }
   }, [user]);
 
-  const schoolId = user?.school_id || 1;
-
-  const fetchStats = async () => {
+  const fetchData = async () => {
     try {
-      const [schoolsRes, coursesRes, usersRes] = await Promise.all([
+      const [schoolsRes, notifRes, ticketsRes] = await Promise.all([
         api.get('/schools'),
-        api.get(`/courses/school/${schoolId}`),
-        api.get(`/auth/users/${schoolId}`),
+        api.get(`/notifications/${user?.id}`),
+        api.get('/b2b-tickets/all'),
       ]);
-      const users = usersRes.data.users;
-      setStats({
-        schools: schoolsRes.data.schools.length,
-        courses: coursesRes.data.courses.length,
-        students: users.filter((u: any) => u.role === 'student').length,
-        teachers: users.filter((u: any) => u.role === 'teacher').length,
-      });
+      const schools = schoolsRes.data.schools || [];
+      setStats({ schools: schools.length, total_students: 0, total_teachers: 0, open_tickets: (ticketsRes.data.tickets || []).filter((t: any) => t.status === 'open').length });
+      setNotifications((notifRes.data.notifications || []).filter((n: any) => !n.is_read));
+      setTickets((ticketsRes.data.tickets || []).filter((t: any) => t.status === 'open').slice(0, 5));
     } catch (err) {}
+    setLoading(false);
   };
 
-  const fetchNotifications = async () => {
-    if (!user) return;
-    try {
-      const res = await api.get(`/notifications/${user.id}`);
-      setNotifications(res.data.notifications.filter((n: any) => !n.is_read));
-    } catch (err) {}
-  };
-
-  const fetchSubscription = async () => {
-    try {
-      const res = await api.get(`/subscription/school/${schoolId}`);
-      setSubscription(res.data.subscription);
-    } catch (err) {}
-  };
+  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-400">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold">Edunova</h1>
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.push('/profile')} className="text-gray-500 hover:text-gray-900 text-sm">Profile</button>
-          <button onClick={() => { logout(); router.push('/auth/login'); }} className="text-sm text-red-400">Logout</button>
-        </div>
+    <div className="min-h-screen bg-gray-50 text-gray-900 pb-24">
+      <div className="bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between">
+        <div><p className="text-xs text-gray-400">Edunova HQ</p><h1 className="text-lg font-bold text-gray-900">Super Admin 👋</h1></div>
+        <button onClick={() => router.push('/profile')} className="w-9 h-9 rounded-full bg-gray-900 text-white text-sm font-bold flex items-center justify-center">{user?.full_name?.[0]}</button>
       </div>
 
-      <div className="max-w-6xl mx-auto p-6">
-        {subscription && subscription.status === 'trial' && (
-          <div onClick={() => router.push('/subscription')} className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-6 cursor-pointer hover:border-yellow-400 transition">
-            <p className="text-yellow-400 font-medium text-sm">Trial period — expires {new Date(subscription.trial_ends_at).toLocaleDateString()}. Tap to subscribe.</p>
+      <div className="px-5 py-4 space-y-4">
+        {notifications.length > 0 && (
+          <div onClick={() => router.push('/dashboard/notifications')} className="bg-blue-50 border border-blue-200 rounded-xl p-4 cursor-pointer">
+            <p className="text-blue-600 font-medium text-sm">🔔 {notifications.length} new notification{notifications.length > 1 ? 's' : ''}</p>
           </div>
         )}
 
-        {notifications.length > 0 && (
-          <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6">
-            <p className="text-blue-400 font-medium text-sm mb-2">Notifications ({notifications.length})</p>
-            {notifications.slice(0, 3).map((n) => (
-              <div key={n.id} className="text-sm text-gray-600 py-1 border-b border-blue-500/10 last:border-0">
-                <span className="font-medium">{n.title}</span> — {n.body}
+        <div className="grid grid-cols-2 gap-3">
+          <div onClick={() => router.push('/dashboard/schools')} className="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer active:bg-gray-50">
+            <div className="text-3xl font-bold text-blue-600">{stats.schools}</div>
+            <div className="text-sm text-gray-400 mt-1">Active Schools</div>
+          </div>
+          <div onClick={() => router.push('/dashboard/b2b-support')} className="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer active:bg-gray-50">
+            <div className="text-3xl font-bold text-red-500">{stats.open_tickets}</div>
+            <div className="text-sm text-gray-400 mt-1">Open Tickets</div>
+          </div>
+        </div>
+
+        {tickets.length > 0 && (
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+              <h2 className="font-semibold text-sm text-gray-900">🆘 School Support Tickets</h2>
+              <button onClick={() => router.push('/dashboard/b2b-support')} className="text-xs text-blue-600">See all</button>
+            </div>
+            {tickets.map(t => (
+              <div key={t.id} onClick={() => router.push('/dashboard/b2b-support')} className="px-4 py-3 border-b border-gray-50 last:border-0 cursor-pointer active:bg-gray-50">
+                <div className="flex items-center justify-between"><p className="text-sm font-medium text-gray-900">{t.subject}</p><span className="text-xs text-gray-400">{t.priority}</span></div>
+                <p className="text-xs text-gray-400 mt-0.5">{t.school_name} · {new Date(t.created_at).toLocaleDateString()}</p>
               </div>
             ))}
           </div>
         )}
 
-        <p className="text-gray-500 mb-6">Welcome back, <span className="text-gray-900 font-medium">{user?.full_name}</span></p>
-
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-3">
           {[
-            { label: 'Schools', value: stats.schools },
-            { label: 'Courses', value: stats.courses },
-            { label: 'Students', value: stats.students },
-            { label: 'Teachers', value: stats.teachers },
-          ].map((s) => (
-            <div key={s.label} className="bg-white rounded-xl p-4 border border-gray-200">
-              <p className="text-gray-500 text-sm">{s.label}</p>
-              <p className="text-3xl font-bold mt-1">{s.value}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 gap-3">
-          {[
-            { label: 'Manage Schools', href: '/dashboard/schools' },
-            { label: 'Manage Classes', href: '/dashboard/classes' },
-            { label: 'Timetable', href: '/dashboard/timetable' },
-            { label: 'Manage Courses', href: '/dashboard/courses' },
-            { label: 'Manage Students', href: '/dashboard/students' },
-            { label: 'Parent Management', href: '/dashboard/parents' },
-            { label: 'Bulk Import Students', href: '/dashboard/import' },
-            { label: 'Results & Grades', href: '/dashboard/results' },
-            { label: 'Report Cards', href: '/dashboard/reportcard' },
-            { label: 'Attendance', href: '/dashboard/attendance' },
-            { label: 'Fees', href: '/dashboard/fees' },
-            { label: 'Send Notifications', href: '/dashboard/notifications' },
-            { label: 'Messages', href: '/dashboard/messages' },
-            { label: 'Subscription', href: '/subscription' },
-          ].map((item) => (
-            <button
-              key={item.label}
-              onClick={() => router.push(item.href)}
-              className="w-full bg-white border border-gray-200 hover:border-blue-500 text-left px-5 py-4 rounded-xl text-sm font-medium transition"
-            >
-              {item.label} →
-            </button>
+            { label: '🏫 Schools', href: '/dashboard/schools' },
+            { label: '📊 Analytics', href: '/dashboard/analytics' },
+            { label: '🤖 AI Studio', href: '/dashboard/ai-studio' },
+            { label: '⚙️ Automations', href: '/dashboard/automations' },
+            { label: '🎟 Coupons', href: '/dashboard/coupons' },
+            { label: '🛡 Roles', href: '/dashboard/custom-roles' },
+            { label: '📋 Audit Logs', href: '/dashboard/audit-logs' },
+            { label: '📉 Dropout Risk', href: '/dashboard/dropout-risk' },
+          ].map(item => (
+            <button key={item.label} onClick={() => router.push(item.href)} className="bg-white border border-gray-200 active:bg-gray-50 text-left px-4 py-3 rounded-xl text-sm font-medium transition">{item.label}</button>
           ))}
         </div>
       </div>
