@@ -1,14 +1,14 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   LayoutDashboard, School, BookOpen, Users, ClipboardList,
   CalendarDays, DollarSign, Bell, MessageCircle, User,
   GraduationCap, FlaskConical, BrainCircuit, Bot, Briefcase,
   Link2, ShieldCheck, Megaphone, BarChart2, Ticket,
-  Tag, ScrollText, Building2, Layers, Cpu, Zap, Trophy,
+  Tag, ScrollText, Building2, Cpu, Zap, Trophy,
   FileCheck, UserCheck, TrendingDown, RefreshCcw, Headphones,
-  Lightbulb, BookMarked, UserCog, Presentation
+  Lightbulb, BookMarked, UserCog, Presentation, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 const navGroups: Record<string, { icon: any; label: string; href: string }[][]> = {
@@ -140,52 +140,51 @@ export default function BottomNav() {
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<any>({});
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
-    try {
-      setUser(JSON.parse(localStorage.getItem('user') || '{}'));
-    } catch {}
+    try { setUser(JSON.parse(localStorage.getItem('user') || '{}')); } catch {}
   }, []);
 
   const role = user.role || 'student';
   const groups = navGroups[role] || navGroups.student;
 
-  // Find which group contains the current path
-  const activeGroupIndex = groups.findIndex(group =>
-    group.some(item => pathname === item.href || pathname.startsWith(item.href + '/'))
-  );
-  const [page, setPage] = useState(0);
-
   useEffect(() => {
-    if (activeGroupIndex !== -1) setPage(activeGroupIndex);
-  }, [activeGroupIndex]);
+    const idx = groups.findIndex(g => g.some(i => pathname === i.href || pathname.startsWith(i.href + '/')));
+    if (idx !== -1) setPage(idx);
+  }, [pathname, groups]);
 
   const current = groups[page] || groups[0];
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200">
-      {groups.length > 1 && (
-        <div className="flex justify-center gap-1.5 pt-1.5">
-          {groups.map((_, i) => (
-            <button key={i} onClick={() => setPage(i)} className={`h-1 rounded-full transition-all ${i === page ? 'bg-blue-600 w-6' : 'bg-gray-200 w-3'}`} />
-          ))}
+      <div className="flex items-center px-1 pb-1">
+        {groups.length > 1 && (
+          <button onClick={() => setPage(p => Math.max(0, p - 1))} className={`p-2 ${page === 0 ? 'text-gray-200' : 'text-gray-400'}`}>
+            <ChevronLeft size={16} />
+          </button>
+        )}
+        <div className="flex items-center justify-around flex-1">
+          {current.map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.href || pathname.startsWith(item.href + '/');
+            return (
+              <button
+                key={item.href}
+                onClick={() => router.push(item.href)}
+                className={`flex flex-col items-center gap-0.5 py-2 px-1 flex-1 transition-colors ${active ? 'text-blue-600' : 'text-gray-400'}`}
+              >
+                <Icon size={21} strokeWidth={active ? 2.2 : 1.7} />
+                <span className="text-[9px] font-medium truncate w-full text-center leading-tight">{item.label}</span>
+              </button>
+            );
+          })}
         </div>
-      )}
-      <div className="flex items-center justify-around px-1 pb-1">
-        {current.map((item) => {
-          const Icon = item.icon;
-          const active = pathname === item.href || pathname.startsWith(item.href + '/');
-          return (
-            <button
-              key={item.href}
-              onClick={() => router.push(item.href)}
-              className={`flex flex-col items-center gap-0.5 py-2 px-2 flex-1 transition-colors ${active ? 'text-blue-600' : 'text-gray-400'}`}
-            >
-              <Icon size={21} strokeWidth={active ? 2.2 : 1.7} />
-              <span className="text-[9px] font-medium truncate w-full text-center leading-tight">{item.label}</span>
-            </button>
-          );
-        })}
+        {groups.length > 1 && (
+          <button onClick={() => setPage(p => Math.min(groups.length - 1, p + 1))} className={`p-2 ${page === groups.length - 1 ? 'text-gray-200' : 'text-gray-400'}`}>
+            <ChevronRight size={16} />
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import LoadingScreen from '@/components/LoadingScreen';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { joinRoom, getSocket } from '@/lib/socket';
@@ -51,7 +52,7 @@ export default function StudentDashboard() {
     return p >= 70 ? { g: 'A', c: 'text-green-600' } : p >= 60 ? { g: 'B', c: 'text-blue-600' } : p >= 50 ? { g: 'C', c: 'text-yellow-600' } : p >= 45 ? { g: 'D', c: 'text-orange-500' } : { g: 'F', c: 'text-red-500' };
   };
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 pb-24">
