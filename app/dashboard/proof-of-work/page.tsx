@@ -1,10 +1,10 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 const API = process.env.NEXT_PUBLIC_API_URL;
 interface Task { id: number; title: string; description: string; company: string; difficulty: string; task_url: string; }
 interface Submission { id: number; task_id: number; title: string; company: string; status: string; submitted_at: string; }
-export default function ProofOfWorkPage() {
+function ProofOfWorkPageInner() {
   const router = useRouter();
   const params = useSearchParams();
   const course_id = params.get('course_id');
@@ -62,5 +62,13 @@ export default function ProofOfWorkPage() {
         {mySubmissions.length > 0 && (<div><h2 className="font-semibold text-gray-900 mb-3">My Submissions</h2><div className="space-y-3">{mySubmissions.map(s => (<div key={s.id} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between"><div><div className="font-medium text-sm text-gray-900">{s.title}</div><div className="text-xs text-gray-400">{s.company}</div></div><span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${statusColor(s.status)}`}>{s.status}</span></div>))}</div></div>)}
       </div>
     </div>
+  );
+}
+
+export default function ProofOfWorkPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+      <ProofOfWorkPageInner />
+    </Suspense>
   );
 }

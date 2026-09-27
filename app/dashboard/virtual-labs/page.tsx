@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 const API = process.env.NEXT_PUBLIC_API_URL;
 interface Lab { id: number; title: string; description: string; lab_url: string; lab_type: string; }
-export default function VirtualLabsPage() {
+function VirtualLabsPageInner() {
   const router = useRouter();
   const params = useSearchParams();
   const course_id = params.get('course_id');
@@ -47,5 +47,13 @@ export default function VirtualLabsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VirtualLabsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+      <VirtualLabsPageInner />
+    </Suspense>
   );
 }

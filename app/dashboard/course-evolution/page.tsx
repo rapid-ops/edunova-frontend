@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 const API = process.env.NEXT_PUBLIC_API_URL;
 interface Log { id: number; change_type: string; source: string; suggested_update: string; status: string; created_at: string; }
-export default function CourseEvolutionPage() {
+function CourseEvolutionPageInner() {
   const router = useRouter();
   const params = useSearchParams();
   const course_id = params.get('course_id');
@@ -37,5 +37,13 @@ export default function CourseEvolutionPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CourseEvolutionPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+      <CourseEvolutionPageInner />
+    </Suspense>
   );
 }

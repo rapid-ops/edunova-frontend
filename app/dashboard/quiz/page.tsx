@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
@@ -14,7 +14,7 @@ interface Question {
   position: number;
 }
 
-export default function QuizPage() {
+function QuizPageInner() {
   const params = useSearchParams();
   const router = useRouter();
   const assessment_id = params.get('assessment_id');
@@ -133,5 +133,13 @@ export default function QuizPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function QuizPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+      <QuizPageInner />
+    </Suspense>
   );
 }

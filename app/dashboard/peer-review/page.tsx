@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 const API = process.env.NEXT_PUBLIC_API_URL;
 interface Review { id: number; full_name: string; score: number; feedback: string; credits_earned: number; created_at: string; }
-export default function PeerReviewPage() {
+function PeerReviewPageInner() {
   const router = useRouter();
   const params = useSearchParams();
   const submission_id = params.get('submission_id');
@@ -44,5 +44,13 @@ export default function PeerReviewPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PeerReviewPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+      <PeerReviewPageInner />
+    </Suspense>
   );
 }

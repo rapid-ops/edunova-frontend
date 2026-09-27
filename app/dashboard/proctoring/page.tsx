@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 const API = process.env.NEXT_PUBLIC_API_URL;
 interface Session { id: number; full_name: string; email: string; status: string; tab_switches: number; started_at: string; ended_at: string; flags: any[]; }
-export default function ProctoringPage() {
+function ProctoringPageInner() {
   const router = useRouter();
   const params = useSearchParams();
   const assessment_id = params.get('assessment_id');
@@ -41,5 +41,13 @@ export default function ProctoringPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProctoringPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+      <ProctoringPageInner />
+    </Suspense>
   );
 }

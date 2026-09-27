@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 const API = process.env.NEXT_PUBLIC_API_URL;
 interface Message { role: string; content: string; }
-export default function AITutorPage() {
+function AITutorPageInner() {
   const router = useRouter();
   const params = useSearchParams();
   const course_id = params.get('course_id');
@@ -44,5 +44,13 @@ export default function AITutorPage() {
         <div className="flex gap-3"><input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Ask a question about your course..." className="flex-1 bg-gray-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" /><button onClick={send} disabled={loading} className="bg-blue-600 text-white px-5 py-3 rounded-xl text-sm disabled:opacity-50">Send</button></div>
       </div>
     </div>
+  );
+}
+
+export default function AITutorPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+      <AITutorPageInner />
+    </Suspense>
   );
 }
