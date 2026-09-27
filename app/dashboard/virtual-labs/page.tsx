@@ -1,5 +1,5 @@
-import LoadingScreen from '@/components/LoadingScreen';
 'use client';
+import LoadingScreen from '@/components/LoadingScreen';
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 const API = process.env.NEXT_PUBLIC_API_URL;

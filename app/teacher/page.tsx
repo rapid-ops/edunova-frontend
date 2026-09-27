@@ -1,6 +1,6 @@
 'use client';
-import { useEffect, useState } from 'react';
 import LoadingScreen from '@/components/LoadingScreen';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { joinRoom, getSocket } from '@/lib/socket';

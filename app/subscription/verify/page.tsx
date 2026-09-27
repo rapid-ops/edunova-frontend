@@ -1,5 +1,5 @@
-import LoadingScreen from '@/components/LoadingScreen';
 'use client';
+import LoadingScreen from '@/components/LoadingScreen';
 import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
