@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   LayoutDashboard, School, BookOpen, Users, ClipboardList,
@@ -8,7 +8,7 @@ import {
   Link2, ShieldCheck, Megaphone, BarChart2, Ticket,
   Tag, ScrollText, Building2, Layers, Cpu, Zap, Trophy,
   FileCheck, UserCheck, TrendingDown, RefreshCcw, Headphones,
-  Lightbulb, QrCode, BookMarked, UserCog, Presentation
+  Lightbulb, BookMarked, UserCog, Presentation
 } from 'lucide-react';
 
 const navGroups: Record<string, { icon: any; label: string; href: string }[][]> = {
@@ -37,7 +37,7 @@ const navGroups: Record<string, { icon: any; label: string; href: string }[][]> 
   ],
   school_admin: [
     [
-      { icon: LayoutDashboard, label: 'Home', href: '/dashboard' },
+      { icon: LayoutDashboard, label: 'Home', href: '/school-admin' },
       { icon: Users, label: 'Students', href: '/dashboard/students' },
       { icon: BookOpen, label: 'Courses', href: '/dashboard/courses' },
       { icon: Megaphone, label: 'Announce', href: '/dashboard/announcements' },
@@ -139,10 +139,27 @@ const navGroups: Record<string, { icon: any; label: string; href: string }[][]> 
 export default function BottomNav() {
   const router = useRouter();
   const pathname = usePathname();
-  const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : {};
+  const [user, setUser] = useState<any>({});
+
+  useEffect(() => {
+    try {
+      setUser(JSON.parse(localStorage.getItem('user') || '{}'));
+    } catch {}
+  }, []);
+
   const role = user.role || 'student';
   const groups = navGroups[role] || navGroups.student;
+
+  // Find which group contains the current path
+  const activeGroupIndex = groups.findIndex(group =>
+    group.some(item => pathname === item.href || pathname.startsWith(item.href + '/'))
+  );
   const [page, setPage] = useState(0);
+
+  useEffect(() => {
+    if (activeGroupIndex !== -1) setPage(activeGroupIndex);
+  }, [activeGroupIndex]);
+
   const current = groups[page] || groups[0];
 
   return (
