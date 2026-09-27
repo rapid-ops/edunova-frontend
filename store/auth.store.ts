@@ -6,6 +6,7 @@ interface User {
   email: string;
   role: string;
   school_id?: number;
+  avatar_url?: string;
 }
 
 interface AuthStore {
