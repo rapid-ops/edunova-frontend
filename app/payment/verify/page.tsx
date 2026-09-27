@@ -1,10 +1,11 @@
 'use client';
+import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle, XCircle, Loader } from 'lucide-react';
 import api from '@/lib/api';
 
-export default function PaymentVerifyPage() {
+function PaymentVerifyContent() {
   const router = useRouter();
   const params = useSearchParams();
   const reference = params.get('reference');
@@ -26,4 +27,8 @@ export default function PaymentVerifyPage() {
       </div>
     </div>
   );
+}
+
+export default function PaymentVerifyPage() {
+  return <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}><PaymentVerifyContent /></Suspense>;
 }
