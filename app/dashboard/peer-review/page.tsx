@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -20,7 +21,7 @@ function PeerReviewPageInner() {
   };
   useEffect(() => { load(); }, [submission_id]);
   const submit = async () => { if (!form.score || !form.feedback.trim()) return; await fetch(`${API}/api/peer-review`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ submission_id: Number(submission_id), reviewer_id: user.id, score: Number(form.score), feedback: form.feedback }) }); setForm({ score: '', feedback: '' }); load(); };
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">
@@ -49,7 +50,7 @@ function PeerReviewPageInner() {
 
 export default function PeerReviewPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<LoadingScreen />}>
       <PeerReviewPageInner />
     </Suspense>
   );

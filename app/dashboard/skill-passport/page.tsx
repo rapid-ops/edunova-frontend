@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -21,7 +22,7 @@ export default function SkillPassportPage() {
     setShowExternal(false);
     load();
   };
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">

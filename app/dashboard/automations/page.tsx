@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -19,7 +20,7 @@ export default function AutomationsPage() {
   const create = async () => { try { const payload = JSON.parse(form.action_payload); await fetch(`${API}/api/automations`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ ...form, action_payload: payload, school_id: user.school_id }) }); setShowForm(false); load(); } catch { alert('Invalid JSON in payload'); } };
   const toggle = async (id: number) => { await fetch(`${API}/api/automations/${id}/toggle`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } }); load(); };
   const del = async (id: number) => { await fetch(`${API}/api/automations/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); load(); };
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">

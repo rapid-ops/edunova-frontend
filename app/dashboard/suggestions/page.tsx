@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -17,7 +18,7 @@ export default function SuggestionsPage() {
   const submit = async () => { if (!content.trim()) return; await fetch(`${API}/api/suggestions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ school_id: user.school_id, role: user.role, content }) }); setContent(''); alert('Suggestion submitted anonymously.'); };
   const reply = async (id: number) => { if (!replies[id]?.trim()) return; await fetch(`${API}/api/suggestions/${id}/reply`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ admin_reply: replies[id] }) }); setReplies({ ...replies, [id]: '' }); load(); };
   const statusColor = (s: string) => s === 'addressed' ? 'bg-green-100 text-green-700' : s === 'read' ? 'bg-blue-100 text-blue-600' : 'bg-yellow-100 text-yellow-700';
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">

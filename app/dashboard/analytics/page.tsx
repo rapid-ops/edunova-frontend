@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -21,7 +22,7 @@ export default function AnalyticsPage() {
       fetch(`${API}/api/analytics/instructor/${sid}`, { headers: h }).then(r => r.json()),
     ]).then(([c, d, co, i]) => { setCohort(c.data || []); setDropout(d.data || []); setCompletion(co.data || []); setInstructors(i.data || []); setLoading(false); });
   }, []);
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-5xl mx-auto">

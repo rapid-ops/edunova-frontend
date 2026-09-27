@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -59,7 +60,7 @@ function QuizPageInner() {
     setSubmitted(true);
   };
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-900">Loading...</div>;
+  if (loading) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
@@ -138,7 +139,7 @@ function QuizPageInner() {
 
 export default function QuizPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<LoadingScreen />}>
       <QuizPageInner />
     </Suspense>
   );

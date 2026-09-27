@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
@@ -83,7 +84,7 @@ function PaymentContent() {
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-900">Loading...</div>}>
+    <Suspense fallback={<LoadingScreen />}>
       <PaymentContent />
     </Suspense>
   );

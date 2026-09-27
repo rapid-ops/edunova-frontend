@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -14,7 +15,7 @@ export default function LearningTwinPage() {
   useEffect(() => { load(); }, []);
   const analyze = async () => { setAnalyzing(true); await fetch(`${API}/api/learning-twin/${user.id}/analyze`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } }); setAnalyzing(false); load(); };
   const speedColor = (s: string) => s === 'fast' ? 'text-green-600' : s === 'medium' ? 'text-blue-600' : 'text-orange-500';
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">

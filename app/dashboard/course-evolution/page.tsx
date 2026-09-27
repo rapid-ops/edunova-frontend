@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -17,7 +18,7 @@ function CourseEvolutionPageInner() {
   const scan = async () => { if (!topic.trim()) return; setScanning(true); await fetch(`${API}/api/course-evolution/scan`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ course_id: Number(course_id), topic }) }); setTopic(''); setScanning(false); load(); };
   const action = async (id: number, type: 'apply' | 'reject') => { await fetch(`${API}/api/course-evolution/${id}/${type}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } }); load(); };
   const statusColor = (s: string) => s === 'applied' ? 'bg-green-100 text-green-700' : s === 'rejected' ? 'bg-red-100 text-red-500' : 'bg-yellow-100 text-yellow-700';
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">
@@ -42,7 +43,7 @@ function CourseEvolutionPageInner() {
 
 export default function CourseEvolutionPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<LoadingScreen />}>
       <CourseEvolutionPageInner />
     </Suspense>
   );

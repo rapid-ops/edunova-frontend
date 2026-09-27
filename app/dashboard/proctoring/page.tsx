@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -16,7 +17,7 @@ function ProctoringPageInner() {
   }, [assessment_id]);
   const flagSession = async (id: number) => { await fetch(`${API}/api/proctoring/${id}/flag-session`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } }); setSessions(s => s.map(x => x.id === id ? { ...x, status: 'flagged' } : x)); };
   const statusColor = (s: string) => s === 'flagged' ? 'bg-red-100 text-red-600' : s === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-4xl mx-auto">
@@ -46,7 +47,7 @@ function ProctoringPageInner() {
 
 export default function ProctoringPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<LoadingScreen />}>
       <ProctoringPageInner />
     </Suspense>
   );

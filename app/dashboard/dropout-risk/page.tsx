@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -14,7 +15,7 @@ export default function DropoutRiskPage() {
   useEffect(() => { load(); }, []);
   const run = async () => { setRunning(true); await fetch(`${API}/api/dropout/predict/${user.school_id}`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } }); setRunning(false); load(); };
   const riskColor = (l: string) => l === 'critical' ? 'bg-red-100 text-red-600' : l === 'high' ? 'bg-orange-100 text-orange-600' : l === 'medium' ? 'bg-yellow-100 text-yellow-600' : 'bg-green-100 text-green-700';
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-4xl mx-auto">

@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -18,7 +19,7 @@ function VirtualLabsPageInner() {
   useEffect(() => { load(); }, [course_id]);
   const create = async () => { await fetch(`${API}/api/virtual-labs`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ ...form, course_id: Number(course_id), school_id: user.school_id }) }); setForm({ title: '', description: '', lab_url: '', lab_type: 'simulation' }); setShowForm(false); load(); };
   const del = async (id: number) => { await fetch(`${API}/api/virtual-labs/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); load(); };
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">
@@ -52,7 +53,7 @@ function VirtualLabsPageInner() {
 
 export default function VirtualLabsPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<LoadingScreen />}>
       <VirtualLabsPageInner />
     </Suspense>
   );

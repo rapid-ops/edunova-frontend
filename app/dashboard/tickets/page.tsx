@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -20,7 +21,7 @@ export default function TicketsPage() {
   const create = async () => { await fetch(`${API}/api/tickets`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ ...form, school_id: user.school_id, user_id: user.id }) }); setForm({ subject: '', body: '', priority: 'medium' }); setShowForm(false); load(); };
   const statusColor = (s: string) => s === 'open' ? 'bg-yellow-100 text-yellow-700' : s === 'resolved' ? 'bg-green-100 text-green-700' : s === 'in_progress' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500';
   const priorityColor = (p: string) => p === 'urgent' ? 'text-red-500' : p === 'high' ? 'text-orange-500' : p === 'medium' ? 'text-yellow-500' : 'text-gray-400';
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">

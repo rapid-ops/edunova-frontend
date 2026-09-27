@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -14,7 +15,7 @@ export default function CourseAssignmentsPage() {
   useEffect(() => { load(); }, []);
   const assign = async () => { if (!form.course_id || !form.teacher_id) return; await fetch(`${API}/api/course-assignments`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ ...form, course_id: Number(form.course_id), teacher_id: Number(form.teacher_id), school_id: user.school_id, assigned_by: user.id }) }); setForm({ course_id: '', teacher_id: '' }); load(); };
   const unassign = async (course_id: number, teacher_id: number) => { await fetch(`${API}/api/course-assignments/${course_id}/${teacher_id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); load(); };
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">

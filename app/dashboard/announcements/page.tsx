@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -21,7 +22,7 @@ export default function AnnouncementsPage() {
   const create = async () => { if (!form.title || !form.body) return; await fetch(`${API}/api/announcements`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ ...form, school_id: user.school_id, created_by: user.id, class_id: form.class_id || null, course_id: form.course_id || null }) }); setForm({ title: '', body: '', target_role: 'all', class_id: '', course_id: '' }); setShowForm(false); load(); };
   const del = async (id: number) => { await fetch(`${API}/api/announcements/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); load(); };
   const roleColor = (r: string) => r === 'student' ? 'bg-blue-50 text-blue-600' : r === 'teacher' ? 'bg-purple-50 text-purple-600' : r === 'parent' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500';
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">

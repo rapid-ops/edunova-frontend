@@ -1,3 +1,4 @@
+import LoadingScreen from '@/components/LoadingScreen';
 'use client';
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -27,7 +28,7 @@ function ProofOfWorkPageInner() {
   const createTask = async () => { await fetch(`${API}/api/proof-of-work/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ ...form, course_id: Number(course_id), school_id: user.school_id }) }); setForm({ title: '', description: '', company: '', task_url: '', difficulty: 'beginner' }); setShowForm(false); load(); };
   const submitWork = async (task_id: number) => { if (!submitUrl.trim()) return; await fetch(`${API}/api/proof-of-work/submit`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ task_id, student_id: user.id, submission_url: submitUrl }) }); setSubmitUrl(''); setSelectedTask(null); load(); };
   const statusColor = (s: string) => s === 'approved' ? 'bg-green-100 text-green-700' : s === 'rejected' ? 'bg-red-100 text-red-500' : 'bg-yellow-100 text-yellow-700';
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">
@@ -67,7 +68,7 @@ function ProofOfWorkPageInner() {
 
 export default function ProofOfWorkPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<LoadingScreen />}>
       <ProofOfWorkPageInner />
     </Suspense>
   );
