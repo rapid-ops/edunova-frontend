@@ -3,6 +3,7 @@ import { Suspense, useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import LoadingScreen from '@/components/LoadingScreen';
 import { Send, ArrowLeft, BookOpen, Bot } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 const API = 'https://edunova-backend-2x7h.onrender.com/api';
 
@@ -26,21 +27,14 @@ function AITutorContent() {
   useEffect(() => {
     const { token, user } = getAuth();
     if (!token || !user.id) { router.push('/auth/login'); return; }
-
     if (!course_id) {
-      fetch(`${API}/enrollments/student/${user.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(r => r.json()).then(d => {
-        setCourses(d.enrollments || []);
-        setReady(true);
-      }).catch(() => setReady(true));
+      fetch(`${API}/enrollments/student/${user.id}`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.json()).then(d => { setCourses(d.enrollments || []); setReady(true); })
+        .catch(() => setReady(true));
     } else {
-      fetch(`${API}/ai-tutor/session/${user.id}/${course_id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(r => r.json()).then(d => {
-        if (d.session?.messages) setMessages(d.session.messages);
-        setReady(true);
-      }).catch(() => setReady(true));
+      fetch(`${API}/ai-tutor/session/${user.id}/${course_id}`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.json()).then(d => { if (d.session?.messages) setMessages(d.session.messages); setReady(true); })
+        .catch(() => setReady(true));
     }
   }, [course_id]);
 
@@ -60,12 +54,8 @@ function AITutorContent() {
         body: JSON.stringify({ student_id: user.id, course_id: Number(course_id), message: text }),
       });
       const d = await res.json();
-      if (d.reply) {
-        setMessages(m => [...m, { role: 'assistant', content: d.reply }]);
-      } else {
-        setMessages(m => [...m, { role: 'assistant', content: `Error: ${d.error || 'No response'}` }]);
-      }
-    } catch (err) {
+      setMessages(m => [...m, { role: 'assistant', content: d.reply || d.error || 'No response' }]);
+    } catch {
       setMessages(m => [...m, { role: 'assistant', content: 'Connection error. Please try again.' }]);
     }
     setLoading(false);
@@ -105,7 +95,7 @@ function AITutorContent() {
         <div className="flex items-center gap-2"><Bot size={18} className="text-blue-600" /><h1 className="text-lg font-bold">AI Tutor</h1></div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" style={{ paddingBottom: '80px' }}>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" style={{ paddingBottom: '120px' }}>
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mb-4">
@@ -117,9 +107,15 @@ function AITutorContent() {
         )}
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${m.role === 'user' ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-white border border-gray-200 text-gray-900 rounded-bl-sm'}`}>
-              {m.content}
-            </div>
+            {m.role === 'user' ? (
+              <div className="max-w-[80%] bg-blue-600 text-white rounded-2xl rounded-br-sm px-4 py-3 text-sm">
+                {m.content}
+              </div>
+            ) : (
+              <div className="max-w-[90%] bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-4 py-3 text-sm text-gray-900 prose prose-sm prose-blue max-w-none">
+                <ReactMarkdown>{m.content}</ReactMarkdown>
+              </div>
+            )}
           </div>
         ))}
         {loading && (
