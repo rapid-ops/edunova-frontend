@@ -2,21 +2,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import api from '@/lib/api';
+import LoadingScreen from '@/components/LoadingScreen';
+import { ArrowLeft, Plus, Trash2, Video, FileText, BookOpen, Eye, EyeOff } from 'lucide-react';
 
-interface Lesson {
-  id: number;
-  title: string;
-  content: string;
-  video_url: string;
-  position: number;
-}
-
-interface Course {
-  id: number;
-  title: string;
-  description: string;
-  is_published: boolean;
-}
+interface Lesson { id: number; title: string; content: string; video_url: string; position: number; }
+interface Course { id: number; title: string; description: string; is_published: boolean; }
 
 export default function CourseDetailPage() {
   const router = useRouter();
@@ -26,11 +16,14 @@ export default function CourseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: '', content: '', video_url: '', position: '0' });
+  const [saving, setSaving] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchData();
-  }, [id]);
+  const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : {};
+  const isTeacherOrAdmin = ['teacher','school_admin','super_admin'].includes(user.role);
+
+  useEffect(() => { fetchData(); }, [id]);
 
   const fetchData = async () => {
     try {
@@ -39,126 +32,128 @@ export default function CourseDetailPage() {
         api.get(`/lessons/course/${id}`),
       ]);
       setCourse(courseRes.data.course);
-      setLessons(lessonsRes.data.lessons);
-    } catch (err) {} finally {
-      setLoading(false);
-    }
+      setLessons(lessonsRes.data.lessons || []);
+    } catch (err) {}
+    setLoading(false);
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError(''); setSaving(true);
     try {
       await api.post('/lessons', { ...form, course_id: id, position: Number(form.position) });
       setShowForm(false);
-      setForm({ title: '', content: '', video_url: '', position: '0' });
+      setForm({ title: '', content: '', video_url: '', position: String(lessons.length) });
       fetchData();
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to create lesson');
     }
+    setSaving(false);
+  };
+
+  const togglePublish = async () => {
+    try {
+      await api.put(`/courses/${id}`, { is_published: !course?.is_published });
+      setCourse(c => c ? { ...c, is_published: !c.is_published } : c);
+    } catch {}
   };
 
   const deleteLesson = async (lessonId: number) => {
-    if (!confirm('Delete this lesson?')) return;
     try {
       await api.delete(`/lessons/${lessonId}`);
+      setDeleteId(null);
       fetchData();
-    } catch (err) {}
+    } catch {}
   };
 
-  if (loading) return <div className="min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/dashboard/courses')} className="text-gray-500 hover:text-gray-900">←</button>
-          <div>
-            <h1 className="text-xl font-bold">{course?.title}</h1>
-            <p className="text-gray-500 text-xs">{course?.description}</p>
+    <div className="min-h-screen bg-gray-50 text-gray-900 pb-24">
+      <div className="bg-white border-b border-gray-100 px-4 py-4">
+        <div className="flex items-center justify-between mb-1">
+          <button onClick={() => router.back()}><ArrowLeft size={20} className="text-gray-500" /></button>
+          <div className="flex items-center gap-2">
+            {isTeacherOrAdmin && (
+              <button onClick={togglePublish} className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium ${course?.is_published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                {course?.is_published ? <><Eye size={12} />Published</> : <><EyeOff size={12} />Draft</>}
+              </button>
+            )}
+            {isTeacherOrAdmin && (
+              <button onClick={() => { setShowForm(true); setForm({ title: '', content: '', video_url: '', position: String(lessons.length) }); }} className="flex items-center gap-1.5 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium">
+                <Plus size={12} />Add Lesson
+              </button>
+            )}
           </div>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-blue-600 hover:bg-blue-700 text-gray-900 text-sm px-4 py-2 rounded-lg"
-        >
-          + Add Lesson
-        </button>
+        <div className="mt-2">
+          <h1 className="text-lg font-bold text-gray-900">{course?.title}</h1>
+          {course?.description && <p className="text-sm text-gray-400 mt-0.5">{course.description}</p>}
+          <p className="text-xs text-gray-400 mt-1">{lessons.length} lesson{lessons.length !== 1 ? 's' : ''}</p>
+        </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-6">
-        {showForm && (
-          <form onSubmit={handleCreate} className="bg-white border border-gray-200 rounded-xl p-6 mb-6 space-y-4">
-            <h2 className="font-semibold">New Lesson</h2>
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+      <div className="px-4 py-4 space-y-4">
+        {showForm && isTeacherOrAdmin && (
+          <form onSubmit={handleCreate} className="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
+            <h2 className="font-semibold text-gray-900 flex items-center gap-2"><FileText size={16} className="text-blue-600" />New Lesson</h2>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
             <div>
-              <label className="text-gray-500 text-sm mb-1 block">Title</label>
-              <input
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="e.g. Introduction to Algebra"
-                className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
+              <label className="text-xs text-gray-400 mb-1 block">Lesson Title</label>
+              <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Introduction to Algebra" className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" required />
             </div>
             <div>
-              <label className="text-gray-500 text-sm mb-1 block">Content</label>
-              <textarea
-                value={form.content}
-                onChange={(e) => setForm({ ...form, content: e.target.value })}
-                placeholder="Lesson content..."
-                rows={4}
-                className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              />
+              <label className="text-xs text-gray-400 mb-1 block">Content</label>
+              <textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} placeholder="Write the lesson content here. The AI tutor will use this to answer student questions." rows={5} className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
             </div>
             <div>
-              <label className="text-gray-500 text-sm mb-1 block">Video URL (optional)</label>
-              <input
-                value={form.video_url}
-                onChange={(e) => setForm({ ...form, video_url: e.target.value })}
-                placeholder="https://youtube.com/..."
-                className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="text-gray-500 text-sm mb-1 block">Position</label>
-              <input
-                type="number"
-                value={form.position}
-                onChange={(e) => setForm({ ...form, position: e.target.value })}
-                className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <label className="text-xs text-gray-400 mb-1 block">Video URL (optional)</label>
+              <input value={form.video_url} onChange={e => setForm({ ...form, video_url: e.target.value })} placeholder="https://youtube.com/watch?v=..." className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div className="flex gap-3">
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-gray-900 px-6 py-2 rounded-lg text-sm">Create</button>
-              <button type="button" onClick={() => setShowForm(false)} className="text-gray-500 hover:text-gray-900 text-sm px-4 py-2">Cancel</button>
+              <button type="submit" disabled={saving} className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium disabled:opacity-50">{saving ? 'Saving...' : 'Save Lesson'}</button>
+              <button type="button" onClick={() => setShowForm(false)} className="bg-gray-100 text-gray-500 px-5 py-2.5 rounded-lg text-sm">Cancel</button>
             </div>
           </form>
         )}
 
+        {deleteId && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between">
+            <p className="text-sm text-red-700">Delete this lesson?</p>
+            <div className="flex gap-2">
+              <button onClick={() => deleteLesson(deleteId)} className="bg-red-500 text-white px-4 py-1.5 rounded-lg text-xs font-medium">Delete</button>
+              <button onClick={() => setDeleteId(null)} className="bg-gray-100 text-gray-500 px-4 py-1.5 rounded-lg text-xs">Cancel</button>
+            </div>
+          </div>
+        )}
+
         {lessons.length === 0 ? (
-          <p className="text-gray-500">No lessons yet. Add one above.</p>
+          <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+            <BookOpen size={32} className="text-gray-200 mx-auto mb-3" />
+            <p className="text-gray-400 text-sm">{isTeacherOrAdmin ? 'No lessons yet. Tap + Add Lesson to start.' : 'No lessons available yet.'}</p>
+          </div>
         ) : (
           <div className="space-y-3">
             {lessons.map((l, i) => (
-              <div key={l.id} className="bg-white border border-gray-200 rounded-xl p-5">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-600 text-sm">#{i + 1}</span>
-                      <h3 className="font-semibold">{l.title}</h3>
+              <div key={l.id} className="bg-white border border-gray-200 rounded-xl p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">{i + 1}</div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 text-sm">{l.title}</h3>
+                      {l.content && <p className="text-gray-400 text-xs mt-1 line-clamp-2">{l.content}</p>}
+                      {l.video_url && (
+                        <a href={l.video_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 text-xs mt-2">
+                          <Video size={12} />Watch video
+                        </a>
+                      )}
                     </div>
-                    <p className="text-gray-500 text-sm mt-1 line-clamp-2">{l.content}</p>
-                    {l.video_url && (
-                      <a href={l.video_url} target="_blank" className="text-blue-400 text-xs mt-1 block">Video link</a>
-                    )}
                   </div>
-                  <button
-                    onClick={() => deleteLesson(l.id)}
-                    className="text-red-400 hover:text-red-300 text-sm ml-4"
-                  >
-                    Delete
-                  </button>
+                  {isTeacherOrAdmin && (
+                    <button onClick={() => setDeleteId(l.id)} className="shrink-0 p-1.5 rounded-lg hover:bg-red-50">
+                      <Trash2 size={15} className="text-red-400" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
