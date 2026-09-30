@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import api from '@/lib/api';
 import LoadingScreen from '@/components/LoadingScreen';
-import { ArrowLeft, Plus, Trash2, Video, FileText, BookOpen, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Video, FileText, BookOpen, Eye, EyeOff, ChevronRight } from 'lucide-react';
 
 interface Lesson { id: number; title: string; content: string; video_url: string; position: number; }
 interface Course { id: number; title: string; description: string; is_published: boolean; }
@@ -33,7 +33,7 @@ export default function CourseDetailPage() {
       ]);
       setCourse(courseRes.data.course);
       setLessons(lessonsRes.data.lessons || []);
-    } catch (err) {}
+    } catch {}
     setLoading(false);
   };
 
@@ -59,11 +59,7 @@ export default function CourseDetailPage() {
   };
 
   const deleteLesson = async (lessonId: number) => {
-    try {
-      await api.delete(`/lessons/${lessonId}`);
-      setDeleteId(null);
-      fetchData();
-    } catch {}
+    try { await api.delete(`/lessons/${lessonId}`); setDeleteId(null); fetchData(); } catch {}
   };
 
   if (loading) return <LoadingScreen />;
@@ -71,7 +67,7 @@ export default function CourseDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 pb-24">
       <div className="bg-white border-b border-gray-100 px-4 py-4">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-2">
           <button onClick={() => router.back()}><ArrowLeft size={20} className="text-gray-500" /></button>
           <div className="flex items-center gap-2">
             {isTeacherOrAdmin && (
@@ -86,14 +82,22 @@ export default function CourseDetailPage() {
             )}
           </div>
         </div>
-        <div className="mt-2">
-          <h1 className="text-lg font-bold text-gray-900">{course?.title}</h1>
-          {course?.description && <p className="text-sm text-gray-400 mt-0.5">{course.description}</p>}
-          <p className="text-xs text-gray-400 mt-1">{lessons.length} lesson{lessons.length !== 1 ? 's' : ''}</p>
-        </div>
+        <h1 className="text-lg font-bold text-gray-900">{course?.title}</h1>
+        {course?.description && <p className="text-sm text-gray-400 mt-0.5">{course.description}</p>}
+        <p className="text-xs text-gray-400 mt-1">{lessons.length} lesson{lessons.length !== 1 ? 's' : ''}</p>
       </div>
 
       <div className="px-4 py-4 space-y-4">
+        {deleteId && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between">
+            <p className="text-sm text-red-700">Delete this lesson?</p>
+            <div className="flex gap-2">
+              <button onClick={() => deleteLesson(deleteId)} className="bg-red-500 text-white px-4 py-1.5 rounded-lg text-xs font-medium">Delete</button>
+              <button onClick={() => setDeleteId(null)} className="bg-gray-100 text-gray-500 px-4 py-1.5 rounded-lg text-xs">Cancel</button>
+            </div>
+          </div>
+        )}
+
         {showForm && isTeacherOrAdmin && (
           <form onSubmit={handleCreate} className="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
             <h2 className="font-semibold text-gray-900 flex items-center gap-2"><FileText size={16} className="text-blue-600" />New Lesson</h2>
@@ -104,7 +108,7 @@ export default function CourseDetailPage() {
             </div>
             <div>
               <label className="text-xs text-gray-400 mb-1 block">Content</label>
-              <textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} placeholder="Write the lesson content here. The AI tutor will use this to answer student questions." rows={5} className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+              <textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} placeholder="Write lesson content here. The AI tutor will use this to answer student questions." rows={5} className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
             </div>
             <div>
               <label className="text-xs text-gray-400 mb-1 block">Video URL (optional)</label>
@@ -117,16 +121,6 @@ export default function CourseDetailPage() {
           </form>
         )}
 
-        {deleteId && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between">
-            <p className="text-sm text-red-700">Delete this lesson?</p>
-            <div className="flex gap-2">
-              <button onClick={() => deleteLesson(deleteId)} className="bg-red-500 text-white px-4 py-1.5 rounded-lg text-xs font-medium">Delete</button>
-              <button onClick={() => setDeleteId(null)} className="bg-gray-100 text-gray-500 px-4 py-1.5 rounded-lg text-xs">Cancel</button>
-            </div>
-          </div>
-        )}
-
         {lessons.length === 0 ? (
           <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
             <BookOpen size={32} className="text-gray-200 mx-auto mb-3" />
@@ -136,25 +130,28 @@ export default function CourseDetailPage() {
           <div className="space-y-3">
             {lessons.map((l, i) => (
               <div key={l.id} className="bg-white border border-gray-200 rounded-xl p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                <button className="w-full text-left" onClick={() => router.push(`/dashboard/lessons/${l.id}`)}>
+                  <div className="flex items-start gap-3">
                     <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">{i + 1}</div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 text-sm">{l.title}</h3>
                       {l.content && <p className="text-gray-400 text-xs mt-1 line-clamp-2">{l.content}</p>}
                       {l.video_url && (
-                        <a href={l.video_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 text-xs mt-2">
-                          <Video size={12} />Watch video
-                        </a>
+                        <span className="flex items-center gap-1 text-blue-600 text-xs mt-1.5">
+                          <Video size={11} />Has video
+                        </span>
                       )}
                     </div>
+                    <ChevronRight size={16} className="text-gray-300 shrink-0 mt-0.5" />
                   </div>
-                  {isTeacherOrAdmin && (
-                    <button onClick={() => setDeleteId(l.id)} className="shrink-0 p-1.5 rounded-lg hover:bg-red-50">
-                      <Trash2 size={15} className="text-red-400" />
+                </button>
+                {isTeacherOrAdmin && (
+                  <div className="mt-3 pt-3 border-t border-gray-50 flex justify-end">
+                    <button onClick={() => setDeleteId(l.id)} className="flex items-center gap-1 text-red-400 text-xs">
+                      <Trash2 size={12} />Delete
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
