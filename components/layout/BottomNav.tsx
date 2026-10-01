@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { FileText, KeyRound } from 'lucide-react';
 import {
   LayoutDashboard, School, BookOpen, Users, ClipboardList,
   CalendarDays, DollarSign, Bell, MessageCircle, User,
@@ -135,6 +136,13 @@ const navGroups: Record<string, { icon: any; label: string; href: string }[][]> 
     ],
   ],
 };
+
+const assignmentsItem = { icon: FileText, label: 'Assignments', href: '/dashboard/assignments' };
+navGroups.student.push([assignmentsItem]);
+navGroups.teacher.push([assignmentsItem]);
+navGroups.parent.push([assignmentsItem]);
+navGroups.school_admin.push([assignmentsItem, { icon: KeyRound, label: 'Reset', href: '/dashboard/reset-passwords' }]);
+navGroups.super_admin.push([assignmentsItem]);
 
 export default function BottomNav() {
   const router = useRouter();
