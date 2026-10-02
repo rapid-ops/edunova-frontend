@@ -16,6 +16,7 @@ export default function WebsiteBuilder() {
   const [ext, setExt] = useState('');
   const [msg, setMsg] = useState('');
   const [saving, setSaving] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [view, setView] = useState<'edit' | 'preview'>('edit');
 
   useEffect(() => {
@@ -26,7 +27,7 @@ export default function WebsiteBuilder() {
         if (!id) { setMsg('No school linked to this account.'); return; }
         const r = await api.get(`/schools/${id}`);
         const s: School = r.data.school;
-        setSchool(s); setTagline(s.tagline || ''); setLogo(s.logo_url || ''); setExt((s as any).external_website_url || '');
+        setSchool(s); setTagline(s.tagline || ''); setLogo(s.logo_url || ''); setExt(s.external_website_url || '');
         setTheme(mergeTheme(s.theme_config));
         try {
           const cr = await api.get(`/courses/school/${id}`);
@@ -37,8 +38,7 @@ export default function WebsiteBuilder() {
     })();
   }, []);
 
-  const [busy, setBusy] = useState(false);
-  const up = async (file: File, kind: 'logo' | 'hero') => {
+  const up = async (file: File, done: (url: string) => void) => {
     if (!school) return;
     if (file.size > 5 * 1024 * 1024) { setMsg('Image must be under 5MB.'); return; }
     setBusy(true); setMsg('');
@@ -46,9 +46,7 @@ export default function WebsiteBuilder() {
       const fd = new FormData();
       fd.append('file', file);
       const r = await api.post('/upload/website-image/' + school.id, fd);
-      const url: string = r.data.url;
-      if (kind === 'logo') setLogo(url);
-      else setTheme(t => t ? { ...t, sections: { ...t.sections, content: { ...t.sections.content, hero_image: url } } } : t);
+      done(r.data.url);
       setMsg('Uploaded. Tap Save to publish.');
     } catch (e: any) { setMsg(e?.response?.data?.error || 'Upload failed.'); }
     setBusy(false);
@@ -85,7 +83,7 @@ export default function WebsiteBuilder() {
         <h1 className="text-xl font-bold text-slate-900">Website Builder</h1>
         <div className="flex flex-wrap items-center gap-2">
           <a href={`/school/${school.subdomain}`} target="_blank" rel="noreferrer" className="flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 px-4 text-sm font-medium"><ExternalLink className="h-4 w-4" />Open live</a>
-          <button onClick={save} disabled={saving} className="flex min-h-11 items-center gap-1 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white disabled:opacity-60"><Save className="h-4 w-4" />{saving ? 'Saving...' : 'Save'}</button>
+          <button onClick={save} disabled={saving || busy} className="flex min-h-11 items-center gap-1 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white disabled:opacity-60"><Save className="h-4 w-4" />{saving ? 'Saving...' : 'Save'}</button>
         </div>
       </div>
       {msg && <div className="mb-4 rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-800">{msg}</div>}
@@ -107,7 +105,7 @@ export default function WebsiteBuilder() {
           <BuilderPanel theme={theme} setTheme={setTheme} tagline={tagline} setTagline={setTagline} logo={logo} setLogo={setLogo} up={up} busy={busy} />
         </div>
         <div className={view === 'preview' ? 'block' : 'hidden lg:block'}>
-          <div className="mx-auto h-[70vh] w-full max-w-[420px] overflow-y-auto rounded-3xl border-4 border-slate-800 bg-white">
+          <div className="mx-auto h-[70vh] w-full max-w-[420px] overflow-y-auto overflow-x-hidden rounded-3xl border-4 border-slate-800 bg-white">
             <ThemeProvider theme={theme}>
               <Template school={preview} courses={courses} theme={theme} sections={theme.sections} />
             </ThemeProvider>

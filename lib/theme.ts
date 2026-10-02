@@ -2,6 +2,11 @@ export type TemplateId = 'modern' | 'bold' | 'minimal' | 'vibrant' | 'profession
 export type FontId = 'inter' | 'jakarta' | 'sora' | 'poppins' | 'merriweather' | 'dmsans';
 export type Radius = 'sharp' | 'soft' | 'round';
 
+export interface NewsItem { title: string; date: string; body: string; image: string }
+export interface EventItem { title: string; date: string; place: string }
+export interface StaffItem { name: string; role: string; photo: string; bio: string }
+export interface GalleryItem { url: string; caption: string }
+
 export interface SectionConfig {
   hero: boolean; stats: boolean; features: boolean; courses: boolean;
   testimonials: boolean; teachers: boolean; faq: boolean; contact: boolean; footer: boolean;
@@ -10,6 +15,7 @@ export interface SectionConfig {
     stats: { students: number; courses: number; teachers: number; years: number };
     testimonials: { quote: string; name: string; role: string }[];
     faq: { q: string; a: string }[];
+    news: NewsItem[]; events: EventItem[]; staff: StaffItem[]; gallery: GalleryItem[];
   };
 }
 
@@ -21,15 +27,22 @@ export interface ThemeConfig {
   background: string; sections: SectionConfig;
 }
 
-export interface School { id: string; name: string; subdomain: string; tagline?: string; logo_url?: string; email?: string; phone?: string; address?: string; theme_config?: Partial<ThemeConfig>; }
+export interface School {
+  id: string; name: string; subdomain: string; tagline?: string; logo_url?: string;
+  email?: string; phone?: string; address?: string; external_website_url?: string | null;
+  theme_config?: Partial<ThemeConfig>;
+}
 export interface Course { id: string; title: string; description?: string; thumbnail_url?: string; }
 export interface TemplateProps { school: School; courses: Course[]; theme: ThemeConfig; sections: SectionConfig; }
 
 export const DEFAULT_SECTIONS: SectionConfig = {
   hero: true, stats: true, features: true, courses: true, testimonials: true,
   teachers: true, faq: true, contact: true, footer: true,
-  content: { hero_cta: 'Apply now', hero_image: '', video_url: '', about: '', admissions: '',
-    stats: { students: 0, courses: 0, teachers: 0, years: 1 }, testimonials: [], faq: [] },
+  content: {
+    hero_cta: 'Apply now', hero_image: '', video_url: '', about: '', admissions: '',
+    stats: { students: 0, courses: 0, teachers: 0, years: 1 }, testimonials: [], faq: [],
+    news: [], events: [], staff: [], gallery: [],
+  },
 };
 
 export const DEFAULT_THEME: ThemeConfig = {
@@ -38,14 +51,13 @@ export const DEFAULT_THEME: ThemeConfig = {
   button_style: 'filled', background: '#ffffff', sections: DEFAULT_SECTIONS,
 };
 
-// Template presets: applied when admin picks a template
 export const TEMPLATE_PRESETS: Record<TemplateId, Partial<ThemeConfig>> = {
-  modern: { primary_color: '#2563eb', secondary_color: '#10b981', font: 'inter', hero_style: 'split', card_style: 'rounded', radius: 'soft', background: '#ffffff' },
+  modern: { primary_color: '#2563eb', secondary_color: '#10b981', font: 'inter', hero_style: 'centered', card_style: 'rounded', radius: 'soft', background: '#ffffff' },
   bold: { primary_color: '#f97316', secondary_color: '#0f172a', font: 'poppins', hero_style: 'fullscreen', card_style: 'sharp', radius: 'sharp', background: '#ffffff' },
   minimal: { primary_color: '#000000', secondary_color: '#6b7280', font: 'dmsans', hero_style: 'centered', card_style: 'bordered', radius: 'soft', background: '#ffffff' },
-  vibrant: { primary_color: '#fbbf24', secondary_color: '#7c3aed', font: 'jakarta', hero_style: 'illustrated', card_style: 'floating', radius: 'round', background: '#fffbeb' },
+  vibrant: { primary_color: '#fbbf24', secondary_color: '#7c3aed', font: 'jakarta', hero_style: 'centered', card_style: 'floating', radius: 'round', background: '#fffbeb' },
   professional: { primary_color: '#065f46', secondary_color: '#d1fae5', font: 'merriweather', hero_style: 'split', card_style: 'sharp', radius: 'sharp', background: '#ffffff' },
-  african: { primary_color: '#c2410c', secondary_color: '#d97706', font: 'sora', hero_style: 'fullscreen', card_style: 'bordered', radius: 'soft', background: '#fef3c7' },
+  african: { primary_color: '#c2410c', secondary_color: '#d97706', font: 'sora', hero_style: 'centered', card_style: 'bordered', radius: 'soft', background: '#fef3c7' },
 };
 
 export const FONT_VARS: Record<FontId, string> = {
@@ -56,9 +68,8 @@ export const FONT_VARS: Record<FontId, string> = {
 const HEX = /^#[0-9a-fA-F]{6}$/;
 export const safeHex = (v: unknown, fallback: string) => (typeof v === 'string' && HEX.test(v) ? v : fallback);
 
-// Allow only YouTube embed URLs for the video hero
 export const safeVideoUrl = (v: string) =>
-  /^https:\/\/(www\.)?(youtube\.com\/embed\/|youtube-nocookie\.com\/embed\/)[\w-]+/.test(v) ? v : '';
+  /^https:\/\/(www\.)?(youtube\.com\/embed\/|youtube-nocookie\.com\/embed\/)[\w-]+$/.test(v) ? v : '';
 
 export function contrastText(hex: string) {
   const n = parseInt(hex.slice(1), 16);
@@ -66,7 +77,6 @@ export function contrastText(hex: string) {
   return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? '#0f172a' : '#ffffff';
 }
 
-// Merge DB value over defaults, validating anything that reaches CSS
 export function mergeTheme(raw?: Partial<ThemeConfig> | null): ThemeConfig {
   const t = { ...DEFAULT_THEME, ...(raw || {}) } as ThemeConfig;
   const s = (raw?.sections || {}) as Partial<SectionConfig>;

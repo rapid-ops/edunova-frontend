@@ -142,6 +142,7 @@ export default function CourseDetailPage() {
           <div className="flex items-center gap-1 text-xs text-gray-400"><BookOpen size={12} />{lessons.length} lessons</div>
           <div className="flex items-center gap-1 text-xs text-gray-400"><Clock size={12} />~{estimatedMinutes} min</div>
           {course?.teacher_name && <div className="flex items-center gap-1 text-xs text-gray-400"><Star size={12} />{course.teacher_name}</div>}
+          <button onClick={() => router.push(`/dashboard/courses/${id}/reviews`)} className="flex items-center gap-1 text-xs text-blue-600 font-medium"><Star size={12} />Ratings and reviews</button>
         </div>
       </div>
 
