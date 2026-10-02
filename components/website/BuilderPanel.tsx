@@ -23,9 +23,9 @@ function Choice<T extends string>({ value, opts, on }: { value: T; opts: [T, str
   );
 }
 
-interface P { theme: ThemeConfig; setTheme: (t: ThemeConfig) => void; tagline: string; setTagline: (s: string) => void; logo: string; setLogo: (s: string) => void; }
+interface P { theme: ThemeConfig; setTheme: (t: ThemeConfig) => void; tagline: string; setTagline: (s: string) => void; logo: string; setLogo: (s: string) => void; up: (f: File, k: 'logo' | 'hero') => void; busy: boolean; }
 
-export default function BuilderPanel({ theme, setTheme, tagline, setTagline, logo, setLogo }: P) {
+export default function BuilderPanel({ theme, setTheme, tagline, setTagline, logo, setLogo, up, busy }: P) {
   const [tab, setTab] = useState<(typeof TABS)[number]>('Template');
   const upd = (p: Partial<ThemeConfig>) => setTheme({ ...theme, ...p });
   const c = theme.sections.content;
@@ -74,8 +74,20 @@ export default function BuilderPanel({ theme, setTheme, tagline, setTagline, log
           <Lbl t="Hero style"><Choice value={theme.hero_style} opts={[['centered', 'Centered'], ['split', 'Split'], ['fullscreen', 'Fullscreen'], ['video', 'Video'], ['illustrated', 'Illustrated']]} on={v => upd({ hero_style: v })} /></Lbl>
           <Lbl t="Tagline"><input className={inp} value={tagline} maxLength={160} onChange={e => setTagline(e.target.value)} /></Lbl>
           <Lbl t="Button text"><input className={inp} value={c.hero_cta} maxLength={40} onChange={e => updC({ hero_cta: e.target.value })} /></Lbl>
-          <Lbl t="Logo image link (https)"><input className={inp} value={logo} onChange={e => setLogo(e.target.value)} placeholder="https://..." /></Lbl>
-          <Lbl t="Background image link (https)"><input className={inp} value={c.hero_image} onChange={e => updC({ hero_image: e.target.value })} placeholder="https://..." /></Lbl>
+          <div>
+            <span className="mb-1 block text-sm font-medium text-slate-700">School logo / crest</span>
+            <div className="flex items-center gap-3">
+              {logo && <img src={logo} alt="" className="h-14 w-14 rounded border border-slate-200 object-contain" />}
+              <input type="file" accept="image/*" disabled={busy} onChange={e => { const f = e.target.files?.[0]; if (f) up(f, 'logo'); e.target.value = ''; }} className="block w-full text-sm text-slate-900" />
+            </div>
+            {logo && <button type="button" className="mt-1 min-h-11 text-sm text-red-600" onClick={() => setLogo('')}>Remove logo</button>}
+          </div>
+          <div>
+            <span className="mb-1 block text-sm font-medium text-slate-700">Hero background photo</span>
+            {c.hero_image && <img src={c.hero_image} alt="" className="mb-2 h-24 w-full rounded border border-slate-200 object-cover" />}
+            <input type="file" accept="image/*" disabled={busy} onChange={e => { const f = e.target.files?.[0]; if (f) up(f, 'hero'); e.target.value = ''; }} className="block w-full text-sm text-slate-900" />
+            {c.hero_image && <button type="button" className="mt-1 min-h-11 text-sm text-red-600" onClick={() => updC({ hero_image: '' })}>Remove photo</button>}
+          </div>
           <Lbl t="YouTube embed link (for Video style)"><input className={inp} value={c.video_url} onChange={e => updC({ video_url: e.target.value })} placeholder="https://www.youtube.com/embed/VIDEO_ID" /></Lbl>
         </div>
       )}

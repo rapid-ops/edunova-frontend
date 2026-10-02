@@ -37,6 +37,23 @@ export default function WebsiteBuilder() {
     })();
   }, []);
 
+  const [busy, setBusy] = useState(false);
+  const up = async (file: File, kind: 'logo' | 'hero') => {
+    if (!school) return;
+    if (file.size > 5 * 1024 * 1024) { setMsg('Image must be under 5MB.'); return; }
+    setBusy(true); setMsg('');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await api.post('/upload/website-image/' + school.id, fd);
+      const url: string = r.data.url;
+      if (kind === 'logo') setLogo(url);
+      else setTheme(t => t ? { ...t, sections: { ...t.sections, content: { ...t.sections.content, hero_image: url } } } : t);
+      setMsg('Uploaded. Tap Save to publish.');
+    } catch (e: any) { setMsg(e?.response?.data?.error || 'Upload failed.'); }
+    setBusy(false);
+  };
+
   const save = async () => {
     if (!school || !theme) return;
     setSaving(true); setMsg('');
@@ -87,7 +104,7 @@ export default function WebsiteBuilder() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 [&>*]:min-w-0">
         <div className={view === 'edit' ? 'block' : 'hidden lg:block'}>
-          <BuilderPanel theme={theme} setTheme={setTheme} tagline={tagline} setTagline={setTagline} logo={logo} setLogo={setLogo} />
+          <BuilderPanel theme={theme} setTheme={setTheme} tagline={tagline} setTagline={setTagline} logo={logo} setLogo={setLogo} up={up} busy={busy} />
         </div>
         <div className={view === 'preview' ? 'block' : 'hidden lg:block'}>
           <div className="mx-auto h-[70vh] w-full max-w-[420px] overflow-y-auto rounded-3xl border-4 border-slate-800 bg-white">
