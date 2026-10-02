@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import ThemeProvider from '@/components/website/ThemeProvider';
 import { templates } from '@/components/website/templates';
 import { mergeTheme, type Course, type School } from '@/lib/theme';
@@ -22,6 +22,8 @@ export default async function SchoolPage({ params }: { params: Promise<{ subdoma
   const { subdomain } = await params;
   const school = await getSchool(subdomain);
   if (!school || !school.id) notFound();
+  const ext = (school as any).external_website_url;
+  if (typeof ext === 'string' && ext.startsWith('https://')) redirect(ext);
   let courses: Course[] = [];
   try {
     const r = await fetch(`${API}/courses/school/${school.id}`, { next: { revalidate: 30 } });

@@ -13,6 +13,7 @@ export default function WebsiteBuilder() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [tagline, setTagline] = useState('');
   const [logo, setLogo] = useState('');
+  const [ext, setExt] = useState('');
   const [msg, setMsg] = useState('');
   const [saving, setSaving] = useState(false);
   const [view, setView] = useState<'edit' | 'preview'>('edit');
@@ -25,7 +26,7 @@ export default function WebsiteBuilder() {
         if (!id) { setMsg('No school linked to this account.'); return; }
         const r = await api.get(`/schools/${id}`);
         const s: School = r.data.school;
-        setSchool(s); setTagline(s.tagline || ''); setLogo(s.logo_url || '');
+        setSchool(s); setTagline(s.tagline || ''); setLogo(s.logo_url || ''); setExt((s as any).external_website_url || '');
         setTheme(mergeTheme(s.theme_config));
         try {
           const cr = await api.get(`/courses/school/${id}`);
@@ -46,6 +47,16 @@ export default function WebsiteBuilder() {
     setSaving(false);
   };
 
+  const saveExt = async () => {
+    if (!school) return;
+    const v = ext.trim();
+    if (v && !v.startsWith('https://')) { setMsg('Link must start with https://'); return; }
+    try {
+      await api.put('/schools/' + school.id + '/website', { external_website_url: v || null, website_config: null });
+      setMsg(v ? 'Your public page now redirects to your website.' : 'Redirect removed. Your Edunova page is active.');
+    } catch (e: any) { setMsg(e?.response?.data?.error || 'Save failed.'); }
+  };
+
   if (!school || !theme) return <div className="p-6 text-slate-600">{msg || 'Loading...'}</div>;
 
   const preview = { ...school, tagline, logo_url: logo && /^https:\/\//.test(logo) ? logo : undefined };
@@ -61,6 +72,13 @@ export default function WebsiteBuilder() {
         </div>
       </div>
       {msg && <div className="mb-4 rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-800">{msg}</div>}
+      <div className="mb-4 rounded-lg border border-slate-200 p-4">
+        <div className="mb-2 text-sm font-semibold">Already have a website? Redirect visitors to it</div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base" value={ext} onChange={e => setExt(e.target.value)} placeholder="https://yourschool.com (empty = use this builder)" />
+          <button onClick={saveExt} className="min-h-11 rounded-lg border border-slate-300 px-4 text-sm font-semibold">Save link</button>
+        </div>
+      </div>
 
       <div className="mb-4 flex gap-2 lg:hidden">
         <button onClick={() => setView('edit')} className={`flex min-h-11 flex-1 items-center justify-center gap-1 rounded-lg text-sm font-semibold ${view === 'edit' ? 'bg-blue-600 text-white' : 'bg-slate-100'}`}><Pencil className="h-4 w-4" />Edit</button>
