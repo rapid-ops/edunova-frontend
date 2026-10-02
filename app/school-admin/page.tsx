@@ -1,4 +1,5 @@
 'use client';
+import { Palette } from "lucide-react";
 import LoadingScreen from '@/components/LoadingScreen';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -135,6 +136,7 @@ export default function SchoolAdminDashboard() {
             { icon: TrendingDown, label: 'Dropout Risk', href: '/dashboard/dropout-risk', color: 'text-red-500' },
             { icon: Tag, label: 'Coupons', href: '/dashboard/coupons', color: 'text-pink-500' },
             { icon: Headphones, label: 'Contact Support', href: '/dashboard/b2b-support', color: 'text-teal-600' },
+            { icon: Palette, label: 'Website Builder', href: '/dashboard/website', color: 'text-blue-600' },
           ].map(({ icon: Icon, label, href, color }) => (
             <button key={label} onClick={() => router.push(href)} className="bg-white border border-gray-200 active:bg-gray-50 flex items-center gap-3 px-4 py-3 rounded-xl text-left transition">
               <Icon size={18} className={color} />
