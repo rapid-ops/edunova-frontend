@@ -1,0 +1,41 @@
+import { notFound } from 'next/navigation';
+import ThemeProvider from '@/components/website/ThemeProvider';
+import { templates } from '@/components/website/templates';
+import { mergeTheme, type Course, type School } from '@/lib/theme';
+
+const API = 'https://edunova-backend-2x7h.onrender.com/api';
+
+async function getSchool(sub: string): Promise<School | null> {
+  const r = await fetch(`${API}/schools/subdomain/${encodeURIComponent(sub)}`, { next: { revalidate: 30 } });
+  if (!r.ok) return null;
+  const j = await r.json();
+  return (j.school || j.data || j) as School;
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ subdomain: string }> }) {
+  const { subdomain } = await params;
+  const s = await getSchool(subdomain);
+  return { title: s ? `${s.name} | Edunova` : 'School | Edunova', description: s?.tagline || 'Learn online with Edunova.' };
+}
+
+export default async function SchoolPage({ params }: { params: Promise<{ subdomain: string }> }) {
+  const { subdomain } = await params;
+  const school = await getSchool(subdomain);
+  if (!school || !school.id) notFound();
+  let courses: Course[] = [];
+  try {
+    const r = await fetch(`${API}/courses/school/${school.id}`, { next: { revalidate: 30 } });
+    if (r.ok) {
+      const j = await r.json();
+      const list = Array.isArray(j) ? j : j.courses || j.data || [];
+      courses = list.filter((c: any) => c.is_published !== false && c.status !== 'draft');
+    }
+  } catch {}
+  const theme = mergeTheme(school.theme_config);
+  const Template = templates[theme.template];
+  return (
+    <ThemeProvider theme={theme}>
+      <Template school={school} courses={courses} theme={theme} sections={theme.sections} />
+    </ThemeProvider>
+  );
+}

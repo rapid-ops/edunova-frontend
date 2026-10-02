@@ -1,146 +1,83 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth.store';
+import { Save, ExternalLink, Eye, Pencil } from 'lucide-react';
 import api from '@/lib/api';
+import { mergeTheme, type ThemeConfig, type School, type Course } from '@/lib/theme';
+import { templates } from '@/components/website/templates';
+import ThemeProvider from '@/components/website/ThemeProvider';
+import BuilderPanel from '@/components/website/BuilderPanel';
 
-export default function WebsitePage() {
-  const router = useRouter();
-  const { user } = useAuthStore();
-  const schoolId = user?.school_id;
-  const [school, setSchool] = useState<any>(null);
-  const [mode, setMode] = useState<'builder' | 'external'>('builder');
-  const [externalUrl, setExternalUrl] = useState('');
-  const [form, setForm] = useState({
-    tagline: '',
-    about: '',
-    address: '',
-    phone: '',
-    email: '',
-    primary_color: '#1d4ed8',
-  });
-  const [success, setSuccess] = useState('');
-  const [loading, setLoading] = useState(false);
+export default function WebsiteBuilder() {
+  const [school, setSchool] = useState<School | null>(null);
+  const [theme, setTheme] = useState<ThemeConfig | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [tagline, setTagline] = useState('');
+  const [logo, setLogo] = useState('');
+  const [msg, setMsg] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [view, setView] = useState<'edit' | 'preview'>('edit');
 
   useEffect(() => {
-    fetchSchool();
+    (async () => {
+      try {
+        const u = JSON.parse(localStorage.getItem('user') || '{}');
+        const id = new URLSearchParams(window.location.search).get('school') || u.school_id;
+        if (!id) { setMsg('No school linked to this account.'); return; }
+        const r = await api.get(`/schools/${id}`);
+        const s: School = r.data.school;
+        setSchool(s); setTagline(s.tagline || ''); setLogo(s.logo_url || '');
+        setTheme(mergeTheme(s.theme_config));
+        try {
+          const cr = await api.get(`/courses/school/${id}`);
+          const list = Array.isArray(cr.data) ? cr.data : cr.data.courses || [];
+          setCourses(list.filter((x: any) => x.is_published !== false && x.status !== 'draft'));
+        } catch {}
+      } catch (e: any) { setMsg(e?.response?.data?.error || 'Could not load school.'); }
+    })();
   }, []);
 
-  const fetchSchool = async () => {
+  const save = async () => {
+    if (!school || !theme) return;
+    setSaving(true); setMsg('');
     try {
-      const res = await api.get(`/schools/${schoolId}`);
-      const s = res.data.school;
-      setSchool(s);
-      if (s.external_website_url) {
-        setExternalUrl(s.external_website_url);
-        setMode('external');
-      }
-      if (s.website_config) {
-        setForm(JSON.parse(s.website_config));
-      }
-    } catch (err) {}
+      await api.put(`/schools/${school.id}/theme`, { theme_config: theme, tagline, logo_url: logo });
+      setMsg('Saved. Your public page is updated.');
+    } catch (e: any) { setMsg(e?.response?.data?.error || 'Save failed.'); }
+    setSaving(false);
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await api.put(`/schools/${schoolId}/website`, {
-        mode,
-        external_website_url: mode === 'external' ? externalUrl : null,
-        website_config: mode === 'builder' ? JSON.stringify(form) : null,
-      });
-      setSuccess('Website settings saved');
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {} finally { setLoading(false); }
-  };
+  if (!school || !theme) return <div className="p-6 text-slate-600">{msg || 'Loading...'}</div>;
+
+  const preview = { ...school, tagline, logo_url: logo && /^https:\/\//.test(logo) ? logo : undefined };
+  const Template = templates[theme.template];
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-900">←</button>
-        <h1 className="text-xl font-bold">School Website</h1>
+    <div className="p-4 md:p-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-bold text-slate-900">Website Builder</h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <a href={`/school/${school.subdomain}`} target="_blank" rel="noreferrer" className="flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 px-4 text-sm font-medium"><ExternalLink className="h-4 w-4" />Open live</a>
+          <button onClick={save} disabled={saving} className="flex min-h-11 items-center gap-1 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white disabled:opacity-60"><Save className="h-4 w-4" />{saving ? 'Saving...' : 'Save'}</button>
+        </div>
+      </div>
+      {msg && <div className="mb-4 rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-800">{msg}</div>}
+
+      <div className="mb-4 flex gap-2 lg:hidden">
+        <button onClick={() => setView('edit')} className={`flex min-h-11 flex-1 items-center justify-center gap-1 rounded-lg text-sm font-semibold ${view === 'edit' ? 'bg-blue-600 text-white' : 'bg-slate-100'}`}><Pencil className="h-4 w-4" />Edit</button>
+        <button onClick={() => setView('preview')} className={`flex min-h-11 flex-1 items-center justify-center gap-1 rounded-lg text-sm font-semibold ${view === 'preview' ? 'bg-blue-600 text-white' : 'bg-slate-100'}`}><Eye className="h-4 w-4" />Preview</button>
       </div>
 
-      <div className="max-w-2xl mx-auto p-6">
-        {success && <div className="bg-green-500/10 border border-green-500/30 text-green-400 text-sm px-4 py-3 rounded-lg mb-4">{success}</div>}
-
-        <div className="flex gap-2 mb-6">
-          <button onClick={() => setMode('builder')} className={`px-4 py-2 rounded-lg text-sm font-medium ${mode === 'builder' ? 'bg-blue-600 text-gray-900' : 'bg-white text-gray-500'}`}>Build Website</button>
-          <button onClick={() => setMode('external')} className={`px-4 py-2 rounded-lg text-sm font-medium ${mode === 'external' ? 'bg-blue-600 text-gray-900' : 'bg-white text-gray-500'}`}>Use Existing Website</button>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className={view === 'edit' ? 'block' : 'hidden lg:block'}>
+          <BuilderPanel theme={theme} setTheme={setTheme} tagline={tagline} setTagline={setTagline} logo={logo} setLogo={setLogo} />
         </div>
-
-        {mode === 'external' ? (
-          <form onSubmit={handleSave} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
-            <h2 className="font-semibold">Link Your Existing Website</h2>
-            <p className="text-gray-500 text-sm">Students and parents will be redirected to your website.</p>
-            <div>
-              <label className="text-gray-500 text-sm mb-1 block">Website URL</label>
-              <input
-                value={externalUrl}
-                onChange={(e) => setExternalUrl(e.target.value)}
-                placeholder="https://yourschool.edu.ng"
-                className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-            <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-gray-900 py-3 rounded-lg text-sm font-medium disabled:opacity-50">
-              {loading ? 'Saving...' : 'Save'}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleSave} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
-            <h2 className="font-semibold">Customize Your School Website</h2>
-            <p className="text-gray-500 text-sm">Your website will be live at: <span className="text-blue-400">{`edunova-frontend-gkaj.vercel.app/school/${school?.subdomain}`}</span></p>
-
-            {[
-              { key: 'tagline', label: 'Tagline', placeholder: 'Shaping tomorrow\'s leaders today' },
-              { key: 'about', label: 'About School', placeholder: 'Brief description of your school...' },
-              { key: 'address', label: 'Address', placeholder: '123 School Street, Lagos' },
-              { key: 'phone', label: 'Phone', placeholder: '08012345678' },
-              { key: 'email', label: 'Email', placeholder: 'info@school.edu.ng' },
-            ].map((f) => (
-              <div key={f.key}>
-                <label className="text-gray-500 text-sm mb-1 block">{f.label}</label>
-                {f.key === 'about' ? (
-                  <textarea
-                    value={(form as any)[f.key]}
-                    onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                    placeholder={f.placeholder}
-                    rows={3}
-                    className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none resize-none focus:ring-2 focus:ring-blue-500"
-                  />
-                ) : (
-                  <input
-                    value={(form as any)[f.key]}
-                    onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                    placeholder={f.placeholder}
-                    className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                )}
-              </div>
-            ))}
-
-            <div>
-              <label className="text-gray-500 text-sm mb-1 block">Primary Color</label>
-              <div className="flex items-center gap-3">
-                <input type="color" value={form.primary_color} onChange={(e) => setForm({ ...form, primary_color: e.target.value })} className="w-12 h-12 rounded-lg cursor-pointer bg-transparent border-0" />
-                <span className="text-gray-500 text-sm">{form.primary_color}</span>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-gray-900 px-6 py-2 rounded-lg text-sm disabled:opacity-50">
-                {loading ? 'Saving...' : 'Save & Publish'}
-              </button>
-              {school?.subdomain && (
-                <a href={`/school/${school.subdomain}`} target="_blank" className="bg-gray-100 hover:bg-gray-200 text-gray-900 px-6 py-2 rounded-lg text-sm">
-                  Preview
-                </a>
-              )}
-            </div>
-          </form>
-        )}
+        <div className={view === 'preview' ? 'block' : 'hidden lg:block'}>
+          <div className="mx-auto h-[70vh] w-full max-w-[420px] overflow-y-auto rounded-3xl border-4 border-slate-800 bg-white">
+            <ThemeProvider theme={theme}>
+              <Template school={preview} courses={courses} theme={theme} sections={theme.sections} />
+            </ThemeProvider>
+          </div>
+        </div>
       </div>
     </div>
   );
