@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Menu, X, GraduationCap } from 'lucide-react';
 
-const links = [['Features', '/features'], ['Pricing', '/pricing'], ['Schools', '/schools'], ['Blog', '/blog']];
+const links = [['Features', '/features'], ['Pricing', '/pricing'], ['Blog', '/blog']];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);

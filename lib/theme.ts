@@ -6,7 +6,7 @@ export interface SectionConfig {
   hero: boolean; stats: boolean; features: boolean; courses: boolean;
   testimonials: boolean; teachers: boolean; faq: boolean; contact: boolean; footer: boolean;
   content: {
-    hero_cta: string; hero_image: string; video_url: string;
+    hero_cta: string; hero_image: string; video_url: string; about: string; admissions: string;
     stats: { students: number; courses: number; teachers: number; years: number };
     testimonials: { quote: string; name: string; role: string }[];
     faq: { q: string; a: string }[];
@@ -21,14 +21,14 @@ export interface ThemeConfig {
   background: string; sections: SectionConfig;
 }
 
-export interface School { id: string; name: string; subdomain: string; tagline?: string; logo_url?: string; theme_config?: Partial<ThemeConfig>; }
+export interface School { id: string; name: string; subdomain: string; tagline?: string; logo_url?: string; email?: string; phone?: string; address?: string; theme_config?: Partial<ThemeConfig>; }
 export interface Course { id: string; title: string; description?: string; thumbnail_url?: string; }
 export interface TemplateProps { school: School; courses: Course[]; theme: ThemeConfig; sections: SectionConfig; }
 
 export const DEFAULT_SECTIONS: SectionConfig = {
   hero: true, stats: true, features: true, courses: true, testimonials: true,
   teachers: true, faq: true, contact: true, footer: true,
-  content: { hero_cta: 'Join this school', hero_image: '', video_url: '',
+  content: { hero_cta: 'Apply now', hero_image: '', video_url: '', about: '', admissions: '',
     stats: { students: 0, courses: 0, teachers: 0, years: 1 }, testimonials: [], faq: [] },
 };
 

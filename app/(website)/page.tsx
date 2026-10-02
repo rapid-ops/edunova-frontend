@@ -4,7 +4,6 @@ import LoggedInRedirect from '@/components/website/LoggedInRedirect';
 import Reveal from '@/components/website/Reveal';
 import StatsCounter from '@/components/website/StatsCounter';
 import FAQAccordion from '@/components/website/FAQAccordion';
-import SchoolShowcase from '@/components/website/SchoolShowcase';
 import HeroMock from '@/components/website/HeroMock';
 
 export const metadata = {
@@ -12,8 +11,6 @@ export const metadata = {
   description: 'Edunova is a school LMS with AI tutoring, blockchain certificates, parent portal and WhatsApp notifications, priced in Naira.',
   openGraph: { title: 'Edunova | The LMS Built for African Schools', description: 'Run your school online with Edunova.', type: 'website' },
 };
-
-const API = 'https://edunova-backend-2x7h.onrender.com/api';
 
 const features = [
   [Users, 'Multi-role access', 'Admins, teachers, students and parents each get their own dashboard.'],
@@ -54,16 +51,7 @@ const faq = [
   ['How do I get support?', 'Use the support section in your dashboard or the contact page.'],
 ].map(([q, a]) => ({ q, a }));
 
-async function schoolCount() {
-  try {
-    const r = await fetch(`${API}/schools/public`, { next: { revalidate: 120 }, signal: AbortSignal.timeout(4000) });
-    const j = await r.json();
-    return (j.schools || []).length as number;
-  } catch { return 0; }
-}
-
 export default async function Home() {
-  const n = await schoolCount();
   const ld = {
     '@context': 'https://schema.org', '@graph': [
       { '@type': 'Organization', name: 'Edunova', url: 'https://edunova.com' },
@@ -91,10 +79,7 @@ export default async function Home() {
 
       <section className="bg-blue-600 px-4 py-10 text-white">
         <div className="mx-auto max-w-6xl">
-          <StatsCounter items={[
-            { label: 'Schools on Edunova', value: n }, { label: 'Feature tiers', value: 7 },
-            { label: 'Website templates', value: 6 }, { label: 'Starting price', value: 0, prefix: '₦' },
-          ]} />
+          <StatsCounter items={[{ label: 'Feature tiers', value: 7 }, { label: 'Website templates', value: 6 }, { label: 'User roles', value: 4 }, { label: 'Starting price', value: 0, prefix: '₦' }]} />
         </div>
       </section>
 
@@ -155,10 +140,6 @@ export default async function Home() {
         </div>
       </div></section>
 
-      <section className="px-4 py-16"><div className="mx-auto max-w-6xl">
-        <h2 className="mb-8 text-center text-3xl font-bold tracking-tight text-slate-900">Schools on Edunova</h2>
-        <SchoolShowcase />
-      </div></section>
 
       <section className="bg-slate-50 px-4 py-16"><div className="mx-auto max-w-3xl">
         <h2 className="mb-8 text-center text-3xl font-bold tracking-tight text-slate-900">Questions</h2>

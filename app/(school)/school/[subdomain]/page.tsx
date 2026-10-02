@@ -15,7 +15,7 @@ async function getSchool(sub: string): Promise<School | null> {
 export async function generateMetadata({ params }: { params: Promise<{ subdomain: string }> }) {
   const { subdomain } = await params;
   const s = await getSchool(subdomain);
-  return { title: s ? `${s.name} | Edunova` : 'School | Edunova', description: s?.tagline || 'Learn online with Edunova.' };
+  return { title: s ? s.name : 'School', description: s?.tagline || (s ? s.name + ' official website' : '') };
 }
 
 export default async function SchoolPage({ params }: { params: Promise<{ subdomain: string }> }) {

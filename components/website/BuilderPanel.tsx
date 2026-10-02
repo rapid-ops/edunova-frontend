@@ -3,12 +3,12 @@ import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { TEMPLATE_PRESETS, type ThemeConfig, type TemplateId, type FontId } from '@/lib/theme';
 
-const TABS = ['Template', 'Colors', 'Fonts', 'Hero', 'Sections'] as const;
+const TABS = ['Template', 'Colors', 'Fonts', 'Hero', 'Content', 'Sections'] as const;
 const FONTS: [FontId, string][] = [['inter', 'Inter'], ['jakarta', 'Plus Jakarta Sans'], ['sora', 'Sora'], ['poppins', 'Poppins'], ['merriweather', 'Merriweather'], ['dmsans', 'DM Sans']];
 const TPL: [TemplateId, string][] = [['modern', 'Modern'], ['bold', 'Bold'], ['minimal', 'Minimal'], ['vibrant', 'Vibrant'], ['professional', 'Professional'], ['african', 'African']];
-const SECS = ['hero', 'stats', 'features', 'courses', 'testimonials', 'teachers', 'faq', 'contact', 'footer'] as const;
+const SECS = ['hero', 'stats', 'courses', 'testimonials', 'faq', 'contact', 'footer'] as const;
 
-const inp = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-base';
+const inp = 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900';
 const Lbl = ({ t, children }: { t: string; children: React.ReactNode }) => (
   <label className="block"><span className="mb-1 block text-sm font-medium text-slate-700">{t}</span>{children}</label>
 );
@@ -64,7 +64,6 @@ export default function BuilderPanel({ theme, setTheme, tagline, setTagline, log
           </Lbl>
           <Lbl t="Button style"><Choice value={theme.button_style} opts={[['filled', 'Filled'], ['outlined', 'Outlined'], ['ghost', 'Ghost']]} on={v => upd({ button_style: v })} /></Lbl>
           <Lbl t="Corners"><Choice value={theme.radius} opts={[['sharp', 'Sharp'], ['soft', 'Soft'], ['round', 'Round']]} on={v => upd({ radius: v })} /></Lbl>
-          <Lbl t="Card style"><Choice value={theme.card_style} opts={[['rounded', 'Rounded'], ['sharp', 'Sharp'], ['floating', 'Floating'], ['glass', 'Glass'], ['bordered', 'Bordered']]} on={v => upd({ card_style: v })} /></Lbl>
         </div>
       )}
 
@@ -78,6 +77,13 @@ export default function BuilderPanel({ theme, setTheme, tagline, setTagline, log
           <Lbl t="Logo image link (https)"><input className={inp} value={logo} onChange={e => setLogo(e.target.value)} placeholder="https://..." /></Lbl>
           <Lbl t="Background image link (https)"><input className={inp} value={c.hero_image} onChange={e => updC({ hero_image: e.target.value })} placeholder="https://..." /></Lbl>
           <Lbl t="YouTube embed link (for Video style)"><input className={inp} value={c.video_url} onChange={e => updC({ video_url: e.target.value })} placeholder="https://www.youtube.com/embed/VIDEO_ID" /></Lbl>
+        </div>
+      )}
+
+      {tab === 'Content' && (
+        <div className="space-y-4">
+          <Lbl t="About the school (blank line = new paragraph)"><textarea className={inp} rows={8} maxLength={3000} value={c.about} onChange={e => updC({ about: e.target.value })} /></Lbl>
+          <Lbl t="Admissions information"><textarea className={inp} rows={6} maxLength={2000} value={c.admissions} onChange={e => updC({ admissions: e.target.value })} /></Lbl>
         </div>
       )}
 

@@ -63,7 +63,7 @@ export default function WebsiteBuilder() {
   const Template = templates[theme.template];
 
   return (
-    <div className="p-4 md:p-6">
+    <div className="p-4 pb-28 md:p-6 text-slate-900 overflow-x-hidden">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-bold text-slate-900">Website Builder</h1>
         <div className="flex flex-wrap items-center gap-2">
@@ -85,7 +85,7 @@ export default function WebsiteBuilder() {
         <button onClick={() => setView('preview')} className={`flex min-h-11 flex-1 items-center justify-center gap-1 rounded-lg text-sm font-semibold ${view === 'preview' ? 'bg-blue-600 text-white' : 'bg-slate-100'}`}><Eye className="h-4 w-4" />Preview</button>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 [&>*]:min-w-0">
         <div className={view === 'edit' ? 'block' : 'hidden lg:block'}>
           <BuilderPanel theme={theme} setTheme={setTheme} tagline={tagline} setTagline={setTagline} logo={logo} setLogo={setLogo} />
         </div>
