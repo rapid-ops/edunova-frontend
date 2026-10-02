@@ -17,7 +17,12 @@ export default function FeesPage() {
   const [form, setForm] = useState({ class_id: '', student_id: '', amount: '', description: '', due_date: '' });
   const [error, setError] = useState('');
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    let r = '';
+    try { r = JSON.parse(localStorage.getItem('user') || '{}').role || ''; } catch {}
+    if (r === 'parent' || r === 'student') { router.replace('/dashboard/my-fees'); return; }
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
     try {
