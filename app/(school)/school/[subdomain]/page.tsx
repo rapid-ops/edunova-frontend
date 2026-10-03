@@ -38,8 +38,19 @@ export default async function SchoolPage({ params }: { params: Promise<{ subdoma
   } catch {}
   const theme = mergeTheme(school.theme_config);
   const Template = templates[theme.template];
+  const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://edunova-frontend-gkaj.vercel.app';
+  const ld = {
+    '@context': 'https://schema.org', '@type': 'EducationalOrganization', name: school.name,
+    url: site + '/school/' + school.subdomain,
+    ...(school.tagline ? { description: school.tagline } : {}),
+    ...(school.logo_url && school.logo_url.startsWith('https://') ? { logo: school.logo_url } : {}),
+    ...(school.email ? { email: school.email } : {}),
+    ...(school.phone ? { telephone: school.phone } : {}),
+    ...(school.address ? { address: school.address } : {}),
+  };
   return (
     <ThemeProvider theme={theme}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, '\\u003c') }} />
       <Template school={school} courses={courses} theme={theme} sections={theme.sections} />
     </ThemeProvider>
   );

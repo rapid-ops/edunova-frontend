@@ -92,11 +92,26 @@ export function mergeTheme(raw?: Partial<ThemeConfig> | null): ThemeConfig {
   return t;
 }
 
+function lin(c: number) { const s = c / 255; return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); }
+function lumOf(hex: string) { const n = parseInt(hex.slice(1), 16); return 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255); }
+function ratioOf(a: string, b: string) { const x = lumOf(a), y = lumOf(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+// Nudges a colour until it is readable as text on the given background
+export function ink(fg: string, bg: string) {
+  const toward = lumOf(bg) < 0.18 ? 255 : 0;
+  let c = fg;
+  for (let i = 0; i < 16 && ratioOf(c, bg) < 4.5; i++) {
+    const n = parseInt(c.slice(1), 16);
+    const k = (v: number) => Math.round(v + (toward - v) * 0.15).toString(16).padStart(2, '0');
+    c = '#' + k((n >> 16) & 255) + k((n >> 8) & 255) + k(n & 255);
+  }
+  return c;
+}
+
 export function buildCssVars(t: ThemeConfig): Record<string, string> {
   const card = t.card_style === 'sharp' ? '0px' : t.radius === 'sharp' ? '0px' : t.radius === 'round' ? '24px' : '12px';
   const btn = t.radius === 'sharp' ? '0px' : t.radius === 'round' ? '999px' : '8px';
   return {
-    '--primary': t.primary_color, '--on-primary': contrastText(t.primary_color),
+    '--primary': t.primary_color, '--on-primary': contrastText(t.primary_color), '--primary-text': ink(t.primary_color, t.background),
     '--secondary': t.secondary_color, '--bg': t.background, '--text': contrastText(t.background),
     '--font': FONT_VARS[t.font], '--radius-card': card, '--radius-btn': btn,
   };

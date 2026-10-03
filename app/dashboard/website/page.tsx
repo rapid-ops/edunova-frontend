@@ -115,6 +115,7 @@ export default function WebsiteBuilder() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-bold text-slate-900">Website Builder{hasDraft && <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">Draft</span>}</h1>
         <div className="flex flex-wrap items-center gap-2">
+          <a href="/dashboard/applications" className="flex min-h-11 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium">Applications</a>
           <a href={`/school/${school.subdomain}`} target="_blank" rel="noreferrer" className="flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 px-4 text-sm font-medium"><ExternalLink className="h-4 w-4" />Open live</a>
           <button onClick={saveDraft} disabled={saving || busy} className="flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 px-4 text-sm font-semibold disabled:opacity-60"><Save className="h-4 w-4" />Save draft</button>
           <button onClick={publish} disabled={saving || busy} className="flex min-h-11 items-center gap-1 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white disabled:opacity-60"><Rocket className="h-4 w-4" />{saving ? 'Working...' : 'Publish'}</button>

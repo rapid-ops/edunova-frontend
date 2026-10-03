@@ -35,7 +35,7 @@ export function About({ x }: { x: X }) {
 export function Programmes({ x, kind = 'list' }: { x: X; kind?: 'list' | 'table' | 'cards' | 'rows' | 'numbered' }) {
   if (!x.showProgs) return null;
   const cs = x.courses;
-  const more = (k: Course) => <Link href={x.courseHref(k.id)} className="mt-2 inline-block text-sm font-semibold underline" style={{ color: 'var(--primary)' }}>View programme</Link>;
+  const more = (k: Course) => <Link href={x.courseHref(k.id)} className="mt-2 inline-block text-sm font-semibold underline" style={{ color: 'var(--primary-text)' }}>View programme</Link>;
   return (
     <Sec x={x} id="programmes" title="Programmes" tint>
       {kind === 'table' ? (
@@ -46,7 +46,7 @@ export function Programmes({ x, kind = 'list' }: { x: X; kind?: 'list' | 'table'
               <tr key={k.id} className="border-b border-slate-300 align-top">
                 <td className="py-3 pr-4 font-semibold">{k.title}</td>
                 <td className="py-3 pr-4 opacity-75">{k.description || ''}</td>
-                <td className="py-3"><Link href={x.courseHref(k.id)} className="font-semibold underline" style={{ color: 'var(--primary)' }}>View</Link></td>
+                <td className="py-3"><Link href={x.courseHref(k.id)} className="font-semibold underline" style={{ color: 'var(--primary-text)' }}>View</Link></td>
               </tr>))}
             </tbody>
           </table>
@@ -56,7 +56,7 @@ export function Programmes({ x, kind = 'list' }: { x: X; kind?: 'list' | 'table'
           {cs.map(k => (
             <div key={k.id} className="overflow-hidden bg-white text-slate-900 shadow-md" style={{ borderRadius: 'var(--radius-card)' }}>
               {img(k.thumbnail_url)
-                ? <img src={img(k.thumbnail_url)} alt="" className="h-36 w-full object-cover" />
+                ? <img loading="lazy" src={img(k.thumbnail_url)} alt="" className="h-36 w-full object-cover" />
                 : <div className="h-36" style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))' }} />}
               <div className="p-5">
                 <h3 className="text-lg font-semibold" style={x.head}>{k.title}</h3>
@@ -73,7 +73,7 @@ export function Programmes({ x, kind = 'list' }: { x: X; kind?: 'list' | 'table'
                 <span className="block text-lg font-semibold" style={x.head}>{k.title}</span>
                 {k.description && <span className="mt-1 block line-clamp-1 text-sm opacity-70">{k.description}</span>}
               </span>
-              <span aria-hidden style={{ color: 'var(--primary)' }}>&rarr;</span>
+              <span aria-hidden style={{ color: 'var(--primary-text)' }}>&rarr;</span>
             </Link>))}
         </div>
       ) : kind === 'numbered' ? (
@@ -106,7 +106,7 @@ export function News({ x, kind = 'cards' }: { x: X; kind?: 'cards' | 'rows' }) {
   if (!x.news.length) return null;
   const body = (t: string) => x.paras(t).length ? (
     <details className="mt-2">
-      <summary className="min-h-11 cursor-pointer list-none py-2 text-sm font-semibold" style={{ color: 'var(--primary)' }}>Read more</summary>
+      <summary className="min-h-11 cursor-pointer list-none py-2 text-sm font-semibold" style={{ color: 'var(--primary-text)' }}>Read more</summary>
       <div className="space-y-2 text-sm leading-relaxed">{x.paras(t).map((p, i) => <p key={i}>{p}</p>)}</div>
     </details>
   ) : null;
@@ -125,7 +125,7 @@ export function News({ x, kind = 'cards' }: { x: X; kind?: 'cards' | 'rows' }) {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {x.news.map((n, i) => (
             <article key={i} className="overflow-hidden bg-white text-slate-900 shadow-md" style={{ borderRadius: 'var(--radius-card)' }}>
-              {img(n.image) && <img src={img(n.image)} alt="" className="h-44 w-full object-cover" />}
+              {img(n.image) && <img loading="lazy" src={img(n.image)} alt="" className="h-44 w-full object-cover" />}
               <div className="p-5">
                 <div className="text-xs uppercase tracking-widest text-slate-500">{x.fmt(n.date)}</div>
                 <h3 className="mt-1 text-lg font-semibold" style={x.head}>{n.title}</h3>
@@ -145,7 +145,7 @@ export function Events({ x, side }: { x: X; side?: boolean }) {
     return (
       <li key={i} className="flex gap-4 py-3">
         <div className="w-16 shrink-0 text-center">
-          <div className="text-2xl font-bold leading-none" style={{ ...x.head, color: 'var(--primary)' }}>{d ? d.getUTCDate() : ''}</div>
+          <div className="text-2xl font-bold leading-none" style={{ ...x.head, color: 'var(--primary-text)' }}>{d ? d.getUTCDate() : ''}</div>
           <div className="text-xs uppercase tracking-widest opacity-60">{d ? d.toLocaleDateString('en-GB', { month: 'short', timeZone: 'UTC' }) : ''}</div>
         </div>
         <div><div className="font-semibold">{e.title}</div>{e.place && <div className="text-sm opacity-70">{e.place}</div>}</div>
@@ -167,7 +167,7 @@ export function Staff({ x, kind = 'grid' }: { x: X; kind?: 'grid' | 'round' | 'c
   if (!x.staff.length) return null;
   const ini = (n: string) => n.split(/\s+/).map(w => w[0] || '').slice(0, 2).join('').toUpperCase();
   const photo = (s: { name: string; photo: string }, cls: string) => img(s.photo)
-    ? <img src={img(s.photo)} alt={s.name} className={`${cls} object-cover`} />
+    ? <img loading="lazy" src={img(s.photo)} alt={s.name} className={`${cls} object-cover`} />
     : <div className={`${cls} flex items-center justify-center font-bold`} style={{ background: 'var(--primary)', color: 'var(--on-primary)' } as CSSProperties}>{ini(s.name)}</div>;
   return (
     <Sec x={x} id="people" title="Leadership & staff" tint>
@@ -202,11 +202,11 @@ export function Gallery({ x, kind = 'grid' }: { x: X; kind?: 'grid' | 'masonry' 
     <Sec x={x} id="gallery" title="Gallery">
       {kind === 'masonry' ? (
         <div className="columns-2 gap-3 md:columns-3">
-          {x.gallery.map((g, i) => <img key={i} src={img(g.url)} alt={g.caption} className="mb-3 w-full" style={{ borderRadius: 'var(--radius-card)' }} />)}
+          {x.gallery.map((g, i) => <img loading="lazy" key={i} src={img(g.url)} alt={g.caption} className="mb-3 w-full" style={{ borderRadius: 'var(--radius-card)' }} />)}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-          {x.gallery.map((g, i) => <img key={i} src={img(g.url)} alt={g.caption} className="aspect-square w-full object-cover" />)}
+          {x.gallery.map((g, i) => <img loading="lazy" key={i} src={img(g.url)} alt={g.caption} className="aspect-square w-full object-cover" />)}
         </div>
       )}
     </Sec>
@@ -274,9 +274,9 @@ export function Contact({ x, side }: { x: X; side?: boolean }) {
   const { school } = x;
   const items = (
     <ul className="space-y-4 text-lg">
-      {school.address && <li className="flex gap-3"><MapPin className="mt-1 h-5 w-5 shrink-0" style={{ color: 'var(--primary)' }} /><span>{school.address}</span></li>}
-      {school.phone && <li className="flex gap-3"><Phone className="mt-1 h-5 w-5 shrink-0" style={{ color: 'var(--primary)' }} /><a href={`tel:${school.phone}`}>{school.phone}</a></li>}
-      {school.email && <li className="flex gap-3"><Mail className="mt-1 h-5 w-5 shrink-0" style={{ color: 'var(--primary)' }} /><a href={`mailto:${school.email}`} className="break-all">{school.email}</a></li>}
+      {school.address && <li className="flex gap-3"><MapPin className="mt-1 h-5 w-5 shrink-0" style={{ color: 'var(--primary-text)' }} /><span>{school.address}</span></li>}
+      {school.phone && <li className="flex gap-3"><Phone className="mt-1 h-5 w-5 shrink-0" style={{ color: 'var(--primary-text)' }} /><a href={`tel:${school.phone}`}>{school.phone}</a></li>}
+      {school.email && <li className="flex gap-3"><Mail className="mt-1 h-5 w-5 shrink-0" style={{ color: 'var(--primary-text)' }} /><a href={`mailto:${school.email}`} className="break-all">{school.email}</a></li>}
     </ul>
   );
   if (side) {

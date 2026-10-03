@@ -5,7 +5,8 @@ import { safeVideoUrl, type TemplateId, type TemplateProps } from '@/lib/theme';
 
 export const DARK = 'color-mix(in srgb, var(--primary) 55%, #000000)';
 export const TINT = 'color-mix(in srgb, var(--primary) 7%, var(--bg))';
-export const img = (v?: string | null) => (v && /^https:\/\/[^\s"'<>()]+$/.test(v) ? v : '');
+const opt = (u: string) => (u.includes('res.cloudinary.com') && u.includes('/image/upload/') && !u.includes('f_auto') ? u.replace('/image/upload/', '/image/upload/f_auto,q_auto,w_1400/') : u);
+export const img = (v?: string | null) => (v && /^https:\/\/[^\s"'<>()]+$/.test(v) ? opt(v) : '');
 export const btnCls = 'inline-flex min-h-11 items-center justify-center px-6 py-3 text-sm font-semibold uppercase tracking-wider';
 
 export interface Opt { serif?: boolean; tracking?: string; pattern?: string; heading?: 'rule' | 'plain' | 'pill'; airy?: boolean }
@@ -23,7 +24,7 @@ export function makeCtx(p: TemplateProps, o: Opt, pre = '') {
   const { school, courses, theme, sections } = p;
   const c = sections.content;
   const base = `/school/${encodeURIComponent(school.subdomain)}`;
-  const apply = `/onboarding?school=${encodeURIComponent(school.subdomain)}`;
+  const apply = `${base}/apply`;
   const today = new Date().toISOString().slice(0, 10);
   const paras = (t?: string) => (t || '').split(/\n+/).map(s => s.trim()).filter(Boolean);
   const fmt = (d?: string) => {
@@ -63,8 +64,8 @@ export function makeCtx(p: TemplateProps, o: Opt, pre = '') {
     if (solid && theme.button_style === 'filled') {
       return dark ? { borderRadius: rad, background: '#ffffff', color: '#111111' } : { borderRadius: rad, background: 'var(--primary)', color: 'var(--on-primary)' };
     }
-    if (theme.button_style === 'ghost') return { borderRadius: rad, color: dark ? '#ffffff' : 'var(--primary)', textDecoration: 'underline' };
-    return { borderRadius: rad, border: `2px solid ${dark ? '#ffffff' : 'var(--primary)'}`, color: dark ? '#ffffff' : 'var(--primary)' };
+    if (theme.button_style === 'ghost') return { borderRadius: rad, color: dark ? '#ffffff' : 'var(--primary-text)', textDecoration: 'underline' };
+    return { borderRadius: rad, border: `2px solid ${dark ? '#ffffff' : 'var(--primary)'}`, color: dark ? '#ffffff' : 'var(--primary-text)' };
   };
   const courseHref = (id: string | number) => `${base}/programmes/${encodeURIComponent(String(id))}`;
 
@@ -89,7 +90,7 @@ function Burger({ x, nav }: { x: X; nav: [string, string][] }) {
       <summary className="flex h-11 w-11 cursor-pointer list-none items-center justify-center"><Menu className="h-6 w-6" /></summary>
       <div className="absolute right-0 top-12 w-56 border border-slate-200 bg-white p-2 text-slate-900 shadow-lg">
         {nav.map(([l, h]) => <a key={h} href={h} className="block min-h-11 px-3 py-3 text-sm">{l}</a>)}
-        <Link href={x.apply} className="block min-h-11 px-3 py-3 text-sm font-semibold" style={{ color: 'var(--primary)' }}>Apply now</Link>
+        <Link href={x.apply} className="block min-h-11 px-3 py-3 text-sm font-semibold" style={{ color: 'var(--primary-text)' }}>Apply now</Link>
         <Link href={x.portal} className="block min-h-11 px-3 py-3 text-sm">Portal login</Link>
       </div>
     </details>
@@ -116,7 +117,7 @@ export function Header({ x, kind = 'classic' }: { x: X; kind?: 'classic' | 'cent
             <div className="flex h-16 items-center md:h-auto">{brand}</div>
             <nav className="hidden items-center gap-8 md:mt-3 md:flex">
               {nav.map(([l, h]) => <a key={h} href={h} className={linkCls}>{l}</a>)}
-              <Link href={x.apply} className="text-sm font-semibold" style={{ color: 'var(--primary)' }}>Apply</Link>
+              <Link href={x.apply} className="text-sm font-semibold" style={{ color: 'var(--primary-text)' }}>Apply</Link>
             </nav>
             <Burger x={x} nav={nav} />
           </div>
@@ -248,7 +249,7 @@ export function Facts({ x, kind = 'row' }: { x: X; kind?: 'row' | 'band' | 'card
         <div className="mx-auto grid max-w-5xl grid-cols-2 gap-4 md:grid-cols-4">
           {x.facts.map(([l, v]) => (
             <div key={l} className="bg-white p-5 text-center text-slate-900 shadow-lg" style={{ borderRadius: 'var(--radius-card)' }}>
-              <div className="text-3xl font-bold" style={{ ...x.head, color: 'var(--primary)' }}>{num(v)}</div>
+              <div className="text-3xl font-bold" style={{ ...x.head, color: 'var(--primary-text)' }}>{num(v)}</div>
               <div className="mt-1 text-xs uppercase tracking-widest text-slate-500">{l}</div>
             </div>
           ))}
@@ -261,7 +262,7 @@ export function Facts({ x, kind = 'row' }: { x: X; kind?: 'row' | 'band' | 'card
       <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-x-14 gap-y-6 text-center">
         {x.facts.map(([l, v]) => (
           <div key={l}>
-            <div className="text-3xl font-bold md:text-4xl" style={{ ...x.head, color: 'var(--primary)' }}>{num(v)}</div>
+            <div className="text-3xl font-bold md:text-4xl" style={{ ...x.head, color: 'var(--primary-text)' }}>{num(v)}</div>
             <div className="mt-1 text-xs uppercase tracking-widest text-slate-500">{l}</div>
           </div>
         ))}

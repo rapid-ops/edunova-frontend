@@ -47,7 +47,7 @@ export default async function Programme({ params }: { params: Promise<{ subdomai
       <Header x={x} />
       <main className="px-4 py-14 md:py-20">
         <div className="mx-auto max-w-3xl">
-          <Link href={base} className="text-sm font-semibold" style={{ color: 'var(--primary)' }}>&larr; Back to {school.name}</Link>
+          <Link href={base} className="text-sm font-semibold" style={{ color: 'var(--primary-text)' }}>&larr; Back to {school.name}</Link>
           <h1 className={`mt-4 text-3xl font-bold md:text-5xl ${x.trk}`} style={x.head}>{course.title}</h1>
           {thumb && <img src={thumb} alt="" className="mt-8 h-64 w-full object-cover" style={{ borderRadius: 'var(--radius-card)' }} />}
           {info && (info.duration || info.fees || info.requirements) && (
@@ -61,7 +61,7 @@ export default async function Programme({ params }: { params: Promise<{ subdomai
             {ps.length ? ps.map((t, i) => <p key={i}>{t}</p>) : <p className="opacity-70">Details for this programme are available from the admissions office.</p>}
           </div>
           <div className="mt-10 flex flex-wrap gap-3">
-            <Link href={x.apply} className={btnCls} style={x.btn(true, false)}>Apply for this programme</Link>
+            <Link href={`${x.apply}?programme=${encodeURIComponent(String(course.id))}`} className={btnCls} style={x.btn(true, false)}>Apply for this programme</Link>
             <Link href={base + '#admissions'} className={btnCls} style={x.btn(false, false)}>Admissions information</Link>
           </div>
         </div>
