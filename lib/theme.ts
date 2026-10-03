@@ -7,6 +7,8 @@ export interface EventItem { title: string; date: string; place: string }
 export interface StaffItem { name: string; role: string; photo: string; bio: string }
 export interface GalleryItem { url: string; caption: string }
 
+export interface ProgrammeInfo { duration: string; fees: string; requirements: string }
+
 export interface SectionConfig {
   hero: boolean; stats: boolean; features: boolean; courses: boolean;
   testimonials: boolean; teachers: boolean; faq: boolean; contact: boolean; footer: boolean;
@@ -15,7 +17,7 @@ export interface SectionConfig {
     stats: { students: number; courses: number; teachers: number; years: number };
     testimonials: { quote: string; name: string; role: string }[];
     faq: { q: string; a: string }[];
-    news: NewsItem[]; events: EventItem[]; staff: StaffItem[]; gallery: GalleryItem[];
+    news: NewsItem[]; events: EventItem[]; staff: StaffItem[]; gallery: GalleryItem[]; programmes: Record<string, ProgrammeInfo>;
   };
 }
 
@@ -41,7 +43,7 @@ export const DEFAULT_SECTIONS: SectionConfig = {
   content: {
     hero_cta: 'Apply now', hero_image: '', video_url: '', about: '', admissions: '',
     stats: { students: 0, courses: 0, teachers: 0, years: 1 }, testimonials: [], faq: [],
-    news: [], events: [], staff: [], gallery: [],
+    news: [], events: [], staff: [], gallery: [], programmes: {},
   },
 };
 

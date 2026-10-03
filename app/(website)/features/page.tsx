@@ -13,14 +13,6 @@ const tiers = [
   [ShieldCheck, 'Tier 7: Trust and credentials', 'Prove achievement.', ['Certificates', 'Blockchain verification', 'Proctored exams', 'Skill passport']],
 ] as const;
 
-const compare: [string, string, string, string, string][] = [
-  ['Naira pricing', 'Yes', 'No', 'No', 'No'],
-  ['WhatsApp notifications', 'Yes', 'No', 'No', 'No'],
-  ['Parent portal', 'Yes', 'Limited', 'Plugin', 'No'],
-  ['AI Tutor', 'Yes', 'No', 'Plugin', 'No'],
-  ['Blockchain certificates', 'Yes', 'No', 'No', 'No'],
-];
-
 export default function Features() {
   return (
     <>
@@ -37,15 +29,6 @@ export default function Features() {
               </div>
             </div>
           ))}
-        </div>
-      </div></section>
-      <section className="bg-slate-50 px-4 py-14"><div className="mx-auto max-w-4xl">
-        <h2 className="mb-6 text-center text-2xl font-bold text-slate-900">How Edunova compares</h2>
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-          <table className="w-full text-sm">
-            <thead><tr className="bg-slate-100 text-left"><th className="p-3" /><th className="p-3">Edunova</th><th className="p-3">Google Classroom</th><th className="p-3">Moodle</th><th className="p-3">Alison</th></tr></thead>
-            <tbody>{compare.map(r => <tr key={r[0]} className="border-t border-slate-200">{r.map((c, i) => <td key={i} className={`p-3 ${i === 0 ? 'font-medium' : ''}`}>{c}</td>)}</tr>)}</tbody>
-          </table>
         </div>
       </div></section>
       <section className="px-4 py-14 text-center">

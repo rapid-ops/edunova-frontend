@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Save, ExternalLink, Eye, Pencil } from 'lucide-react';
+import { Save, ExternalLink, Eye, Pencil, Rocket } from 'lucide-react';
 import api from '@/lib/api';
 import { mergeTheme, type ThemeConfig, type School, type Course } from '@/lib/theme';
 import { templates } from '@/components/website/templates';
@@ -17,6 +17,8 @@ export default function WebsiteBuilder() {
   const [msg, setMsg] = useState('');
   const [saving, setSaving] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
+  const [sure, setSure] = useState(false);
   const [view, setView] = useState<'edit' | 'preview'>('edit');
 
   useEffect(() => {
@@ -29,6 +31,14 @@ export default function WebsiteBuilder() {
         const s: School = r.data.school;
         setSchool(s); setTagline(s.tagline || ''); setLogo(s.logo_url || ''); setExt(s.external_website_url || '');
         setTheme(mergeTheme(s.theme_config));
+        try {
+          const d = await api.get(`/schools/${id}/draft`);
+          const dr = d.data.draft;
+          if (dr && dr.theme_config) {
+            setTheme(mergeTheme(dr.theme_config)); setTagline(dr.tagline || ''); setLogo(dr.logo_url || '');
+            setHasDraft(true); setMsg('Editing your unpublished draft. Visitors still see the published page.');
+          }
+        } catch {}
         try {
           const cr = await api.get(`/courses/school/${id}`);
           const list = Array.isArray(cr.data) ? cr.data : cr.data.courses || [];
@@ -47,19 +57,42 @@ export default function WebsiteBuilder() {
       fd.append('file', file);
       const r = await api.post('/upload/website-image/' + school.id, fd);
       done(r.data.url);
-      setMsg('Uploaded. Tap Save to publish.');
+      setMsg('Uploaded. Save the draft or publish to keep it.');
     } catch (e: any) { setMsg(e?.response?.data?.error || 'Upload failed.'); }
     setBusy(false);
   };
 
-  const save = async () => {
+  const saveDraft = async () => {
     if (!school || !theme) return;
-    setSaving(true); setMsg('');
+    setSaving(true); setMsg(''); setSure(false);
+    try {
+      await api.put(`/schools/${school.id}/draft`, { theme_config: theme, tagline, logo_url: logo });
+      setHasDraft(true); setMsg('Draft saved. Visitors still see the published page.');
+    } catch (e: any) { setMsg(e?.response?.data?.error || 'Could not save the draft.'); }
+    setSaving(false);
+  };
+
+  const publish = async () => {
+    if (!school || !theme) return;
+    setSaving(true); setMsg(''); setSure(false);
     try {
       await api.put(`/schools/${school.id}/theme`, { theme_config: theme, tagline, logo_url: logo });
-      setMsg('Saved. Your public page is updated.');
-    } catch (e: any) { setMsg(e?.response?.data?.error || 'Save failed.'); }
+      setHasDraft(false); setMsg('Published. Your public page is updated.');
+    } catch (e: any) { setMsg(e?.response?.data?.error || 'Publish failed.'); }
     setSaving(false);
+  };
+
+  const discard = async () => {
+    if (!school) return;
+    if (!sure) { setSure(true); setMsg('Tap Discard draft again to throw away your unpublished changes.'); return; }
+    setSure(false);
+    try {
+      await api.delete(`/schools/${school.id}/draft`);
+      const r = await api.get(`/schools/${school.id}`);
+      const s: School = r.data.school;
+      setTheme(mergeTheme(s.theme_config)); setTagline(s.tagline || ''); setLogo(s.logo_url || '');
+      setHasDraft(false); setMsg('Draft discarded. Showing the published page.');
+    } catch (e: any) { setMsg(e?.response?.data?.error || 'Could not discard the draft.'); }
   };
 
   const saveExt = async () => {
@@ -80,10 +113,12 @@ export default function WebsiteBuilder() {
   return (
     <div className="p-4 pb-28 md:p-6 text-slate-900 overflow-x-hidden">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-bold text-slate-900">Website Builder</h1>
+        <h1 className="text-xl font-bold text-slate-900">Website Builder{hasDraft && <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">Draft</span>}</h1>
         <div className="flex flex-wrap items-center gap-2">
           <a href={`/school/${school.subdomain}`} target="_blank" rel="noreferrer" className="flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 px-4 text-sm font-medium"><ExternalLink className="h-4 w-4" />Open live</a>
-          <button onClick={save} disabled={saving || busy} className="flex min-h-11 items-center gap-1 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white disabled:opacity-60"><Save className="h-4 w-4" />{saving ? 'Saving...' : 'Save'}</button>
+          <button onClick={saveDraft} disabled={saving || busy} className="flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 px-4 text-sm font-semibold disabled:opacity-60"><Save className="h-4 w-4" />Save draft</button>
+          <button onClick={publish} disabled={saving || busy} className="flex min-h-11 items-center gap-1 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white disabled:opacity-60"><Rocket className="h-4 w-4" />{saving ? 'Working...' : 'Publish'}</button>
+          {hasDraft && <button onClick={discard} className="min-h-11 px-2 text-sm font-semibold text-red-600">{sure ? 'Tap again to confirm' : 'Discard draft'}</button>}
         </div>
       </div>
       {msg && <div className="mb-4 rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-800">{msg}</div>}
@@ -102,7 +137,7 @@ export default function WebsiteBuilder() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 [&>*]:min-w-0">
         <div className={view === 'edit' ? 'block' : 'hidden lg:block'}>
-          <BuilderPanel theme={theme} setTheme={setTheme} tagline={tagline} setTagline={setTagline} logo={logo} setLogo={setLogo} up={up} busy={busy} />
+          <BuilderPanel theme={theme} setTheme={setTheme} tagline={tagline} setTagline={setTagline} logo={logo} setLogo={setLogo} up={up} busy={busy} courses={courses} />
         </div>
         <div className={view === 'preview' ? 'block' : 'hidden lg:block'}>
           <div className="mx-auto h-[70vh] w-full max-w-[420px] overflow-y-auto overflow-x-hidden rounded-3xl border-4 border-slate-800 bg-white">

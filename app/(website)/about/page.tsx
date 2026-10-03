@@ -15,12 +15,6 @@ export default function About() {
           <div key={t} className="flex gap-4"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-white">{i + 1}</div><div><div className="font-semibold text-slate-900">{t}</div><p className="text-slate-600">{d}</p></div></div>
         ))}
       </div></section>
-      <section className="px-4 py-14"><div className="mx-auto max-w-5xl">
-        <h2 className="mb-6 text-center text-2xl font-bold text-slate-900">Team</h2>
-        <div className="grid gap-5 sm:grid-cols-3">
-          {['Founder', 'Engineering', 'Support'].map(r => <div key={r} className="rounded-2xl border border-slate-200 p-6 text-center"><div className="mx-auto mb-3 h-16 w-16 rounded-full bg-blue-100" /><div className="font-semibold text-slate-900">{r}</div><div className="text-sm text-slate-500">Name coming soon</div></div>)}
-        </div>
-      </div></section>
     </>
   );
 }

@@ -41,6 +41,7 @@ export default async function Programme({ params }: { params: Promise<{ subdomai
   const x = makeCtx({ school, courses, theme, sections: theme.sections }, OPTS[theme.template], base);
   const thumb = img(course.thumbnail_url);
   const ps = x.paras(course.description);
+  const info = theme.sections.content.programmes?.[String(course.id)];
   return (
     <ThemeProvider theme={theme}>
       <Header x={x} />
@@ -49,6 +50,13 @@ export default async function Programme({ params }: { params: Promise<{ subdomai
           <Link href={base} className="text-sm font-semibold" style={{ color: 'var(--primary)' }}>&larr; Back to {school.name}</Link>
           <h1 className={`mt-4 text-3xl font-bold md:text-5xl ${x.trk}`} style={x.head}>{course.title}</h1>
           {thumb && <img src={thumb} alt="" className="mt-8 h-64 w-full object-cover" style={{ borderRadius: 'var(--radius-card)' }} />}
+          {info && (info.duration || info.fees || info.requirements) && (
+            <dl className="mt-8 grid gap-4 border-y border-slate-300 py-6 sm:grid-cols-2">
+              {info.duration && <div><dt className="text-xs uppercase tracking-widest opacity-60">Duration</dt><dd className="mt-1 text-lg font-semibold">{info.duration}</dd></div>}
+              {info.fees && <div><dt className="text-xs uppercase tracking-widest opacity-60">Fees</dt><dd className="mt-1 text-lg font-semibold">{info.fees}</dd></div>}
+              {info.requirements && <div className="sm:col-span-2"><dt className="text-xs uppercase tracking-widest opacity-60">Entry requirements</dt><dd className="mt-1 whitespace-pre-line">{info.requirements}</dd></div>}
+            </dl>
+          )}
           <div className="mt-8 space-y-4 text-lg leading-relaxed">
             {ps.length ? ps.map((t, i) => <p key={i}>{t}</p>) : <p className="opacity-70">Details for this programme are available from the admissions office.</p>}
           </div>

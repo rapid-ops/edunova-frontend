@@ -27,13 +27,6 @@ const steps = [
   ['Start learning', 'Publish lessons, quizzes and assignments right away.'],
 ];
 
-// PLACEHOLDERS: replace with real quotes before launch
-const testimonials = [
-  ['Edunova made our term results far easier to manage.', 'School Administrator', 'Partner School'],
-  ['Parents now see attendance and fees without calling the office.', 'School Administrator', 'Partner School'],
-  ['Our teachers were publishing courses in the first week.', 'School Administrator', 'Partner School'],
-];
-
 const plans = [
   { name: 'Basic', price: 'Free', note: 'For small schools starting out', items: ['Core LMS', 'Courses and lessons', 'Student and teacher accounts'], hi: false },
   { name: 'Standard', price: '₦15,000', note: 'per month', items: ['Everything in Basic', 'Parent portal', 'Analytics', 'WhatsApp notifications'], hi: true },
@@ -54,7 +47,7 @@ const faq = [
 export default async function Home() {
   const ld = {
     '@context': 'https://schema.org', '@graph': [
-      { '@type': 'Organization', name: 'Edunova', url: 'https://edunova.com' },
+      { '@type': 'Organization', name: 'Edunova', url: process.env.NEXT_PUBLIC_SITE_URL || 'https://edunova-frontend-gkaj.vercel.app' },
       { '@type': 'SoftwareApplication', name: 'Edunova', applicationCategory: 'EducationalApplication', operatingSystem: 'Web' },
     ],
   };
@@ -70,7 +63,7 @@ export default async function Home() {
             <p className="mt-5 text-lg leading-relaxed text-slate-600">Run classes, results, fees and parent updates from one platform, priced in Naira.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/register" className="flex min-h-11 items-center gap-2 rounded-lg bg-blue-600 px-6 font-semibold text-white hover:bg-blue-700">Start Free Trial <ArrowRight className="h-4 w-4" /></Link>
-              <a href="#how" className="flex min-h-11 items-center rounded-lg border border-slate-300 px-6 font-semibold text-slate-700">Watch Demo</a>
+              <a href="#how" className="flex min-h-11 items-center rounded-lg border border-slate-300 px-6 font-semibold text-slate-700">See how it works</a>
             </div>
           </div>
           <HeroMock />
@@ -110,20 +103,6 @@ export default async function Home() {
         </div>
       </div></section>
 
-      <section className="px-4 py-16"><div className="mx-auto max-w-6xl">
-        <Reveal><h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-slate-900">What school admins say</h2></Reveal>
-        <div className="grid gap-5 md:grid-cols-3">
-          {testimonials.map(([q, r, s]) => (
-            <div key={q} className="rounded-2xl border border-slate-200 bg-white p-6">
-              <p className="text-slate-700">&ldquo;{q}&rdquo;</p>
-              <div className="mt-4 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-700">{s[0]}</div>
-                <div><div className="text-sm font-semibold text-slate-900">{r}</div><div className="text-xs text-slate-500">{s}</div></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div></section>
 
       <section className="bg-slate-50 px-4 py-16"><div className="mx-auto max-w-6xl">
         <Reveal><h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-slate-900">Simple pricing</h2></Reveal>

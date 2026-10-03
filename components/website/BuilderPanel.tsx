@@ -1,9 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import { TEMPLATE_PRESETS, type ThemeConfig, type TemplateId, type FontId } from '@/lib/theme';
+import { TEMPLATE_PRESETS, type ThemeConfig, type TemplateId, type FontId, type Course } from '@/lib/theme';
 
-const TABS = ['Template', 'Colors', 'Fonts', 'Hero', 'Content', 'News', 'People', 'Gallery', 'Sections'] as const;
+const TABS = ['Template', 'Colors', 'Fonts', 'Hero', 'Content', 'News', 'People', 'Programmes', 'Gallery', 'Sections'] as const;
 const FONTS: [FontId, string][] = [['inter', 'Inter'], ['jakarta', 'Plus Jakarta Sans'], ['sora', 'Sora'], ['poppins', 'Poppins'], ['merriweather', 'Merriweather'], ['dmsans', 'DM Sans']];
 const TPL: [TemplateId, string][] = [['modern', 'Modern'], ['bold', 'Bold'], ['minimal', 'Minimal'], ['vibrant', 'Vibrant'], ['professional', 'Professional'], ['african', 'African']];
 const SECS = ['hero', 'stats', 'courses', 'testimonials', 'faq', 'contact', 'footer'] as const;
@@ -25,7 +25,7 @@ function Choice<T extends string>({ value, opts, on }: { value: T; opts: [T, str
 
 interface P {
   theme: ThemeConfig; setTheme: (t: ThemeConfig) => void; tagline: string; setTagline: (s: string) => void;
-  logo: string; setLogo: (s: string) => void; up: (f: File, done: (url: string) => void) => void; busy: boolean;
+  logo: string; setLogo: (s: string) => void; up: (f: File, done: (url: string) => void) => void; busy: boolean; courses: Course[];
 }
 
 function Pic({ url, set, up, busy }: { url: string; set: (u: string) => void; up: P['up']; busy: boolean }) {
@@ -49,7 +49,7 @@ function AddBtn({ label, onClick }: { label: string; onClick: () => void }) {
   return <button type="button" className="flex min-h-11 items-center gap-1 text-sm font-semibold text-blue-600" onClick={onClick}><Plus className="h-4 w-4" />{label}</button>;
 }
 
-export default function BuilderPanel({ theme, setTheme, tagline, setTagline, logo, setLogo, up, busy }: P) {
+export default function BuilderPanel({ theme, setTheme, tagline, setTagline, logo, setLogo, up, busy, courses }: P) {
   const [tab, setTab] = useState<(typeof TABS)[number]>('Template');
   const upd = (p: Partial<ThemeConfig>) => setTheme({ ...theme, ...p });
   const c = theme.sections.content;
@@ -156,6 +156,26 @@ export default function BuilderPanel({ theme, setTheme, tagline, setTagline, log
             </Card>
           ))}
           <AddBtn label="Add person" onClick={() => addIt('staff', { name: '', role: '', photo: '', bio: '' })} />
+        </div>
+      )}
+
+      {tab === 'Programmes' && (
+        <div>
+          <h3 className="mb-2 text-sm font-semibold">Programme details</h3>
+          {courses.length === 0 && <p className="text-sm text-slate-600">No published courses yet.</p>}
+          {courses.map(k => {
+            const id = String(k.id);
+            const v = (c.programmes || {})[id] || { duration: '', fees: '', requirements: '' };
+            const set = (p: Partial<typeof v>) => updC({ programmes: { ...(c.programmes || {}), [id]: { ...v, ...p } } });
+            return (
+              <div key={id} className="mb-3 space-y-2 rounded-lg border border-slate-200 p-3">
+                <div className="font-semibold">{k.title}</div>
+                <input className={inp} placeholder="Duration (e.g. 3 years)" value={v.duration} onChange={e => set({ duration: e.target.value })} />
+                <input className={inp} placeholder="Fees (e.g. 150,000 per term)" value={v.fees} onChange={e => set({ fees: e.target.value })} />
+                <textarea className={inp} rows={3} placeholder="Entry requirements" value={v.requirements} onChange={e => set({ requirements: e.target.value })} />
+              </div>
+            );
+          })}
         </div>
       )}
 

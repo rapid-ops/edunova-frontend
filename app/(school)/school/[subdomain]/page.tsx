@@ -15,7 +15,10 @@ async function getSchool(sub: string): Promise<School | null> {
 export async function generateMetadata({ params }: { params: Promise<{ subdomain: string }> }) {
   const { subdomain } = await params;
   const s = await getSchool(subdomain);
-  return { title: s ? s.name : 'School', description: s?.tagline || (s ? s.name + ' official website' : '') };
+  const c: any = (s as any)?.theme_config?.sections?.content || {};
+  const pic = [c.hero_image, s?.logo_url].find((v: any) => typeof v === 'string' && v.startsWith('https://'));
+  const desc = s?.tagline || (s ? s.name + ' official website' : '');
+  return { title: s ? s.name : 'School', description: desc, openGraph: { title: s ? s.name : 'School', description: desc, type: 'website', images: pic ? [pic] : undefined } };
 }
 
 export default async function SchoolPage({ params }: { params: Promise<{ subdomain: string }> }) {
