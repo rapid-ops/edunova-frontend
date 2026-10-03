@@ -1,94 +1,156 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth.store';
-import api from '@/lib/api';
+import { useState, useRef } from 'react';
+import { Upload, Download, CheckCircle, XCircle } from 'lucide-react';
+
+const API = process.env.NEXT_PUBLIC_API_URL;
+const TEMPLATE = 'full_name,email,phone,class_name,parent_phone,parent_email\nDare Adeola,dare@student.com,08012345678,JSS 1A,08098765432,parent@gmail.com\n';
 
 export default function ImportPage() {
-  const router = useRouter();
-  const { user } = useAuthStore();
-  const schoolId = user?.school_id || 1;
   const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState<string[][]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState('');
+  const [drag, setDrag] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : {};
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
 
-  const handleImport = async () => {
-    if (!file) return;
-    setLoading(true);
-    setError('');
-    setResult(null);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('school_id', String(schoolId));
-      const res = await api.post('/import/students', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      setResult(res.data);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Import failed');
-    } finally { setLoading(false); }
-  };
+  function handleFile(f: File) {
+    setFile(f);
+    const reader = new FileReader();
+    reader.onload = e => {
+      const text = e.target?.result as string;
+      const rows = text.trim().split('\n').slice(0, 6).map(r => r.split(','));
+      setPreview(rows);
+    };
+    reader.readAsText(f);
+  }
 
-  const downloadTemplate = () => {
-    const csv = 'full_name,email,password\nJohn Doe,john@school.com,password123\nJane Smith,jane@school.com,password123';
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
+  function downloadTemplate() {
+    const blob = new Blob([TEMPLATE], { type: 'text/csv' });
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'student-import-template.csv';
+    a.href = URL.createObjectURL(blob);
+    a.download = 'student_import_template.csv';
     a.click();
-    URL.revokeObjectURL(url);
-  };
+  }
+
+  async function uploadFile() {
+    if (!file) return;
+    setUploading(true);
+    setProgress(30);
+    const form = new FormData();
+    form.append('file', file);
+    form.append('school_id', user.school_id);
+    try {
+      setProgress(60);
+      const res = await fetch(`${API}/api/import/students`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+      setProgress(100);
+      const data = await res.json();
+      setResult(data);
+    } finally {
+      setUploading(false);
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-900">←</button>
-        <h1 className="text-xl font-bold">Bulk Import Students</h1>
+    <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-bold text-gray-800">Import Students</h1>
+        <button onClick={downloadTemplate}
+          className="text-sm text-blue-600 flex items-center gap-1 font-medium">
+          <Download size={14} /> Template
+        </button>
       </div>
 
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
-        <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <h2 className="font-semibold mb-2">CSV Format</h2>
-          <p className="text-gray-500 text-sm mb-4">Columns required: <span className="text-blue-400">full_name, email, password</span></p>
-          <button onClick={downloadTemplate} className="bg-gray-100 hover:bg-gray-200 text-gray-900 px-4 py-2 rounded-lg text-sm">Download Template</button>
+      {/* Drop zone */}
+      {!result && (
+        <div
+          onDragOver={e => { e.preventDefault(); setDrag(true); }}
+          onDragLeave={() => setDrag(false)}
+          onDrop={e => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
+          onClick={() => inputRef.current?.click()}
+          className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition mb-4 ${drag ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-gray-50'}`}>
+          <Upload size={32} className="mx-auto text-blue-600 mb-2" />
+          <p className="font-medium text-gray-700">{file ? file.name : 'Drop CSV here or tap to browse'}</p>
+          <p className="text-xs text-gray-400 mt-1">CSV format only</p>
+          <input ref={inputRef} type="file" accept=".csv" className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
         </div>
+      )}
 
-        <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">Upload CSV</h2>
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center">
-            <input type="file" accept=".csv" onChange={(e) => setFile(e.target.files?.[0] || null)} className="hidden" id="csv-input" />
-            <label htmlFor="csv-input" className="cursor-pointer">
-              <p className="text-gray-500 text-sm">{file ? file.name : 'Tap to select CSV file'}</p>
-            </label>
+      {/* Preview */}
+      {preview.length > 0 && !result && (
+        <div className="mb-4 overflow-x-auto">
+          <p className="text-sm font-semibold text-gray-600 mb-2">Preview (first 5 rows):</p>
+          <table className="w-full text-xs border-collapse">
+            {preview.map((row, i) => (
+              <tr key={i} className={i === 0 ? 'bg-blue-600 text-white' : 'border-b'}>
+                {row.map((cell, j) => (
+                  <td key={j} className="p-1.5 border">{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </table>
+        </div>
+      )}
+
+      {/* Progress */}
+      {uploading && (
+        <div className="mb-4">
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-full bg-blue-600 transition-all duration-500 rounded-full" style={{ width: `${progress}%` }} />
           </div>
-          <button onClick={handleImport} disabled={!file || loading} className="w-full bg-blue-600 hover:bg-blue-700 text-gray-900 py-3 rounded-lg text-sm font-medium disabled:opacity-50">
-            {loading ? 'Importing...' : 'Import Students'}
+          <p className="text-xs text-center text-gray-500 mt-1">Uploading...</p>
+        </div>
+      )}
+
+      {/* Upload button */}
+      {file && !result && (
+        <button onClick={uploadFile} disabled={uploading}
+          className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold disabled:opacity-50">
+          {uploading ? 'Importing...' : 'Start Import'}
+        </button>
+      )}
+
+      {/* Result */}
+      {result && (
+        <div>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-green-50 rounded-xl p-4 text-center">
+              <CheckCircle className="mx-auto text-green-500 mb-1" size={24} />
+              <p className="text-2xl font-bold text-green-600">{result.created}</p>
+              <p className="text-xs text-gray-500">Students Created</p>
+            </div>
+            <div className="bg-red-50 rounded-xl p-4 text-center">
+              <XCircle className="mx-auto text-red-400 mb-1" size={24} />
+              <p className="text-2xl font-bold text-red-500">{result.failed}</p>
+              <p className="text-xs text-gray-500">Failed</p>
+            </div>
+          </div>
+
+          {result.errors?.length > 0 && (
+            <div className="border rounded-xl overflow-hidden mb-4">
+              <p className="bg-red-50 text-red-600 text-xs font-semibold px-3 py-2">Failed Rows</p>
+              {result.errors.map((e: any, i: number) => (
+                <div key={i} className="px-3 py-2 border-t text-sm">
+                  <span className="font-medium">{e.row}</span>
+                  <span className="text-gray-400 text-xs ml-2">{e.reason}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button onClick={() => { setResult(null); setFile(null); setPreview([]); setProgress(0); }}
+            className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium">
+            Import Another File
           </button>
         </div>
-
-        {result && (
-          <div className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="font-semibold mb-4">Import Results</h2>
-            <div className="flex gap-4 mb-4">
-              <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3 flex-1 text-center">
-                <p className="text-green-400 text-2xl font-bold">{result.imported}</p>
-                <p className="text-gray-500 text-sm">Imported</p>
-              </div>
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 flex-1 text-center">
-                <p className="text-red-400 text-2xl font-bold">{result.failed}</p>
-                <p className="text-gray-500 text-sm">Failed</p>
-              </div>
-            </div>
-            {result.errors?.map((e: any, i: number) => (
-              <p key={i} className="text-red-400 text-sm">{e.email} — {e.error}</p>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
