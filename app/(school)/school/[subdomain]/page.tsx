@@ -29,7 +29,7 @@ export default async function SchoolPage({ params }: { params: Promise<{ subdoma
   if (typeof ext === 'string' && ext.startsWith('https://')) redirect(ext);
   let courses: Course[] = [];
   try {
-    const r = await fetch(`${API}/courses/school/${school.id}`, { next: { revalidate: 30 } });
+    const r = await fetch(`${API}/schools/subdomain/${encodeURIComponent(school.subdomain)}/courses`, { next: { revalidate: 30 } });
     if (r.ok) {
       const j = await r.json();
       const list = Array.isArray(j) ? j : j.courses || j.data || [];

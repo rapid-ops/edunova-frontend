@@ -14,7 +14,7 @@ async function load(sub: string): Promise<{ school: School | null; courses: Cour
   const school = (j.school || j.data || j) as School;
   let courses: Course[] = [];
   try {
-    const cr = await fetch(`${API}/courses/school/${school.id}`, { next: { revalidate: 30 } });
+    const cr = await fetch(`${API}/schools/subdomain/${encodeURIComponent(school.subdomain)}/courses`, { next: { revalidate: 30 } });
     if (cr.ok) {
       const cj = await cr.json();
       const list = Array.isArray(cj) ? cj : cj.courses || cj.data || [];
