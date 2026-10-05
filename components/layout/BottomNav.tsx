@@ -9,7 +9,8 @@ import {
   Link2, ShieldCheck, Megaphone, BarChart2, Ticket,
   Tag, ScrollText, Building2, Cpu, Zap, Trophy,
   FileCheck, UserCheck, TrendingDown, RefreshCcw, Headphones,
-  Lightbulb, BookMarked, UserCog, Presentation, ChevronLeft, ChevronRight
+  Lightbulb, BookMarked, UserCog, Presentation, ChevronLeft, ChevronRight,
+  CreditCard, Upload, FileBarChart
 } from 'lucide-react';
 
 const navGroups: Record<string, { icon: any; label: string; href: string }[][]> = {
@@ -53,8 +54,8 @@ const navGroups: Record<string, { icon: any; label: string; href: string }[][]> 
     ],
     [
       { icon: BarChart2, label: 'Analytics', href: '/dashboard/analytics' },
-      { icon: Lightbulb, label: 'Suggestions', href: '/dashboard/suggestions' },
-      { icon: Headphones, label: 'Support', href: '/dashboard/b2b-support' },
+      { icon: FileBarChart, label: 'Reports', href: '/dashboard/reportcard' },
+      { icon: Upload, label: 'Import', href: '/dashboard/import' },
       { icon: Trophy, label: 'Gradebook', href: '/dashboard/gradebook' },
       { icon: ScrollText, label: 'Transcripts', href: '/dashboard/transcripts' },
     ],
@@ -77,8 +78,8 @@ const navGroups: Record<string, { icon: any; label: string; href: string }[][]> 
     [
       { icon: Presentation, label: 'Sessions', href: '/dashboard/class-sessions' },
       { icon: Trophy, label: 'Gradebook', href: '/dashboard/gradebook' },
+      { icon: FileBarChart, label: 'Reports', href: '/dashboard/reportcard' },
       { icon: CalendarDays, label: 'Timetable', href: '/dashboard/timetable' },
-      { icon: FlaskConical, label: 'Labs', href: '/dashboard/virtual-labs' },
       { icon: Megaphone, label: 'Announce', href: '/dashboard/announcements' },
     ],
     [
@@ -99,10 +100,10 @@ const navGroups: Record<string, { icon: any; label: string; href: string }[][]> 
     ],
     [
       { icon: Trophy, label: 'Grades', href: '/dashboard/gradebook' },
+      { icon: FileBarChart, label: 'Report', href: '/dashboard/reportcard' },
+      { icon: CreditCard, label: 'Pay Fees', href: '/payment' },
       { icon: GraduationCap, label: 'Certs', href: '/dashboard/certificates' },
-      { icon: Link2, label: 'Blockchain', href: '/dashboard/blockchain-certs' },
       { icon: ScrollText, label: 'Transcript', href: '/dashboard/transcripts' },
-      { icon: CalendarDays, label: 'Timetable', href: '/dashboard/timetable' },
     ],
     [
       { icon: BrainCircuit, label: 'My Twin', href: '/dashboard/learning-twin' },
@@ -128,9 +129,9 @@ const navGroups: Record<string, { icon: any; label: string; href: string }[][]> 
       { icon: Megaphone, label: 'Notices', href: '/dashboard/announcements' },
     ],
     [
-      { icon: DollarSign, label: 'Fees', href: '/dashboard/fees' },
+      { icon: CreditCard, label: 'Pay Fees', href: '/payment' },
+      { icon: FileBarChart, label: 'Report', href: '/dashboard/reportcard' },
       { icon: CalendarDays, label: 'Timetable', href: '/dashboard/timetable' },
-      { icon: MessageCircle, label: 'Messages', href: '/dashboard/messages' },
       { icon: Bell, label: 'Alerts', href: '/dashboard/notifications' },
       { icon: User, label: 'Profile', href: '/profile' },
     ],
