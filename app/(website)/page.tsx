@@ -4,6 +4,8 @@ import LoggedInRedirect from '@/components/website/LoggedInRedirect';
 import Reveal from '@/components/website/Reveal';
 import StatsCounter from '@/components/website/StatsCounter';
 import FAQAccordion from '@/components/website/FAQAccordion';
+import SchoolShowcase from '@/components/website/SchoolShowcase';
+import TestimonialsCarousel from '@/components/website/TestimonialsCarousel';
 import HeroMock from '@/components/website/HeroMock';
 
 export const metadata = {
@@ -103,6 +105,16 @@ export default async function Home() {
         </div>
       </div></section>
 
+
+      <section className="bg-white px-4 py-16"><div className="mx-auto max-w-6xl">
+        <Reveal><h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-slate-900">Schools on Edunova</h2></Reveal>
+        <SchoolShowcase />
+      </div></section>
+
+      <section className="bg-slate-50 px-4 py-16"><div className="mx-auto max-w-6xl">
+        <Reveal><h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-slate-900">What schools say</h2></Reveal>
+        <TestimonialsCarousel />
+      </div></section>
 
       <section className="bg-slate-50 px-4 py-16"><div className="mx-auto max-w-6xl">
         <Reveal><h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-slate-900">Simple pricing</h2></Reveal>
