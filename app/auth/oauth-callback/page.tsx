@@ -1,9 +1,10 @@
 'use client';
+import { Suspense } from 'react';
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 
-export default function OAuthCallbackPage() {
+function OAuthHandler() {
   const router = useRouter();
   const params = useSearchParams();
   const setAuth = useAuthStore((s) => s.setAuth);
@@ -27,9 +28,15 @@ export default function OAuthCallbackPage() {
     }
   }, []);
 
+  return <p className="text-gray-500 text-sm">Signing you in...</p>;
+}
+
+export default function OAuthCallbackPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <p className="text-gray-500 text-sm">Signing you in...</p>
+      <Suspense fallback={<p className="text-gray-500 text-sm">Loading...</p>}>
+        <OAuthHandler />
+      </Suspense>
     </div>
   );
 }
