@@ -50,6 +50,7 @@ export default async function SchoolPage({ params }: { params: Promise<{ subdoma
   };
   return (
     <ThemeProvider theme={theme}>
+      <style dangerouslySetInnerHTML={{ __html: `:root { --primary: ${(school as any).primary_color || "#2563eb"}; }` }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, '\\u003c') }} />
       <Template school={school} courses={courses} theme={theme} sections={theme.sections} />
     </ThemeProvider>
