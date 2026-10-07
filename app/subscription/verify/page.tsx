@@ -1,35 +1,29 @@
 'use client';
-import LoadingScreen from '@/components/LoadingScreen';
-import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle, XCircle, Loader } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 
-function SubscriptionVerifyContent() {
-  const router = useRouter();
+export default function SubscriptionVerifyPage() {
   const params = useSearchParams();
-  const reference = params.get('reference');
-  const [status, setStatus] = useState<'loading'|'success'|'failed'>('loading');
+  const router = useRouter();
+  const [status, setStatus] = useState<'loading'|'success'|'error'>('loading');
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
-    if (!reference) { setStatus('failed'); return; }
-    api.get(`/subscription/verify/${reference}`)
-      .then(() => setStatus('success'))
-      .catch(() => setStatus('failed'));
-  }, [reference]);
+    const ref = params.get('reference') || params.get('trxref');
+    if (!ref) { setStatus('error'); setMessage('No reference found.'); return; }
+    api.get(`/payments/subscription/verify?reference=${ref}`)
+      .then(() => { setStatus('success'); setTimeout(() => router.replace('/school-admin/subscription'), 2000); })
+      .catch(e => { setStatus('error'); setMessage(e?.response?.data?.message || 'Verification failed.'); });
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center max-w-sm w-full">
-        {status === 'loading' && <><Loader size={48} className="text-blue-600 animate-spin mx-auto mb-4" /><p className="text-gray-600">Activating subscription...</p></>}
-        {status === 'success' && <><CheckCircle size={48} className="text-green-500 mx-auto mb-4" /><h2 className="text-xl font-bold text-gray-900 mb-2">Subscription Active</h2><p className="text-gray-500 text-sm mb-6">Your school subscription is now active.</p><button onClick={() => router.push('/school-admin')} className="bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-medium">Go to Dashboard</button></>}
-        {status === 'failed' && <><XCircle size={48} className="text-red-500 mx-auto mb-4" /><h2 className="text-xl font-bold text-gray-900 mb-2">Verification Failed</h2><p className="text-gray-500 text-sm mb-6">Could not verify subscription. Contact support.</p><button onClick={() => router.push('/dashboard/b2b-support')} className="bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-medium">Contact Support</button></>}
+    <main className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="bg-white rounded-2xl shadow p-10 text-center max-w-sm w-full">
+        {status === 'loading' && <><div className="animate-spin h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"/><p className="text-slate-600">Verifying payment…</p></>}
+        {status === 'success' && <><p className="text-4xl mb-4">✅</p><p className="font-semibold">Subscription activated!</p><p className="text-slate-500 text-sm mt-1">Redirecting…</p></>}
+        {status === 'error' && <><p className="text-4xl mb-4">❌</p><p className="font-semibold">Verification failed</p><p className="text-red-500 text-sm mt-1">{message}</p><button onClick={() => router.replace('/subscription')} className="mt-4 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm">Try again</button></>}
       </div>
-    </div>
+    </main>
   );
-}
-
-export default function SubscriptionVerifyPage() {
-  return <Suspense fallback={<LoadingScreen />}><SubscriptionVerifyContent /></Suspense>;
 }
