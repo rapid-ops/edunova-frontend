@@ -1,10 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useAuthStore } from '@/store/auth.store';
 import api from '@/lib/api';
 
 interface Coupon { id: number; code: string; discount_type: string; discount_value: number; usage_count: number; max_uses: number | null; expires_at: string | null; is_active: boolean; }
 
 export default function CouponsPage() {
+  const { user } = useAuthStore();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ code: '', discount_type: 'percentage', discount_value: '', max_uses: '', expires_at: '' });
@@ -12,22 +14,23 @@ export default function CouponsPage() {
   const [error, setError] = useState('');
 
   function load() {
-    api.get('/payments/coupons').then(r => { setCoupons(r.data.coupons || []); setLoading(false); }).catch(() => setLoading(false));
+    if (!user?.school_id) return;
+    api.get(`/coupons/${user.school_id}`).then(r => { setCoupons(r.data || []); setLoading(false); }).catch(() => setLoading(false));
   }
-  useEffect(load, []);
+  useEffect(load, [user]);
 
   async function create(e: React.FormEvent) {
     e.preventDefault(); setSaving(true); setError('');
     try {
-      await api.post('/payments/coupons', { ...form, discount_value: Number(form.discount_value), max_uses: form.max_uses ? Number(form.max_uses) : null, expires_at: form.expires_at || null });
+      await api.post('/coupons', { ...form, discount_value: Number(form.discount_value), max_uses: form.max_uses ? Number(form.max_uses) : null, expires_at: form.expires_at || null, school_id: user?.school_id });
       setForm({ code: '', discount_type: 'percentage', discount_value: '', max_uses: '', expires_at: '' });
       load();
-    } catch (e: any) { setError(e?.response?.data?.message || 'Failed to create coupon'); }
+    } catch (e: any) { setError(e?.response?.data?.error || 'Failed to create coupon'); }
     setSaving(false);
   }
 
-  async function toggle(id: number, active: boolean) {
-    await api.patch(`/payments/coupons/${id}`, { is_active: !active });
+  async function remove(id: number) {
+    await api.delete(`/coupons/${id}`);
     load();
   }
 
@@ -69,11 +72,12 @@ export default function CouponsPage() {
           <div key={c.id} className="bg-white border border-slate-200 rounded-xl p-4 flex justify-between items-center">
             <div>
               <p className="font-mono font-bold text-slate-900">{c.code}</p>
-              <p className="text-xs text-slate-500">{c.discount_type === 'percentage' ? `${c.discount_value}% off` : `₦${c.discount_value} off`} · {c.usage_count}/{c.max_uses ?? '∞'} used{c.expires_at ? ` · exp ${new Date(c.expires_at).toLocaleDateString('en-GB')}` : ''}</p>
+              <p className="text-xs text-slate-500">{c.discount_type === 'percentage' ? `${c.discount_value}% off` : `₦${c.discount_value} off`} · {c.usage_count ?? 0}/{c.max_uses ?? '∞'} used{c.expires_at ? ` · exp ${new Date(c.expires_at).toLocaleDateString('en-GB')}` : ''}</p>
             </div>
-            <button onClick={() => toggle(c.id, c.is_active)} className={`px-3 py-1 rounded-lg text-xs font-semibold ${c.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>{c.is_active ? 'Active' : 'Inactive'}</button>
+            <button onClick={() => remove(c.id)} className="px-3 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100">Delete</button>
           </div>
         ))}
+        {!loading && coupons.length === 0 && <p className="text-slate-400">No coupons yet.</p>}
       </div>
     </main>
   );
