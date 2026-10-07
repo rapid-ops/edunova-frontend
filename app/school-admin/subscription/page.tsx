@@ -1,21 +1,25 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAuthStore } from '@/store/auth.store';
 import api from '@/lib/api';
 
-interface Sub { plan_id: string; status: string; expires_at: string; }
+interface Sub { plan: string; status: string; current_period_end?: string; trial_ends_at?: string; }
 
 export default function AdminSubscriptionPage() {
+  const { user } = useAuthStore();
   const [sub, setSub] = useState<Sub | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/payments/subscription/status')
-      .then(r => { setSub(r.data.subscription); setLoading(false); })
+    if (!user?.school_id) return;
+    api.get(`/subscriptions/school/${user.school_id}`)
+      .then(r => { setSub(r.data.status === 'none' ? null : r.data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  }, [user]);
 
-  const expired = sub && new Date(sub.expires_at) < new Date();
+  const expiry = sub?.current_period_end || sub?.trial_ends_at;
+  const expired = expiry && new Date(expiry) < new Date();
 
   return (
     <main className="p-6 max-w-lg">
@@ -29,9 +33,9 @@ export default function AdminSubscriptionPage() {
       )}
       {sub && (
         <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
-          <div className="flex justify-between"><span className="text-slate-500 text-sm">Plan</span><span className="font-semibold capitalize">{sub.plan_id}</span></div>
+          <div className="flex justify-between"><span className="text-slate-500 text-sm">Plan</span><span className="font-semibold capitalize">{sub.plan}</span></div>
           <div className="flex justify-between"><span className="text-slate-500 text-sm">Status</span><span className={`text-sm font-semibold ${expired ? 'text-red-500' : 'text-green-600'}`}>{expired ? 'Expired' : sub.status}</span></div>
-          <div className="flex justify-between"><span className="text-slate-500 text-sm">Expires</span><span className="text-sm">{new Date(sub.expires_at).toLocaleDateString('en-GB')}</span></div>
+          {expiry && <div className="flex justify-between"><span className="text-slate-500 text-sm">Expires</span><span className="text-sm">{new Date(expiry).toLocaleDateString('en-GB')}</span></div>}
           {expired && <Link href="/subscription" className="block text-center mt-4 px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Renew</Link>}
         </div>
       )}
