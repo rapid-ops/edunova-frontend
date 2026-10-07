@@ -20,7 +20,7 @@ export default function ProfilePage() {
   const [mfaSecret, setMfaSecret] = useState('');
   const [mfaCode, setMfaCode] = useState('');
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
-  const [mfaEnabled, setMfaEnabled] = useState(user?.totp_enabled || false);
+  const [mfaEnabled, setMfaEnabled] = useState((user as any)?.totp_enabled || false);
 
   const getRoleRoute = () => {
     const role = user?.role;

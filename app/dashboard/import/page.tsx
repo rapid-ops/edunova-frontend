@@ -148,7 +148,7 @@ export default function ImportPage() {
           <button onClick={() => { setResult(null); setFile(null); setPreview([]); setProgress(0); }}
             className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium">
           {result.errors?.length > 0 && (
-            <button onClick={() => { const csv = "row,reason\n" + result.errors.map((e) => `"${e.row}","${e.reason}"`).join("\n"); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "import_errors.csv"; a.click(); }} className="w-full bg-red-50 text-red-600 py-3 rounded-xl font-medium mb-3">Download Error Report</button>
+            <button onClick={() => { const csv = "row,reason\n" + result.errors.map((e: any) => `"${e.row}","${e.reason}"`).join("\n"); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "import_errors.csv"; a.click(); }} className="w-full bg-red-50 text-red-600 py-3 rounded-xl font-medium mb-3">Download Error Report</button>
           )}
           <button onClick={() => { setResult(null); setFile(null); setPreview([]); setProgress(0); }} className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium">Import Another File</button>
           </button>
