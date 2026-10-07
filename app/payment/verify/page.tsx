@@ -12,9 +12,12 @@ export default function PaymentVerifyPage() {
   useEffect(() => {
     const ref = params.get('reference') || params.get('trxref');
     if (!ref) { setStatus('error'); setMessage('No reference found.'); return; }
-    api.get(`/payments/fees/verify?reference=${ref}`)
-      .then(() => { setStatus('success'); setTimeout(() => router.replace('/parent/fees'), 2500); })
-      .catch(e => { setStatus('error'); setMessage(e?.response?.data?.message || 'Verification failed.'); });
+    api.get(`/payments/verify/${ref}`)
+      .then(r => {
+        if (r.data.success) { setStatus('success'); setTimeout(() => router.replace('/parent/fees'), 2500); }
+        else { setStatus('error'); setMessage(r.data.reason || 'Payment not successful.'); }
+      })
+      .catch(e => { setStatus('error'); setMessage(e?.response?.data?.error || 'Verification failed.'); });
   }, []);
 
   return (
