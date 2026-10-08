@@ -23,8 +23,9 @@ export default function SchoolAdminAIPage() {
     try {
       const r = await api.post('/ai/school-admin-query', { question: q });
       setMsgs(prev => [...prev, { role: 'assistant', content: r.data.reply }]);
-    } catch { setMsgs(prev => [...prev, { role: 'assistant', content: 'Error.' }]); }
-    finally { setLoading(false); }
+    } catch {
+      setMsgs(prev => [...prev, { role: 'assistant', content: 'Error.' }]);
+    } finally { setLoading(false); }
   };
 
   const runDropout = async () => {
@@ -37,17 +38,22 @@ export default function SchoolAdminAIPage() {
   };
 
   const riskColor = (l: string) =>
-    l === 'high' ? 'text-red-600 bg-red-50' : l === 'medium' ? 'text-yellow-600 bg-yellow-50' : 'text-green-600 bg-green-50';
+    l === 'high' ? 'text-red-600 bg-red-50' :
+    l === 'medium' ? 'text-yellow-600 bg-yellow-50' :
+    'text-green-600 bg-green-50';
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold flex items-center gap-2"><Brain size={22} className="text-blue-600" />School AI</h1>
+      <h1 className="text-2xl font-bold flex items-center gap-2">
+        <Brain size={22} className="text-blue-600" />School AI
+      </h1>
       <div className="flex gap-2">
-        {([['chat', 'AI Assistant', MessageSquare], ['dropout', 'Dropout Risk', AlertTriangle]] as any[]).map(([k, l, Icon]) => (
-          <button key={k} onClick={() => setTab(k)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${tab === k ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>
-            <Icon size={15} />{l}
-          </button>
-        ))}
+        <button onClick={() => setTab('chat')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${tab === 'chat' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>
+          <MessageSquare size={15} />AI Assistant
+        </button>
+        <button onClick={() => setTab('dropout')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${tab === 'dropout' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>
+          <AlertTriangle size={15} />Dropout Risk
+        </button>
       </div>
 
       {tab === 'chat' && (
@@ -62,13 +68,24 @@ export default function SchoolAdminAIPage() {
               </div>
             )}
             {msgs.map((m, i) => (
-              <div key={i} className={`max-w-[80%] rounded-xl px-4 py-2 text-sm ${m.role === 'user' ? 'ml-auto bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'}`}>{m.content}</div>
+              <div key={i} className={`max-w-[80%] rounded-xl px-4 py-2 text-sm ${m.role === 'user' ? 'ml-auto bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'}`}>
+                {m.content}
+              </div>
             ))}
             {loading && <p className="text-gray-400 text-sm animate-pulse">Analyzing...</p>}
           </div>
           <div className="flex gap-2 p-4 border-t">
-            <input className="flex-1 border rounded-lg px-3 py-2 text-sm" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendQuery()} placeholder="Ask about your school..." disabled={loading} />
-            <button onClick={sendQuery} disabled={loading || !input.trim()} className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm disabled:opacity-40">Send</button>
+            <input
+              className="flex-1 border rounded-lg px-3 py-2 text-sm"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && sendQuery()}
+              placeholder="Ask about your school..."
+              disabled={loading}
+            />
+            <button onClick={sendQuery} disabled={loading || !input.trim()} className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm disabled:opacity-40">
+              Send
+            </button>
           </div>
         </div>
       )}
@@ -81,7 +98,9 @@ export default function SchoolAdminAIPage() {
               {dropoutLoading ? 'Analyzing...' : 'Run Analysis'}
             </button>
           </div>
-          {!dropout.length && !dropoutLoading && <p className="text-gray-400 text-sm">Run analysis to see results.</p>}
+          {!dropout.length && !dropoutLoading && (
+            <p className="text-gray-400 text-sm">Run analysis to see results.</p>
+          )}
           {dropout.length > 0 && (
             <table className="w-full text-sm">
               <thead>
@@ -96,7 +115,11 @@ export default function SchoolAdminAIPage() {
                 {dropout.map((p, i) => (
                   <tr key={i}>
                     <td className="py-2">{p.student_id}</td>
-                    <td className="py-2"><span className={`px-2 py-0.5 rounded text-xs font-medium ${riskColor(p.risk_level)}`}>{p.risk_level}</span></td>
+                    <td className="py-2">
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${riskColor(p.risk_level)}`}>
+                        {p.risk_level}
+                      </span>
+                    </td>
                     <td className="py-2">{Math.round((p.risk_score || 0) * 100)}%</td>
                     <td className="py-2 text-gray-600">{p.reason}</td>
                   </tr>
