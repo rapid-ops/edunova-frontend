@@ -26,9 +26,9 @@ export default function AdminAttendancePage() {
   const overall = data.overall || {};
   const perClass: any[] = data.per_class || [];
   const perStudent: any[] = data.per_student || [];
-  const lowStudents = perStudent.filter(s => Number(s.rate) < 75);
+  const lowStudents = perStudent.filter(s => s.rate !== null && Number(s.rate) < 75);
 
-  const rate = (n: any) => `${Number(n || 0).toFixed(1)}%`;
+  const rate = (n: any) => (n === null || n === undefined ? '-' : `${Number(n).toFixed(1)}%`);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 pb-24">
@@ -68,7 +68,7 @@ export default function AdminAttendancePage() {
                     <div className="h-full bg-blue-600 rounded-full"
                       style={{ width: `${Math.min(100, Number(c.rate || 0))}%` }} />
                   </div>
-                  <span className={`text-sm font-medium ${Number(c.rate) < 75 ? 'text-red-500' : 'text-gray-700'}`}>
+                  <span className={`text-sm font-medium ${c.rate !== null && Number(c.rate) < 75 ? 'text-red-500' : 'text-gray-700'}`}>
                     {rate(c.rate)}
                   </span>
                 </div>
