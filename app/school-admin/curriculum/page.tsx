@@ -23,7 +23,7 @@ export default function CurriculumPage() {
 
   const load = async () => {
     const [sd, cd] = await Promise.all([
-      fetch(`${API}/curriculums/school/${user.school_id}`, { headers: h }).then(r => r.json()),
+      fetch(`${API}/curriculums/${user.school_id}`, { headers: h }).then(r => r.json()),
       fetch(`${API}/courses/school/${user.school_id}`, { headers: h }).then(r => r.json()),
     ]);
     setStandards(sd.standards || []);
@@ -108,7 +108,7 @@ export default function CurriculumPage() {
             <p className="text-gray-400 text-sm">No curriculum standards yet.</p>
           </div>
         ) : standards.map((s: any) => {
-          const linked = s.linked_courses || 0;
+          const linked = Number(s.course_count) || 0;
           const pct = totalCourses > 0 ? Math.round((linked / totalCourses) * 100) : 0;
           return (
             <div key={s.id} className="bg-white border border-gray-200 rounded-xl p-4">
