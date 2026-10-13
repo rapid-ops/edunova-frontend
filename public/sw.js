@@ -1,8 +1,7 @@
-const CACHE = 'edunova-v1';
-const STATIC = ['/', '/offline'];
+const CACHE = 'edunova-v2';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC)));
+  e.waitUntil(caches.open(CACHE).then(c => c.add('/offline')));
   self.skipWaiting();
 });
 
@@ -14,22 +13,29 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
-  if (url.pathname.startsWith('/api/') || url.origin !== self.location.origin) {
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
+
+  if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(e.request).catch(() =>
-        new Response(JSON.stringify({ error: 'offline' }), { headers: { 'Content-Type': 'application/json' } })
-      )
+      fetch(req).then(res => {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(req, clone));
+        return res;
+      }).catch(() => caches.match(req).then(r => r || caches.match('/offline')))
     );
     return;
   }
-  e.respondWith(
-    caches.match(e.request).then(cached =>
-      cached || fetch(e.request).then(res => {
+
+  if (url.pathname.startsWith('/_next/static/')) {
+    e.respondWith(
+      caches.match(req).then(cached => cached || fetch(req).then(res => {
         const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
+        caches.open(CACHE).then(c => c.put(req, clone));
         return res;
-      }).catch(() => caches.match('/offline'))
-    )
-  );
+      }))
+    );
+  }
 });
