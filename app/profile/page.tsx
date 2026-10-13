@@ -19,6 +19,7 @@ export default function ProfilePage() {
   const [mfaQR, setMfaQR] = useState('');
   const [mfaSecret, setMfaSecret] = useState('');
   const [mfaCode, setMfaCode] = useState('');
+  const [mfaError, setMfaError] = useState('');
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [mfaEnabled, setMfaEnabled] = useState((user as any)?.totp_enabled || false);
 
@@ -34,6 +35,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user) setForm({ full_name: user.full_name, email: user.email });
+    setMfaEnabled(!!(user as any)?.totp_enabled);
   }, [user]);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,30 +85,32 @@ export default function ProfilePage() {
   };
 
   const startMFA = async () => {
-    setError(''); setSuccess('');
+    setMfaError(''); setSuccess('');
     try {
       const r = await api.post('/mfa/enable');
       setMfaQR(r.data.qr); setMfaSecret(r.data.secret); setMfaStep('setup');
-    } catch (err: any) { setError(err.response?.data?.error || 'Failed'); }
+    } catch (err: any) { setMfaError(err.response?.data?.error || err.message || 'Failed to start 2FA setup'); }
   };
 
   const activateMFA = async () => {
-    setError(''); setSuccess('');
+    setMfaError(''); setSuccess('');
     try {
       const r = await api.post('/mfa/activate', { token: mfaCode });
-      setBackupCodes(r.data.backup_codes); setMfaEnabled(true); setMfaStep('verify');
+      setBackupCodes(r.data.backup_codes); setMfaEnabled(true); setMfaStep('verify'); setMfaCode('');
+      setAuth({ ...user!, totp_enabled: true } as any, localStorage.getItem('token')!);
       setSuccess('2FA enabled');
-    } catch (err: any) { setError(err.response?.data?.error || 'Invalid code'); }
+    } catch (err: any) { setMfaError(err.response?.data?.error || err.message || 'Invalid code'); }
   };
 
   const disableMFA = async () => {
-    if (!mfaCode) return;
-    setError(''); setSuccess('');
+    if (!mfaCode) { setMfaError('Enter your 6-digit code'); return; }
+    setMfaError(''); setSuccess('');
     try {
       await api.post('/mfa/disable', { token: mfaCode });
       setMfaEnabled(false); setMfaStep('idle'); setMfaCode('');
+      setAuth({ ...user!, totp_enabled: false } as any, localStorage.getItem('token')!);
       setSuccess('2FA disabled');
-    } catch (err: any) { setError(err.response?.data?.error || 'Invalid code'); }
+    } catch (err: any) { setMfaError(err.response?.data?.error || err.message || 'Invalid code'); }
   };
 
   if (!user) return <LoadingScreen />;
@@ -175,6 +179,7 @@ export default function ProfilePage() {
 
         <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
           <h2 className="font-semibold text-gray-900 flex items-center gap-2"><Shield size={16} />Two-Factor Authentication</h2>
+          {mfaError && <p className="bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 rounded-lg">{mfaError}</p>}
           {mfaStep === 'idle' && !mfaEnabled && (
             <button onClick={startMFA} className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium">
               <QrCode size={15} />Enable 2FA
@@ -186,7 +191,7 @@ export default function ProfilePage() {
               <img src={mfaQR} alt="QR Code" className="w-40 h-40 rounded-lg border" />
               <p className="text-xs text-gray-400 font-mono break-all">Secret: {mfaSecret}</p>
               <input value={mfaCode} onChange={e => setMfaCode(e.target.value)} placeholder="Enter 6-digit code"
-                className="w-full bg-gray-100 rounded-lg px-4 py-3 text-sm outline-none tracking-widest text-center" maxLength={6} />
+                className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none tracking-widest text-center" maxLength={6} />
               <button onClick={activateMFA} className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium">Verify & Activate</button>
             </div>
           )}
@@ -203,7 +208,7 @@ export default function ProfilePage() {
             <div className="space-y-3">
               <p className="text-sm text-green-600 font-medium">2FA is enabled</p>
               <input value={mfaCode} onChange={e => setMfaCode(e.target.value)} placeholder="Enter code to disable"
-                className="w-full bg-gray-100 rounded-lg px-4 py-3 text-sm outline-none tracking-widest text-center" maxLength={6} />
+                className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none tracking-widest text-center" maxLength={6} />
               <button onClick={disableMFA} className="flex items-center gap-2 bg-red-50 text-red-600 px-5 py-2.5 rounded-lg text-sm font-medium">Disable 2FA</button>
             </div>
           )}

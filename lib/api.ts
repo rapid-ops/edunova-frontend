@@ -4,6 +4,8 @@ const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://edunova-backend-2x7h.onrender.com/api',
 });
 
+const OPEN = ['/auth/login', '/auth/google', '/mfa/verify-login', '/mfa/backup-code'];
+
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token');
@@ -15,12 +17,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/auth/login';
-      }
+    const url = String(err.config?.url || '');
+    if (err.response?.status === 401 && typeof window !== 'undefined' && !OPEN.some((p) => url.includes(p))) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/auth/login';
     }
     return Promise.reject(err);
   }
