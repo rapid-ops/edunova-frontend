@@ -8,6 +8,11 @@ const OPEN = ['/auth/login', '/auth/google', '/mfa/verify-login', '/mfa/backup-c
 
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
+    if (localStorage.getItem('session_only') === '1' && !sessionStorage.getItem('session_alive')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('session_only');
+    }
     const token = localStorage.getItem('token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
   }
