@@ -144,7 +144,7 @@ export default async function Home() {
                   <Photo src={img} alt={t} className="h-28 w-full object-cover" fallback={<div className="flex h-28 items-center justify-center"><I className="h-10 w-10 text-white/80" /></div>} />
                 </div>
                 <div className="p-4">
-                  <div className="-mt-9 mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-white text-blue-600 shadow"><I className="h-5 w-5" /></div>
+                  <div className="relative z-10 -mt-9 mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-white text-blue-600 shadow"><I className="h-5 w-5" /></div>
                   <h3 className="text-sm font-bold text-[#0b1a4a]">{t}</h3>
                   <ul className="mt-3 space-y-1.5">{pts.map((p) => <li key={p} className="flex items-start gap-2 text-[11px] text-slate-600"><Check className="mt-0.5 h-3 w-3 shrink-0 text-blue-600" />{p}</li>)}</ul>
                   <Link href="/features" className="mt-4 flex min-h-9 items-center justify-center gap-1 rounded-md border border-blue-200 text-[11px] font-semibold text-blue-600 hover:bg-blue-50">{cta} <ArrowRight className="h-3 w-3" /></Link>
