@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
 
-const GID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+const GID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '842943328007-1vm692lbekoqsu6nli8jsiquc560dj0p.apps.googleusercontent.com';
 const HOME: Record<string, string> = { super_admin: '/dashboard', school_admin: '/school-admin', teacher: '/teacher', student: '/student', parent: '/parent' };
 const ERR: Record<string, string> = {
   no_account: 'No account found for this Google email. Ask your school admin to create one.',
