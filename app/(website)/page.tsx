@@ -19,7 +19,7 @@ export const metadata = {
 
 async function getStats() {
   try {
-    const r = await fetch(`${API}/stats/public`, { next: { revalidate: 300 } });
+    const r = await fetch(`${API}/stats/public`, { next: { revalidate: 300 }, signal: AbortSignal.timeout(8000) });
     if (!r.ok) return null;
     return (await r.json()) as { schools: number; students: number; teachers: number; courses: number };
   } catch { return null; }
@@ -161,7 +161,7 @@ export default async function Home() {
           <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-[#0b1a4a]">Join the Growing Edunova Community</h2>
           <p className="mt-2 text-sm text-slate-600">Thousands of students, teachers and schools are already building a better future with Edunova.</p>
         </div>
-        <div className="grid grid-cols-2 gap-6 text-center sm:grid-cols-4">
+        <div className={`grid grid-cols-2 gap-6 text-center sm:grid-cols-4 ${stats ? "" : "hidden"}`}>
           {[[Building2, fmt(stats?.schools), 'Active Schools'], [Users, fmt(stats?.students), 'Students'], [GraduationCap, fmt(stats?.teachers), 'Teachers'], [BookOpen, fmt(stats?.courses), 'Courses & Growing']].map(([I, v, l]) => {
             const Icon = I as typeof Building2;
             return (
