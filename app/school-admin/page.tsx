@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { joinRoom, getSocket } from '@/lib/socket';
 import api from '@/lib/api';
-import { Bell, Users, BookOpen, Trophy, ClipboardList, Calendar, DollarSign, BarChart2, ChevronRight, UserCog, Lightbulb, Headphones, Zap, TrendingDown, Tag, ScrollText, AlertTriangle, Megaphone } from 'lucide-react';
+import { Bell, Users, BookOpen, Trophy, ClipboardList, Calendar, DollarSign, BarChart2, ChevronRight, UserCog, Lightbulb, Headphones, Zap, TrendingDown, Tag, ScrollText, AlertTriangle, Megaphone, UserCheck } from 'lucide-react';
 
 export default function SchoolAdminDashboard() {
   const router = useRouter();
@@ -18,6 +18,7 @@ export default function SchoolAdminDashboard() {
   const [dropout, setDropout] = useState<any[]>([]);
   const [school, setSchool] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [pending, setPending] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -32,6 +33,7 @@ export default function SchoolAdminDashboard() {
   }, [user]);
 
   const fetchData = async () => {
+    api.get('/approvals/pending').then((r) => setPending((r.data.users || []).length)).catch(() => {});
     try {
       const [usersRes, coursesRes, notifRes, schoolRes, announceRes, suggestRes, dropoutRes] = await Promise.all([
         api.get(`/auth/users/${schoolId}`),
@@ -72,6 +74,14 @@ export default function SchoolAdminDashboard() {
             <Bell size={18} className="text-blue-600 shrink-0" />
             <p className="text-blue-600 font-medium text-sm flex-1">{notifications.length} new notification{notifications.length > 1 ? 's' : ''}</p>
             <ChevronRight size={16} className="text-blue-400 shrink-0" />
+          </button>
+        )}
+
+        {pending > 0 && (
+          <button onClick={() => router.push('/school-admin/approvals')} className="w-full bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-3 text-left">
+            <UserCheck size={16} className="text-emerald-600 shrink-0" />
+            <p className="text-emerald-700 font-medium text-sm flex-1">{pending} account{pending > 1 ? 's' : ''} awaiting approval</p>
+            <ChevronRight size={14} className="text-emerald-500 shrink-0" />
           </button>
         )}
 
@@ -138,10 +148,11 @@ export default function SchoolAdminDashboard() {
             { icon: Headphones, label: 'Contact Support', href: '/dashboard/b2b-support', color: 'text-teal-600' },
             { icon: Palette, label: 'Website Builder', href: '/dashboard/website', color: 'text-blue-600' },
             { icon: Palette, label: 'Applications', href: '/dashboard/applications', color: 'text-blue-600' },
+            { icon: UserCheck, label: 'Approvals', href: '/school-admin/approvals', color: 'text-emerald-600' },
           ].map(({ icon: Icon, label, href, color }) => (
             <button key={label} onClick={() => router.push(href)} className="bg-white border border-gray-200 active:bg-gray-50 flex items-center gap-3 px-4 py-3 rounded-xl text-left transition">
               <Icon size={18} className={color} />
-              <span className="text-sm font-medium text-gray-900">{label}</span>
+              <span className="text-sm font-medium text-gray-900">{label}</span>{label === 'Approvals' && pending > 0 && <span className="ml-auto rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">{pending}</span>}
             </button>
           ))}
         </div>

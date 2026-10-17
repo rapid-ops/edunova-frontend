@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 
@@ -19,6 +19,17 @@ export default function OnboardingPage() {
   const [adminForm, setAdminForm] = useState({
     full_name: '', email: '', password: '', confirm_password: '',
   });
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('reg_prefill');
+      if (!raw) return;
+      const p = JSON.parse(raw);
+      setAdminForm((f) => ({ ...f, full_name: p.full_name || f.full_name, email: p.email || f.email }));
+      setSchoolForm((f) => ({ ...f, email: p.email || f.email, phone: p.phone || f.phone }));
+      sessionStorage.removeItem('reg_prefill');
+    } catch {}
+  }, []);
 
   const handleSchoolSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

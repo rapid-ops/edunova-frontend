@@ -8,7 +8,7 @@ export default async function SchoolPage({ params }: { params: Promise<{ subdoma
   const { subdomain } = await params;
   const sRes = await fetch(`${API}/schools/public/${subdomain}`, { next: { revalidate: 3600 } });
   if (!sRes.ok) notFound();
-  const school = await sRes.json();
+  const { school } = await sRes.json();
   const cRes = await fetch(`${API}/courses/public/school/${school.id}`, { next: { revalidate: 3600 } });
   const { courses = [] } = cRes.ok ? await cRes.json() : {};
 
@@ -20,7 +20,7 @@ export default async function SchoolPage({ params }: { params: Promise<{ subdoma
           : <div className="h-20 w-20 rounded-full mx-auto mb-4 bg-white/20 flex items-center justify-center text-3xl font-bold">{school.name?.[0]}</div>}
         <h1 className="text-4xl font-bold mb-2">{school.name}</h1>
         {school.tagline && <p className="text-white/80 text-lg mb-6">{school.tagline}</p>}
-        <Link href={`/onboarding?school=${subdomain}`} className="inline-block px-8 py-3 rounded-xl bg-white font-semibold text-slate-900 hover:bg-slate-100">Join this school</Link>
+        <Link href={`/register?school=${subdomain}`} className="inline-block px-8 py-3 rounded-xl bg-white font-semibold text-slate-900 hover:bg-slate-100">Join this school</Link>
       </section>
       <section className="px-4 py-10 max-w-4xl mx-auto grid grid-cols-3 gap-6 text-center">
         {([['Students', Users, school.student_count ?? 0], ['Teachers', GraduationCap, school.teacher_count ?? 0], ['Courses', BookOpen, school.course_count ?? courses.length]] as const).map(([label, Icon, value]) => (
@@ -41,7 +41,7 @@ export default async function SchoolPage({ params }: { params: Promise<{ subdoma
                 <div className="p-4">
                   <h3 className="font-semibold text-slate-900 leading-snug">{c.title}</h3>
                   {c.description && <p className="text-sm text-slate-500 mt-1 line-clamp-2">{c.description}</p>}
-                  <Link href={`/onboarding?school=${subdomain}`} className="mt-3 block text-center py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Enroll</Link>
+                  <Link href={`/register?school=${subdomain}`} className="mt-3 block text-center py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Enroll</Link>
                 </div>
               </div>
             ))}
