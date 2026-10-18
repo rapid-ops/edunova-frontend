@@ -48,7 +48,7 @@ export default function ProfilePage() {
       const res = await api.post('/upload/avatar', fd);
       const url = res.data.url;
       const updated = { ...user!, avatar_url: url };
-      setAuth(updated, localStorage.getItem('token')!);
+      setAuth(updated, localStorage.getItem('token')!, localStorage.getItem('session_only') !== '1');
       setSuccess('Profile photo updated');
     } catch {
       setError('Failed to upload photo');
@@ -63,7 +63,7 @@ export default function ProfilePage() {
     try {
       const res = await api.put(`/auth/profile/${user?.id}`, form);
       const updated = { ...user!, ...res.data.user };
-      setAuth(updated, localStorage.getItem('token')!);
+      setAuth(updated, localStorage.getItem('token')!, localStorage.getItem('session_only') !== '1');
       setSuccess('Profile updated successfully');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to update');
@@ -97,7 +97,7 @@ export default function ProfilePage() {
     try {
       const r = await api.post('/mfa/activate', { token: mfaCode });
       setBackupCodes(r.data.backup_codes); setMfaEnabled(true); setMfaStep('verify'); setMfaCode('');
-      setAuth({ ...user!, totp_enabled: true } as any, localStorage.getItem('token')!);
+      setAuth({ ...user!, totp_enabled: true } as any, localStorage.getItem('token')!, localStorage.getItem('session_only') !== '1');
       setSuccess('2FA enabled');
     } catch (err: any) { setMfaError(err.response?.data?.error || err.message || 'Invalid code'); }
   };
@@ -108,7 +108,7 @@ export default function ProfilePage() {
     try {
       await api.post('/mfa/disable', { token: mfaCode });
       setMfaEnabled(false); setMfaStep('idle'); setMfaCode('');
-      setAuth({ ...user!, totp_enabled: false } as any, localStorage.getItem('token')!);
+      setAuth({ ...user!, totp_enabled: false } as any, localStorage.getItem('token')!, localStorage.getItem('session_only') !== '1');
       setSuccess('2FA disabled');
     } catch (err: any) { setMfaError(err.response?.data?.error || err.message || 'Invalid code'); }
   };

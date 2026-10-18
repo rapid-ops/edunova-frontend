@@ -4,7 +4,7 @@ const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://edunova-backend-2x7h.onrender.com/api',
 });
 
-const OPEN = ['/auth/login', '/auth/google', '/mfa/verify-login', '/mfa/backup-code'];
+const OPEN = ['/auth/login', '/auth/google', '/mfa/verify-login', '/mfa/backup-code', '/auth/forgot-password', '/auth/reset-password'];
 
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
