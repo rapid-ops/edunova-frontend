@@ -33,7 +33,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <AuthShell backHref="/auth/login" backLabel="Back to Sign In" caption={['Your', 'Learning', 'Journey', 'Continues']} photo="/images/recovery-girl.png" tiles={tiles}>
+    <AuthShell backHref="/auth/login" backLabel="Back to Sign In" caption={['Your', 'Learning', 'Journey', 'Continues']} photo="/images/hero-students.png" tiles={tiles}>
       <Badge icon={Lock}>Account Recovery</Badge>
       <h1 className="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-[#0b1a4a]">Forgot Your Password?</h1>
       <p className="mb-6 mt-3 text-sm leading-relaxed text-slate-500">No worries! Enter your email address and we&apos;ll send you a link to reset your password.</p>

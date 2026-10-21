@@ -55,7 +55,7 @@ function Inner() {
   };
 
   return (
-    <AuthShell backHref="/auth/login" backLabel="Back to Sign In" caption={['A new', 'beginning', 'is just a', 'password away']} badge="lock" photo="/images/recovery-girl-lock.png" tiles={tiles}>
+    <AuthShell backHref="/auth/login" backLabel="Back to Sign In" caption={['A new', 'beginning', 'is just a', 'password away']} badge="lock" photo="/images/hero-students.png" tiles={tiles}>
       <Badge icon={Lock}>Reset Password</Badge>
       {status === 'checking' && <p className="mt-6 text-sm text-slate-500" role="status">Checking your link...</p>}
       {status === 'error' && (

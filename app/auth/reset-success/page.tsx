@@ -14,7 +14,7 @@ const strip = [
 export default function ResetSuccessPage() {
   return (
     <AuthShell
-      backHref="/auth/login" backLabel="Back to Login" caption={['Welcome', 'Back!']} badge="check" photo="/images/recovery-girl-check.png"
+      backHref="/auth/login" backLabel="Back to Login" caption={['Welcome', 'Back!']} badge="check" photo="/images/hero-students.png"
       below={
         <ul className="grid gap-6 rounded-2xl bg-white/80 p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
           {strip.map(({ icon: I, title, text }) => (
