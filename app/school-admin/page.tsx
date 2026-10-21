@@ -57,7 +57,7 @@ const linkCls = 'inline-flex min-h-11 items-center gap-1 text-xs font-semibold t
 const TOOLS = [
   { icon: Users, label: 'Students', href: '/dashboard/students' },
   { icon: UserCog, label: 'Course Assign', href: '/dashboard/course-assignments' },
-  { icon: DollarSign, label: 'Fees', href: '/dashboard/fees' },
+  { icon: DollarSign, label: 'Fees', href: '/school-admin/fees' },
   { icon: ClipboardList, label: 'Attendance', href: '/dashboard/attendance' },
   { icon: BarChart2, label: 'Analytics', href: '/dashboard/analytics' },
   { icon: Calendar, label: 'Timetable', href: '/dashboard/timetable' },
@@ -154,7 +154,7 @@ export default function SchoolAdminDashboard() {
           </div>
         </div>
 
-        <Card title="Fees overview" action={<Link href="/dashboard/fees" className={linkCls}>Open fees <ChevronRight className="h-3.5 w-3.5" /></Link>}>
+        <Card title="Fees overview" action={<Link href="/school-admin/fees" className={linkCls}>Open fees <ChevronRight className="h-3.5 w-3.5" /></Link>}>
           <Body loading={L} bad={bad(fees)} onRetry={load} empty={fees && fees.invoices === 0 ? <EmptyState icon={DollarSign} title="No invoices yet" message="Fees you create for students will be summarised here." /> : null}>
             {fees && (
               <div className="grid gap-4 p-4 lg:grid-cols-3">

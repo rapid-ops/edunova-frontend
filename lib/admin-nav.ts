@@ -13,7 +13,7 @@ export const adminNav: AdminNavItem[] = [
   { key: 'attendance', label: 'Attendance', icon: ClipboardList, href: '/school-admin/attendance', enabled: true },
   { key: 'examinations', label: 'Examinations', icon: FileText, href: '/school-admin/examinations', enabled: false },
   { key: 'results', label: 'Results', icon: Award, href: '/school-admin/results', enabled: true },
-  { key: 'fees', label: 'Fees & Finance', short: 'Fees', icon: Wallet, href: '/dashboard/fees', enabled: true },
+  { key: 'fees', label: 'Fees & Finance', short: 'Fees', icon: Wallet, href: '/school-admin/fees', enabled: true },
   { key: 'communication', label: 'Communication', icon: MessageSquare, href: '/dashboard/messages', enabled: true },
   { key: 'reports', label: 'Reports & Analytics', short: 'Reports', icon: BarChart3, href: '/school-admin/analytics', enabled: true },
   { key: 'ai', label: 'AI Assistant', icon: Bot, href: '/school-admin/ai', enabled: true },
