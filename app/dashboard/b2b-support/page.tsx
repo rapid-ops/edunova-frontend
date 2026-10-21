@@ -1,5 +1,6 @@
 'use client';
 import LoadingScreen from '@/components/LoadingScreen';
+import ErrorState from '@/components/admin/ErrorState';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 const API = process.env.NEXT_PUBLIC_API_URL;
@@ -14,9 +15,16 @@ export default function B2BSupportPage() {
   const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : {};
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const isSuperAdmin = user.role === 'super_admin';
-  const load = () => {
-    const url = isSuperAdmin ? `${API}/api/b2b-tickets/all` : `${API}/api/b2b-tickets/school/${user.school_id}`;
-    fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()).then(d => { setTickets(d.tickets || []); setLoading(false); });
+  const [error, setError] = useState(false);
+  const load = async () => {
+    setError(false);
+    try {
+      const url = isSuperAdmin ? `${API}/api/b2b-tickets/all` : `${API}/api/b2b-tickets/school/${user.school_id}`;
+      const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (!r.ok) throw new Error(String(r.status));
+      const d = await r.json();
+      setTickets(d.tickets || []);
+    } catch { setError(true); } finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
   const create = async () => { await fetch(`${API}/api/b2b-tickets`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ ...form, school_id: user.school_id, submitted_by: user.id }) }); setForm({ subject: '', body: '', type: 'enquiry', priority: 'medium' }); setShowForm(false); load(); };
@@ -25,6 +33,7 @@ export default function B2BSupportPage() {
   const statusColor = (s: string) => s === 'resolved' ? 'bg-green-100 text-green-700' : s === 'in_progress' ? 'bg-blue-100 text-blue-600' : s === 'closed' ? 'bg-gray-100 text-gray-400' : 'bg-yellow-100 text-yellow-700';
   const priorityColor = (p: string) => p === 'urgent' ? 'text-red-500' : p === 'high' ? 'text-orange-500' : p === 'medium' ? 'text-yellow-500' : 'text-gray-400';
   if (loading) return <LoadingScreen />;
+  if (error && tickets.length === 0) return <div className="min-h-screen bg-gray-50 p-6"><ErrorState message="Could not load tickets. Please try again shortly." onRetry={load} /></div>;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">

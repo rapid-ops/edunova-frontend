@@ -1,5 +1,6 @@
 'use client';
 import LoadingScreen from '@/components/LoadingScreen';
+import ErrorState from '@/components/admin/ErrorState';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 const API = process.env.NEXT_PUBLIC_API_URL;
@@ -10,21 +11,25 @@ export default function GradebookPage() {
   const [gpa, setGpa] = useState<{ avg_score: string; gpa: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [courseId, setCourseId] = useState('');
+  const [error, setError] = useState(false);
+  const [tick, setTick] = useState(0);
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const token = localStorage.getItem('token');
-    if (!user.id) return;
+    if (!user.id) { setLoading(false); return; }
     const cid = new URLSearchParams(window.location.search).get('course_id') || '';
-    setCourseId(cid);
-    if (cid) {
-      fetch(`${API}/api/gradebook/student/${user.id}/${cid}`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(r => r.json()).then(d => { setGrades(d.grades || []); setLoading(false); });
-    }
-    fetch(`${API}/api/gradebook/gpa/${user.id}/${user.school_id}`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json()).then(d => setGpa(d));
-  }, []);
+    setCourseId(cid); setError(false); setLoading(true);
+    const get = async (u: string) => { const r = await fetch(u, { headers: { Authorization: `Bearer ${token}` } }); if (!r.ok) throw new Error(String(r.status)); return r.json(); };
+    (async () => {
+      try {
+        if (cid) { const d = await get(`${API}/api/gradebook/student/${user.id}/${cid}`); setGrades(d.grades || []); }
+        try { setGpa(await get(`${API}/api/gradebook/gpa/${user.id}/${user.school_id}`)); } catch {}
+      } catch { setError(true); } finally { setLoading(false); }
+    })();
+  }, [tick]);
   const color = (l: string) => l === 'A' ? 'text-green-600' : l === 'B' ? 'text-blue-600' : l === 'C' ? 'text-yellow-600' : l === 'D' ? 'text-orange-500' : 'text-red-500';
   if (loading) return <LoadingScreen />;
+  if (error) return <div className="min-h-screen bg-gray-50 p-6"><ErrorState message="Could not load your grades. Please try again shortly." onRetry={() => setTick(t => t + 1)} /></div>;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">

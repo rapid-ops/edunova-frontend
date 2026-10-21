@@ -1,5 +1,6 @@
 'use client';
 import LoadingScreen from '@/components/LoadingScreen';
+import ErrorState from '@/components/admin/ErrorState';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 const API = process.env.NEXT_PUBLIC_API_URL;
@@ -12,11 +13,13 @@ export default function CouponsPage() {
   const [loading, setLoading] = useState(true);
   const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : {};
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const load = () => fetch(`${API}/api/coupons/${user.school_id}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()).then(d => { setCoupons(d.coupons || []); setLoading(false); });
+  const [error, setError] = useState(false);
+  const load = async () => { setError(false); try { const r = await fetch(`${API}/api/coupons/${user.school_id}`, { headers: { Authorization: `Bearer ${token}` } }); if (!r.ok) throw new Error(String(r.status)); const d = await r.json(); setCoupons(d.coupons || []); } catch { setError(true); } finally { setLoading(false); } };
   useEffect(() => { load(); }, []);
   const create = async () => { await fetch(`${API}/api/coupons`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ ...form, school_id: user.school_id }) }); setForm({ code: '', discount_percent: 10, max_uses: 100, expires_at: '' }); setShowForm(false); load(); };
   const del = async (id: number) => { await fetch(`${API}/api/coupons/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); load(); };
   if (loading) return <LoadingScreen />;
+  if (error && coupons.length === 0) return <div className="min-h-screen bg-gray-50 p-6"><ErrorState message="Could not load coupons. Please try again shortly." onRetry={load} /></div>;
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-3xl mx-auto">
