@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Clock, ChevronLeft, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
 import api from '@/lib/api';
 
-interface Question { id: number; question: string; type: string; options: string[] | null; marks: number; }
+interface Question { id: number; question: string; type: string; options: string[] | { lefts: string[]; rights: string[] } | null; marks: number; }
 interface QuizInfo { id: number; title: string; instructions: string | null; total_marks: number; time_limit_minutes: number | null; max_attempts: number; pass_percent: number; awards_certificate: boolean; scheduled_at: string | null; }
 type Screen = 'info' | 'questions' | 'result';
 
@@ -126,7 +126,7 @@ export default function QuizPage() {
         <div className="bg-white border border-gray-200 rounded-xl p-6 mb-4">
           <p className="text-gray-900 font-medium mb-1">{q.question}</p>
           <p className="text-xs text-gray-400 mb-4">{q.marks} mark{q.marks>1?'s':''}</p>
-          {q.type === 'mcq' && q.options?.map(opt => (
+          {q.type === 'mcq' && Array.isArray(q.options) && q.options.map(opt => (
             <label key={opt} className={`flex items-center gap-3 p-3 rounded-xl border mb-2 cursor-pointer transition-colors ${answers[q.id]===opt?'border-blue-500 bg-blue-50':'border-gray-200 hover:bg-gray-50'}`}>
               <input type="radio" name={`q${q.id}`} value={opt} checked={answers[q.id]===opt} onChange={() => setAnswers(a => ({...a,[q.id]:opt}))} className="accent-blue-600"/>
               <span className="text-sm">{opt}</span>
@@ -138,6 +138,31 @@ export default function QuizPage() {
               <span className="text-sm">{opt}</span>
             </label>
           ))}
+          {q.type === 'matching' && q.options && !Array.isArray(q.options) && (() => {
+            const mo = q.options as { lefts: string[]; rights: string[] };
+            const cur: Record<string, string> = {};
+            try {
+              (JSON.parse(answers[q.id] || '[]') as { left: string; right: string }[]).forEach(p => { cur[p.left] = p.right; });
+            } catch {}
+            const setPair = (left: string, right: string) => {
+              const next: Record<string, string> = { ...cur, [left]: right };
+              const arr = Object.keys(next).filter(k => next[k]).map(k => ({ left: k, right: next[k] }));
+              setAnswers(a => ({ ...a, [q.id]: JSON.stringify(arr) }));
+            };
+            return (
+              <div className="space-y-3">
+                {mo.lefts.map((l, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className="flex-1 text-sm text-gray-800">{l}</span>
+                    <select value={cur[l] || ''} onChange={e => setPair(l, e.target.value)} className="flex-1 border border-gray-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="">Select...</option>
+                      {mo.rights.map((r, j) => <option key={j} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
           {(q.type === 'short_answer' || q.type === 'fill_blank') && (
             <input value={answers[q.id]||''} onChange={e => setAnswers(a => ({...a,[q.id]:e.target.value}))} placeholder="Your answer..." className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
           )}
