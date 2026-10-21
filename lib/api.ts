@@ -23,6 +23,13 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     const url = String(err.config?.url || '');
+    if (err.response?.status === 429) {
+      const msg = 'Too many requests, please try again shortly';
+      err.userMessage = msg;
+      const d = err.response.data;
+      if (d && typeof d === 'object') { if (!d.error) d.error = msg; } else { err.response.data = { error: msg }; }
+      return Promise.reject(err);
+    }
     if (err.response?.status === 401 && typeof window !== 'undefined' && !OPEN.some((p) => url.includes(p))) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');

@@ -17,6 +17,9 @@ export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [failed, setFailed] = useState(false);
   const box = useRef<HTMLDivElement>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tries = useRef(0);
+  const loadRef = useRef<() => void>(() => {});
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -24,8 +27,17 @@ export default function NotificationBell() {
       const r = await api.get(`/notifications/${user.id}`);
       setItems(r.data.notifications || []);
       setFailed(false);
-    } catch { setFailed(true); }
+      tries.current = 0;
+    } catch {
+      setFailed(true);
+      if (tries.current < 5) {
+        tries.current += 1;
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => loadRef.current(), 60000 * tries.current);
+      }
+    }
   }, [user]);
+  loadRef.current = load;
 
   useEffect(() => {
     if (!user) return;
@@ -33,7 +45,10 @@ export default function NotificationBell() {
     let socket: any;
     const onNew = (n: N) => setItems((p) => [n, ...p]);
     try { joinRoom(user.id); socket = getSocket(); socket.on('new_notification', onNew); } catch {}
-    return () => { try { socket && socket.off('new_notification', onNew); } catch {} };
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+      try { socket && socket.off('new_notification', onNew); } catch {}
+    };
   }, [user, load]);
 
   useEffect(() => {
@@ -44,6 +59,12 @@ export default function NotificationBell() {
 
   const unread = items.filter((n) => !n.is_read).length;
 
+  const toggle = () => {
+    const next = !open;
+    setOpen(next);
+    if (next && failed) { tries.current = 0; load(); }
+  };
+
   const markAll = async () => {
     if (!user || unread === 0) return;
     try { await api.patch(`/notifications/read/${user.id}`); setItems((p) => p.map((n) => ({ ...n, is_read: true }))); } catch {}
@@ -51,7 +72,7 @@ export default function NotificationBell() {
 
   return (
     <div ref={box} className="relative">
-      <button type="button" onClick={() => setOpen(!open)} aria-label={`Notifications${unread ? `, ${unread} unread` : ''}`} aria-expanded={open}
+      <button type="button" onClick={toggle} aria-label={`Notifications${unread ? `, ${unread} unread` : ''}`} aria-expanded={open}
         className="relative flex h-11 w-11 items-center justify-center rounded-full text-slate-600 outline-none hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500">
         <Bell className="h-5 w-5" />
         {unread > 0 && <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">{unread > 9 ? '9+' : unread}</span>}
@@ -62,7 +83,7 @@ export default function NotificationBell() {
             <span className="text-sm font-semibold text-[#0b1a4a]">Notifications</span>
             <button type="button" onClick={markAll} disabled={unread === 0} className="min-h-9 text-xs font-medium text-blue-600 disabled:text-slate-300">Mark all read</button>
           </div>
-          {failed && <p className="px-4 py-6 text-center text-sm text-slate-500">Could not load notifications.</p>}
+          {failed && items.length === 0 && <p className="px-4 py-6 text-center text-sm text-slate-500">Notifications will appear here shortly.</p>}
           {!failed && items.length === 0 && <p className="px-4 py-6 text-center text-sm text-slate-500">No notifications yet.</p>}
           {items.slice(0, 8).map((n) => (
             <div key={n.id} className={`border-b border-slate-50 px-4 py-3 ${n.is_read ? '' : 'bg-blue-50/50'}`}>
