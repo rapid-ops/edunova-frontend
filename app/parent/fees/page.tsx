@@ -1,77 +1,98 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import api from '@/lib/api';
 
-interface Fee { id: number; description: string; amount: number; due_date: string; status: string; }
+interface Fee { id: number; description: string | null; amount: number | string; due_date: string | null; status: string; student_name?: string }
+
+const naira = (n: number | string) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 }).format(Number(n));
+const payError = (e: any) => {
+  const s = e?.response?.status;
+  if (s === 409) return 'This fee has already been paid.';
+  if (s === 403) return 'You are not allowed to pay this fee.';
+  if (s === 404) return 'This fee could not be found.';
+  return e?.response?.data?.error || e?.userMessage || 'Payment could not be started. Please try again.';
+};
 
 export default function ParentFeesPage() {
   const { user, token } = useAuthStore();
   const router = useRouter();
   const [fees, setFees] = useState<Fee[]>([]);
-  const [tab, setTab] = useState<'pending'|'history'>('pending');
+  const [tab, setTab] = useState<'pending' | 'history'>('pending');
   const [loading, setLoading] = useState(true);
-  const [paying, setPaying] = useState<number|null>(null);
+  const [failed, setFailed] = useState(false);
+  const [paying, setPaying] = useState<number | null>(null);
   const [error, setError] = useState('');
 
-  useEffect(() => { if (!token) router.replace('/auth/login'); }, [token]);
+  useEffect(() => { if (!token) router.replace('/auth/login'); }, [token, router]);
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!user) return;
-    api.get(`/fees/student/${user.id}`)
-      .then(r => { setFees(r.data || []); setLoading(false); })
-      .catch(() => setLoading(false));
+    setLoading(true); setFailed(false);
+    try {
+      let kids: { id: number; full_name: string }[] = [];
+      if (user.role === 'parent') { const r = await api.get(`/parent/children/${user.id}`); kids = r.data.children || []; }
+      else if (user.role === 'student') kids = [{ id: user.id, full_name: user.full_name }];
+      const lists = await Promise.all(kids.map(async (k) => {
+        const r = await api.get(`/fees/student/${k.id}`);
+        return ((r.data.fees || []) as Fee[]).map((f) => ({ ...f, student_name: k.full_name }));
+      }));
+      setFees(lists.flat());
+    } catch { setFailed(true); } finally { setLoading(false); }
   }, [user]);
+  useEffect(() => { load(); }, [load]);
 
   async function pay(fee: Fee) {
-    if (!user) return;
     setPaying(fee.id); setError('');
     try {
-      const { data } = await api.post('/payments/initialize', {
-        fee_id: fee.id,
-        email: user.email,
-        amount: fee.amount,
-        student_id: user.id,
-        school_id: user.school_id,
-      });
+      const { data } = await api.post('/payments/initialize', { fee_id: fee.id });
       window.location.href = data.authorization_url;
     } catch (e: any) {
-      setError(e?.response?.data?.error || 'Payment failed');
+      setError(payError(e));
       setPaying(null);
+      if (e?.response?.status === 409) load();
     }
   }
 
-  const pending = fees.filter(f => f.status !== 'paid');
-  const history = fees.filter(f => f.status === 'paid');
+  const pending = fees.filter((f) => f.status !== 'paid');
+  const history = fees.filter((f) => f.status === 'paid');
   const displayed = tab === 'pending' ? pending : history;
+  const many = new Set(fees.map((f) => f.student_name)).size > 1;
 
   return (
-    <main className="p-6 max-w-2xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Fee Payments</h1>
-      <div className="flex gap-2 mb-6">
-        {(['pending','history'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`px-4 py-2 rounded-lg text-sm font-medium capitalize ${tab===t ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>{t}</button>
+    <main className="max-w-2xl p-6">
+      <h1 className="mb-6 text-2xl font-bold text-slate-900">Fee Payments</h1>
+      <div className="mb-6 flex gap-2">
+        {(['pending', 'history'] as const).map((t) => (
+          <button key={t} type="button" onClick={() => setTab(t)} className={`min-h-11 rounded-lg px-4 text-sm font-medium capitalize outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${tab === t ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>{t}</button>
         ))}
       </div>
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-      {loading && <p className="text-slate-400">Loading…</p>}
-      {!loading && displayed.length === 0 && <p className="text-slate-400">No {tab} fees.</p>}
+      {error && <p role="alert" className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      {loading && <p className="text-slate-400">Loading...</p>}
+      {!loading && failed && (
+        <div role="alert" className="rounded-xl border border-slate-200 bg-white p-6 text-center">
+          <p className="mb-3 text-sm text-slate-600">Could not load your fees.</p>
+          <button type="button" onClick={load} className="min-h-11 rounded-lg border border-blue-200 px-5 text-sm font-semibold text-blue-600">Try again</button>
+        </div>
+      )}
+      {!loading && !failed && displayed.length === 0 && <p className="text-slate-400">No {tab} fees.</p>}
       <div className="space-y-4">
-        {displayed.map(f => (
-          <div key={f.id} className="bg-white border border-slate-200 rounded-xl p-5 flex justify-between items-center">
-            <div>
-              <p className="font-semibold text-slate-900">{f.description}</p>
-              {f.due_date && <p className="text-sm text-slate-500">Due: {new Date(f.due_date).toLocaleDateString('en-GB')}</p>}
+        {displayed.map((f) => (
+          <div key={f.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-5">
+            <div className="min-w-0">
+              <p className="font-semibold text-slate-900">{f.description || 'School fee'}</p>
+              {many && f.student_name && <p className="text-sm text-slate-500">{f.student_name}</p>}
+              {f.due_date && <p className="text-sm text-slate-500">Due: {new Intl.DateTimeFormat('en-NG', { timeZone: 'Africa/Lagos', dateStyle: 'medium' }).format(new Date(f.due_date))}</p>}
             </div>
-            <div className="text-right">
-              <p className="font-bold text-blue-600 mb-2">₦{Number(f.amount).toLocaleString()}</p>
+            <div className="shrink-0 text-right">
+              <p className="mb-2 font-bold text-blue-600">{naira(f.amount)}</p>
               {tab === 'pending' && (
-                <button onClick={() => pay(f)} disabled={paying===f.id} className="px-4 py-1.5 rounded-lg bg-blue-600 text-white text-sm font-medium disabled:opacity-50">
-                  {paying===f.id ? 'Redirecting…' : 'Pay Now'}
+                <button type="button" onClick={() => pay(f)} disabled={paying === f.id} className="min-h-11 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50">
+                  {paying === f.id ? 'Redirecting...' : 'Pay now'}
                 </button>
               )}
-              {tab === 'history' && <span className="text-xs text-green-600 font-semibold">Paid</span>}
+              {tab === 'history' && <span className="text-xs font-semibold text-green-600">Paid</span>}
             </div>
           </div>
         ))}
