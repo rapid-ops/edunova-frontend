@@ -6,6 +6,7 @@ import { ArrowRight, Building2, ChevronDown, CircleCheck, Eye, EyeOff, Graduatio
 import api from '@/lib/api';
 import Logo from '@/components/Logo';
 import { Caption, LaptopArt, SocialIcon } from './art';
+import { CONTACT } from '@/lib/contact';
 
 const GID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '842943328007-1vm692lbekoqsu6nli8jsiquc560dj0p.apps.googleusercontent.com';
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -23,6 +24,8 @@ const ROLES: { key: RoleKey; title: string; desc: string; Icon: React.ElementTyp
   { key: 'parent', title: 'Parent', desc: "Stay updated on your child's performance, attendance and fees.", Icon: Users, tint: 'bg-teal-100 text-teal-600' },
   { key: 'school_admin', title: 'School Administrator', desc: 'Manage your school, staff, classes, fees and more.', Icon: Building2, tint: 'bg-blue-100 text-blue-600' },
 ];
+type Soc = 'facebook' | 'x' | 'instagram' | 'youtube';
+const SOCIALS: [Soc, string][] = ([['facebook', CONTACT.facebook], ['x', CONTACT.twitter], ['instagram', CONTACT.instagram], ['youtube', CONTACT.youtube]] as [Soc, string][]).filter(([, u]) => !!u);
 const CHECKS = ['Secure', 'Fast', 'Easy to use', 'Free to get started'];
 const STRIP: [React.ElementType, string, string][] = [
   [ShieldCheck, 'Your data is secure', 'and protected'],
@@ -309,8 +312,8 @@ function Inner() {
             <Link href="/contact" className="hover:text-blue-600">Contact</Link>
           </nav>
           <div className="flex items-center gap-2 text-[#0b1a4a]">
-            {(['facebook', 'x', 'instagram', 'youtube'] as const).map((n) => (
-              <a key={n} href="#" aria-label={n} className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-blue-50"><SocialIcon name={n} /></a>
+            {SOCIALS.map(([n, href]) => (
+              <a key={n} href={href} target="_blank" rel="noopener noreferrer" aria-label={n} className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-blue-50"><SocialIcon name={n} /></a>
             ))}
           </div>
         </div>

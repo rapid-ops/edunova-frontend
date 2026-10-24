@@ -70,6 +70,7 @@ const TOOLS = [
   { icon: Palette, label: 'Website Builder', href: '/dashboard/website' },
   { icon: Palette, label: 'Applications', href: '/dashboard/applications' },
   { icon: UserCheck, label: 'Approvals', href: '/school-admin/approvals' },
+  { icon: Users, label: 'Parents', href: '/school-admin/parents' },
 ];
 
 export default function SchoolAdminDashboard() {
