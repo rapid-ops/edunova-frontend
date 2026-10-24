@@ -1,95 +1,92 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Users, BookOpen, CreditCard, CalendarDays } from 'lucide-react';
+import Link from 'next/link';
+import { CalendarDays, CreditCard, BookOpen } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
+import { Child, ChildData, attendanceStats, outstanding, naira, recentResults, scoreText } from '@/lib/parent-utils';
+
+interface Row { child: Child; data: ChildData | null; }
 
 export default function ParentDashboard() {
-  const router = useRouter();
-  const { user } = useAuthStore();
-  const [children, setChildren] = useState<any[]>([]);
-  const [childData, setChildData] = useState<Record<number, any>>({});
+  const user = useAuthStore((s) => s.user);
+  const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => { useAuthStore.getState().hydrate(); }, []);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!user) return;
+    let alive = true;
     (async () => {
       try {
-        const cr = await api.get('/parents/children');
-        const list: any[] = cr.data.children || [];
-        setChildren(list);
-        const map: Record<number, any> = {};
-        await Promise.all(list.map(async (c: any) => {
-          const [att, grades, fees] = await Promise.all([
-            api.get(`/attendances/student/${c.id}`).catch(() => ({ data: {} })),
-            api.get(`/gradebooks/student/${c.id}`).catch(() => ({ data: { grades: [] } })),
-            api.get(`/fees/student/${c.id}`).catch(() => ({ data: { fees: [] } }))
-          ]);
-          map[c.id] = {
-            attendance: att.data.summary || att.data,
-            grades: grades.data.grades?.slice(0, 3) || [],
-            fees: (fees.data.fees || []).filter((f: any) => !f.paid)
-          };
-        }));
-        setChildData(map);
-      } catch {}
-      finally { setLoading(false); }
+        const r = await api.get(`/parents/children/${user.id}`);
+        const kids: Child[] = r.data.children || [];
+        const data = await Promise.all(
+          kids.map((c) => api.get(`/parents/child/${c.id}`).then((x) => x.data as ChildData).catch(() => null))
+        );
+        if (alive) setRows(kids.map((child, i) => ({ child, data: data[i] })));
+      } catch (e: any) {
+        if (alive) setError(e?.response?.data?.error || 'Could not load your children');
+      } finally { if (alive) setLoading(false); }
     })();
+    return () => { alive = false; };
   }, [user]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400 text-sm">Loading...</div>;
+  if (loading) return <div className="flex min-h-[60vh] items-center justify-center text-sm text-gray-400">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Parent Dashboard</h1>
-      <p className="text-sm text-gray-400 mb-6">Overview of your children's progress</p>
-
-      {!children.length ? (
-        <div className="bg-white border border-gray-200 rounded-xl p-10 text-center text-gray-400 text-sm">
-          No linked children found. Contact the school administrator.
+    <div className="mx-auto max-w-4xl p-4">
+      <h1 className="text-2xl font-bold text-gray-900">Parent Dashboard</h1>
+      <p className="mb-5 text-sm text-gray-400">Your children at a glance</p>
+      {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
+      {!rows.length && !error ? (
+        <div className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-400">
+          No linked children yet. Ask the school administrator to link your account.
         </div>
       ) : (
         <div className="space-y-4">
-          {children.map((child: any) => {
-            const d = childData[child.id] || {};
+          {rows.map(({ child, data }) => {
+            const att = attendanceStats(data?.attendance ?? null);
+            const owing = outstanding(data?.fees || []);
+            const owed = owing.reduce((s, f) => s + (Number(f.amount) || 0), 0);
+            const grades = recentResults(data?.results || []);
             return (
-              <div key={child.id} className="bg-white border border-gray-200 rounded-xl p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="font-semibold text-gray-900">{child.full_name}</h2>
-                    <p className="text-xs text-gray-400">{child.school_name || 'School'}</p>
+              <div key={child.id} className="rounded-xl border border-gray-200 bg-white p-5">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">
+                    {child.full_name?.[0]?.toUpperCase()}
                   </div>
-                  <button onClick={() => router.push('/parent/children')} className="text-xs text-blue-600 hover:underline">View Details</button>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="bg-blue-50 rounded-lg p-3">
-                    <CalendarDays size={14} className="text-blue-600 mb-1" />
-                    <p className="text-lg font-bold text-gray-900">{d.attendance?.rate ?? '—'}%</p>
-                    <p className="text-xs text-gray-400">Attendance</p>
-                  </div>
-                  <div className="bg-green-50 rounded-lg p-3">
-                    <BookOpen size={14} className="text-green-600 mb-1" />
-                    <p className="text-lg font-bold text-gray-900">{d.grades?.length ?? 0}</p>
-                    <p className="text-xs text-gray-400">Recent Grades</p>
-                  </div>
-                  <div className="bg-red-50 rounded-lg p-3">
-                    <CreditCard size={14} className="text-red-500 mb-1" />
-                    <p className="text-lg font-bold text-gray-900">{d.fees?.length ?? 0}</p>
-                    <p className="text-xs text-gray-400">Unpaid Fees</p>
-                  </div>
-                  <div className="bg-purple-50 rounded-lg p-3">
-                    <Users size={14} className="text-purple-600 mb-1" />
-                    <p className="text-lg font-bold text-gray-900">{child.class_name || '—'}</p>
-                    <p className="text-xs text-gray-400">Class</p>
+                  <div className="min-w-0">
+                    <h2 className="truncate font-semibold text-gray-900">{child.full_name}</h2>
+                    {child.email && <p className="truncate text-xs text-gray-400">{child.email}</p>}
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2 mt-4">
-                  <button onClick={() => router.push(`/fees?student=${child.id}`)} className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg">Pay Fees</button>
-                  <button onClick={() => router.push(`/attendance?student=${child.id}`)} className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg">Attendance</button>
-                  <button onClick={() => router.push('/messages')} className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg">Messages</button>
+                {!data ? (
+                  <p className="text-sm text-gray-400">Details are unavailable right now.</p>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-lg bg-blue-50 p-3">
+                      <CalendarDays size={14} className="mb-1 text-blue-600" />
+                      <p className="text-lg font-bold text-gray-900">{att.rate === null ? 'No records' : `${att.rate}%`}</p>
+                      <p className="text-xs text-gray-500">Attendance{att.total ? ` (${att.absent} absent)` : ''}</p>
+                    </div>
+                    <div className="rounded-lg bg-green-50 p-3">
+                      <BookOpen size={14} className="mb-1 text-green-600" />
+                      {grades.length ? grades.map((g) => (
+                        <p key={g.id} className="truncate text-xs text-gray-700">{g.assessment_title}: <span className="font-semibold">{scoreText(g)}</span></p>
+                      )) : <p className="text-sm text-gray-500">No grades yet</p>}
+                      <p className="mt-1 text-xs text-gray-500">Recent grades</p>
+                    </div>
+                    <div className="rounded-lg bg-red-50 p-3">
+                      <CreditCard size={14} className="mb-1 text-red-500" />
+                      <p className="text-lg font-bold text-gray-900">{owing.length ? naira(owed) : 'Nothing due'}</p>
+                      <p className="text-xs text-gray-500">{owing.length} fee notice{owing.length === 1 ? '' : 's'} not marked paid</p>
+                    </div>
+                  </div>
+                )}
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link href="/parent/fees" className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs text-gray-700">Pay fees</Link>
+                  <Link href="/parent/children" className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs text-gray-700">Attendance and details</Link>
                 </div>
               </div>
             );
