@@ -42,7 +42,7 @@ export default function CourseDetailPage() {
       setLessons(lessonsRes.lessons || []);
 
       if (isStudent && user.id) {
-        const progRes = await fetch(`${API}/progress/${user.id}/${id}`, { headers }).then(r => r.json());
+        const progRes = await fetch(`${API}/progresss/${user.id}/${id}`, { headers }).then(r => r.json());
         setProgress(progRes.progress || []);
         setCompletionPct(progRes.completion_percent || 0);
       }
@@ -55,7 +55,7 @@ export default function CourseDetailPage() {
 
   const markComplete = async (lessonId: number) => {
     try {
-      await fetch(`${API}/progress`, {
+      await fetch(`${API}/progresss`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ student_id: user.id, lesson_id: lessonId, course_id: Number(id), watch_percent: 100, completed: true, school_id: user.school_id }),
@@ -87,11 +87,16 @@ export default function CourseDetailPage() {
     e.preventDefault();
     setError(''); setSaving(true);
     try {
-      await fetch(`${API}/lessons`, {
+      const r = await fetch(`${API}/lessons`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ ...form, course_id: Number(id), position: Number(form.position) }),
       });
+      if (!r.ok) {
+        let m = 'The lesson could not be saved. Please try again.';
+        try { const d = await r.json(); if (d.error) m = d.error; } catch {}
+        setError(m); setSaving(false); return;
+      }
       setShowForm(false);
       setForm({ title: '', content: '', video_url: '', position: String(lessons.length) });
       fetchData();
