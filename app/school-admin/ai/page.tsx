@@ -2,26 +2,33 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
-import { Brain, AlertTriangle, MessageSquare, Send, RotateCcw, ArrowRight } from 'lucide-react';
+import { Brain, AlertTriangle, MessageSquare, History as HistoryIcon, Send, RotateCcw, ArrowRight, Plus, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
 import { enabledNav, type AdminNavItem } from '@/lib/admin-nav';
 
-type Tab = 'chat' | 'dropout';
+type Tab = 'chat' | 'history' | 'dropout';
 type Msg = { role: 'user' | 'assistant'; content: string; error?: boolean };
 type Overview = { students: number | null; teachers: number | null; classes: number | null; courses: number | null; published_courses: number | null; at_risk: number | null };
+type ChatItem = { id: number; title: string; updated_at: string };
 
 const MARKER = /\[\[page:([^\]]{0,60})\]\]/g;
+const ANY_MARKER = /\[\[[^\]]*\]\]/g;
 
 const greetingWord = () => {
   const h = parseInt(new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hourCycle: 'h23', timeZone: 'Africa/Lagos' }).format(new Date()), 10);
   return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
 };
 
+const when = (iso: string) => {
+  try { return new Date(iso).toLocaleString('en-GB', { timeZone: 'Africa/Lagos', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
+  catch { return ''; }
+};
+
 function Answer({ text, nav, go }: { text: string; nav: AdminNavItem[]; go: (i: AdminNavItem) => void }) {
   const keys = Array.from(new Set(Array.from(text.matchAll(MARKER)).map((m) => m[1].trim())));
   const known = keys.map((k) => nav.find((n) => String(n.key) === k)).filter(Boolean) as AdminNavItem[];
-  const body = text.replace(/\[\[[^\]]*\]\]/g, '').trim();
+  const body = text.replace(ANY_MARKER, '').trim();
   return (
     <div>
       <ReactMarkdown
@@ -58,12 +65,16 @@ export default function SchoolAdminAIPage() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('chat');
   const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [chatId, setChatId] = useState<number | null>(null);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [overview, setOverview] = useState<Overview | null>(null);
+  const [chats, setChats] = useState<ChatItem[]>([]);
+  const [chatsLoading, setChatsLoading] = useState(false);
+  const [notice, setNotice] = useState('');
   const [dropout, setDropout] = useState<any[]>([]);
   const [dropoutLoading, setDropoutLoading] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const nav = useMemo(() => enabledNav(), []);
   const pages = useMemo(() => nav.map((i) => ({ key: i.key, label: i.label })), [nav]);
@@ -74,7 +85,40 @@ export default function SchoolAdminAIPage() {
   useEffect(() => {
     api.get('/ai/school-admin-overview').then((r) => setOverview(r.data.overview)).catch(() => {});
   }, []);
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [msgs, loading]);
+
+  useEffect(() => {
+    const el = scrollRef.current; if (!el) return;
+    const down = () => { el.scrollTop = el.scrollHeight; };
+    down();
+    const raf = requestAnimationFrame(down);
+    const t = setTimeout(down, 150);
+    return () => { cancelAnimationFrame(raf); clearTimeout(t); };
+  }, [msgs, loading, tab]);
+
+  const loadChats = async () => {
+    setChatsLoading(true); setNotice('');
+    try { const r = await api.get('/ai/school-admin-chats'); setChats(r.data.chats || []); }
+    catch { setNotice('Could not load your saved chats. Please try again.'); }
+    finally { setChatsLoading(false); }
+  };
+  useEffect(() => { if (tab === 'history') loadChats(); }, [tab]);
+
+  const openChat = async (id: number) => {
+    setNotice('');
+    try {
+      const r = await api.get('/ai/school-admin-chats/' + id);
+      setMsgs((r.data.chat.messages || []) as Msg[]); setChatId(id); setTab('chat');
+    } catch { setNotice('Could not open that chat. Please try again.'); }
+  };
+  const removeChat = async (id: number) => {
+    if (!window.confirm('Delete this chat? This cannot be undone.')) return;
+    try {
+      await api.delete('/ai/school-admin-chats/' + id);
+      setChats((p) => p.filter((c) => c.id !== id));
+      if (chatId === id) { setMsgs([]); setChatId(null); }
+    } catch { setNotice('Could not delete that chat. Please try again.'); }
+  };
+  const newChat = () => { if (loading) return; setMsgs([]); setChatId(null); setTab('chat'); };
 
   const chips = useMemo(() => {
     const c: string[] = [];
@@ -92,13 +136,15 @@ export default function SchoolAdminAIPage() {
       const r = await api.post('/ai/school-admin-query', {
         question: q,
         pages,
+        chat_id: chatId ?? undefined,
         history: history.filter((m) => !m.error).slice(-10).map((m) => ({ role: m.role, content: m.content })),
       });
+      if (r.data.chat_id) setChatId(r.data.chat_id);
       setMsgs((p) => [...p, { role: 'assistant', content: String(r.data.reply || '') }]);
     } catch (e: any) {
       const s = e?.response?.status; const server = e?.response?.data?.error;
       const text = !e?.response ? 'Could not reach the server. Check your internet and try again.'
-        : [400, 403, 429, 502, 504].includes(s) && typeof server === 'string' ? server
+        : [400, 403, 404, 429, 502, 504].includes(s) && typeof server === 'string' ? server
         : 'Something went wrong. Please try again.';
       setMsgs((p) => [...p, { role: 'assistant', content: text, error: true }]);
     } finally { setLoading(false); }
@@ -144,12 +190,19 @@ export default function SchoolAdminAIPage() {
       <h1 className="text-2xl font-bold flex items-center gap-2"><Brain size={22} className="text-blue-600" />School AI</h1>
       <div className="flex flex-wrap gap-2">
         {tabBtn('chat', 'Ask a question', MessageSquare)}
+        {tabBtn('history', 'Chat history', HistoryIcon)}
         {tabBtn('dropout', 'Students at risk', AlertTriangle)}
       </div>
 
       {tab === 'chat' && (
-        <div className="bg-white rounded-xl border flex flex-col overflow-hidden h-[70vh] min-h-[380px]">
-          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
+        <div className="bg-white rounded-xl border flex flex-col overflow-hidden h-[calc(100dvh-14rem)] min-h-[360px]">
+          {msgs.length > 0 && (
+            <div className="flex items-center justify-between gap-2 px-3 py-1 border-b">
+              <span className="text-xs text-gray-500">Saved automatically</span>
+              <button onClick={newChat} className="inline-flex items-center gap-1 min-h-[44px] px-3 rounded-lg text-sm text-blue-700 font-medium"><Plus size={16} />New chat</button>
+            </div>
+          )}
+          <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 space-y-3">
             {msgs.length === 0 && (
               <div className="space-y-4">
                 <div>
@@ -188,7 +241,6 @@ export default function SchoolAdminAIPage() {
                 {[0, 1, 2].map((i) => <span key={i} className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />)}
               </div>
             )}
-            <div ref={bottomRef} />
           </div>
           <form onSubmit={(e) => { e.preventDefault(); send(); }} className="flex gap-2 p-3 border-t">
             <input
@@ -204,6 +256,29 @@ export default function SchoolAdminAIPage() {
               <Send size={18} />
             </button>
           </form>
+        </div>
+      )}
+
+      {tab === 'history' && (
+        <div className="bg-white rounded-xl border p-3 sm:p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-semibold">Your saved chats</h2>
+            <button onClick={newChat} className="inline-flex items-center gap-1 min-h-[44px] px-3 rounded-lg bg-blue-600 text-white text-sm font-medium"><Plus size={16} />New chat</button>
+          </div>
+          {notice && <p className="text-sm text-red-600">{notice}</p>}
+          {chatsLoading && <p className="text-sm text-gray-500">Loading...</p>}
+          {!chatsLoading && !notice && chats.length === 0 && <p className="text-sm text-gray-500">No saved chats yet. Your questions are saved here automatically.</p>}
+          <ul className="divide-y">
+            {chats.map((c) => (
+              <li key={c.id} className="flex items-center gap-2">
+                <button onClick={() => openChat(c.id)} className="flex-1 min-w-0 min-h-[44px] py-2 text-left">
+                  <span className="block text-sm font-medium text-gray-800 break-words">{c.title || 'Chat'}</span>
+                  <span className="block text-xs text-gray-500">{when(c.updated_at)}</span>
+                </button>
+                <button onClick={() => removeChat(c.id)} aria-label="Delete chat" className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500"><Trash2 size={18} /></button>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
