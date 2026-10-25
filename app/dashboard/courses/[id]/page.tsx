@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import LoadingScreen from '@/components/LoadingScreen';
+import VideoPlayer from '@/components/VideoPlayer';
+import { uploadLessonFile } from '@/lib/lesson-upload';
 import { ArrowLeft, Plus, Trash2, Video, FileText, BookOpen, Eye, EyeOff, ChevronRight, Clock, CheckCircle, Lock, PlayCircle, Star, Bookmark, BookmarkCheck } from 'lucide-react';
 
 const API = 'https://edunova-backend-2x7h.onrender.com/api';
@@ -23,6 +25,8 @@ export default function CourseDetailPage() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [bookmarked, setBookmarked] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploadPct, setUploadPct] = useState(0);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : {};
@@ -97,8 +101,19 @@ export default function CourseDetailPage() {
         try { const d = await r.json(); if (d.error) m = d.error; } catch {}
         setError(m); setSaving(false); return;
       }
+      let fileMsg = '';
+      if (file) {
+        try {
+          const d = await r.json();
+          await uploadLessonFile(d.lesson.id, file, setUploadPct);
+        } catch (e: any) {
+          fileMsg = e?.message || 'The file could not be uploaded.';
+        }
+      }
+      setFile(null); setUploadPct(0);
       setShowForm(false);
       setForm({ title: '', content: '', video_url: '', position: String(lessons.length) });
+      if (fileMsg) alert('Your lesson was saved, but the file was not uploaded. ' + fileMsg + ' You can add the file again from the lesson page.');
       fetchData();
     } catch { setError('Failed to create lesson'); }
     setSaving(false);
@@ -203,6 +218,23 @@ export default function CourseDetailPage() {
               <label className="text-xs text-gray-400 mb-1 block">Video URL (optional)</label>
               <input value={form.video_url} onChange={e => setForm({ ...form, video_url: e.target.value })} placeholder="https://youtube.com/watch?v=..." className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
+            {/^https:\/\/\S+\.\S+/.test(form.video_url.trim()) && (
+              <div>
+                <p className="text-xs text-gray-400 mb-1">Video preview. This is how students will see your video.</p>
+                <div className="rounded-xl overflow-hidden"><VideoPlayer key={form.video_url.trim()} url={form.video_url.trim()} lessonId="preview" /></div>
+              </div>
+            )}
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Or upload a file (optional)</label>
+              <input type="file" accept=".mp4,.mov,.webm,.pdf,.docx,.pptx,.jpg,.jpeg,.png,.gif,.webp" onChange={e => setFile(e.target.files?.[0] || null)} className="w-full text-sm text-gray-600" />
+              <p className="text-xs text-gray-400 mt-1">Videos, PDF, Word, PowerPoint and pictures up to 50 MB. For longer videos, paste a video link above instead.</p>
+              {file && saving && (
+                <div className="mt-2">
+                  <div className="h-2 bg-gray-100 rounded-full"><div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadPct}%` }} /></div>
+                  <p className="text-xs text-gray-500 mt-1">Uploading {uploadPct}%</p>
+                </div>
+              )}
+            </div>
             <div className="flex gap-3">
               <button type="submit" disabled={saving} className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium disabled:opacity-50">{saving ? 'Saving...' : 'Save Lesson'}</button>
               <button type="button" onClick={() => setShowForm(false)} className="bg-gray-100 text-gray-500 px-5 py-2.5 rounded-lg text-sm">Cancel</button>
@@ -238,6 +270,7 @@ export default function CourseDetailPage() {
                           <div className="flex items-center gap-3 mt-0.5">
                             <span className="text-xs text-gray-400">~10 min</span>
                             {l.video_url && <span className="flex items-center gap-1 text-xs text-blue-500"><Video size={10} />Video</span>}
+                            {(l as any).file_name && <span className="flex items-center gap-1 text-xs text-blue-500"><FileText size={10} />File</span>}
                             {completed && <span className="text-xs text-green-600 font-medium">Completed</span>}
                             {isNext && isStudent && !completed && <span className="text-xs text-blue-600 font-medium">Up next</span>}
                           </div>

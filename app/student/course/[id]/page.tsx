@@ -5,7 +5,8 @@ import { ArrowLeft, Check, Circle, Lock, MessageSquare, Zap } from 'lucide-react
 import { AnimatePresence, motion } from 'framer-motion';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
-import LessonPlayer from '@/components/LessonPlayer';
+import VideoPlayer from '@/components/VideoPlayer';
+import LessonFile from '@/components/LessonFile';
 import LessonDiscussion from '@/components/LessonDiscussion';
 
 interface Lesson { id: number; title: string; content?: string | null; video_url?: string | null; locked?: boolean; unlocks_at?: string | null; }
@@ -162,13 +163,17 @@ export default function CourseViewPage() {
             <div className="space-y-4">
               <h2 className="text-lg font-bold text-gray-900">{sel.title}</h2>
               {sel.video_url && (
-                <LessonPlayer
+                <VideoPlayer
                   key={sel.id}
-                  src={sel.video_url}
-                  initialPercent={Number(progress[sel.id]?.watch_percent) || 0}
-                  completed={selDone}
-                  onSave={(p, d) => saveProgress(sel.id, p, d)}
+                  url={sel.video_url}
+                  lessonId={String(sel.id)}
+                  initialProgress={Number(progress[sel.id]?.watch_percent) || 0}
+                  onProgressSave={(p) => saveProgress(sel.id, p, selDone)}
+                  onComplete={() => saveProgress(sel.id, 100, true)}
                 />
+              )}
+              {(sel as any).file_name && !sel.locked && (
+                <LessonFile key={`file-${sel.id}`} lessonId={sel.id} name={(sel as any).file_name} type={(sel as any).file_type} size={(sel as any).file_size} />
               )}
               <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3">
                 <span className="text-sm text-gray-500">{selDone ? 'Lesson completed' : 'Watch to 90% or mark it complete'}</span>

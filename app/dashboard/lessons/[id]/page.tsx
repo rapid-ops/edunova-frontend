@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, FileText } from 'lucide-react';
 import LoadingScreen from '@/components/LoadingScreen';
 import VideoPlayer from '@/components/VideoPlayer';
+import LessonFile from '@/components/LessonFile';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
 
@@ -71,6 +72,10 @@ export default function LessonPage() {
           <div className="flex items-center gap-2 text-blue-600 font-semibold mb-2"><FileText size={16} /> Lesson Notes</div>
           <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words">{lesson.content}</div>
         </div>
+      )}
+      {(lesson.file_name || ['teacher', 'school_admin', 'super_admin'].includes(user?.role || '')) && (
+        <LessonFile lessonId={String(id)} name={lesson.file_name} type={lesson.file_type} size={lesson.file_size}
+          canManage={['teacher', 'school_admin', 'super_admin'].includes(user?.role || '')} onChanged={load} />
       )}
       {lesson.file_url && (
         <a href={lesson.file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 text-sm underline min-h-[44px]">
