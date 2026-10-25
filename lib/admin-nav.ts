@@ -6,7 +6,7 @@ export interface AdminNavItem { key: string; label: string; short?: string; icon
 export const adminNav: AdminNavItem[] = [
   { key: 'dashboard', label: 'Dashboard', short: 'Home', icon: LayoutDashboard, href: '/school-admin', enabled: true },
   { key: 'students', label: 'Students', icon: Users, href: '/school-admin/students', enabled: true },
-  { key: 'teachers', label: 'Teachers', icon: UserCog, href: '/school-admin/teachers', enabled: false },
+  { key: 'teachers', label: 'Teachers', icon: UserCog, href: '/school-admin/teachers', enabled: true },
   { key: 'classes', label: 'Classes', icon: School, href: '/dashboard/classes', enabled: true },
   { key: 'courses', label: 'Courses', icon: BookOpen, href: '/dashboard/courses', enabled: true },
   { key: 'assessments', label: 'Assessments', icon: ClipboardCheck, href: '/school-admin/assessments', enabled: true },

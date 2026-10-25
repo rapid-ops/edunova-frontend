@@ -58,7 +58,7 @@ function Inner() {
     if (sp.get('totp') && p) setPartial(p);
   }, [sp]);
 
-  const finish = (d: any) => { setAuth(d.user, d.token, remember); router.push(HOME[d.user.role] || '/dashboard'); };
+  const finish = (d: any) => { setAuth(d.user, d.token, remember); router.push(d.must_change_password ? '/auth/set-password' : (HOME[d.user.role] || '/dashboard')); };
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError('');
@@ -117,14 +117,14 @@ const verify = async (e: React.FormEvent) => {
             <>
               <form onSubmit={signIn} className="space-y-5">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-[#0b1a4a]">Email Address or Username <span className="text-red-500">*</span></label>
+                  <label className="mb-1.5 block text-sm font-medium text-[#0b1a4a]">Email or school ID <span className="text-red-500">*</span></label>
                   <div className={field}>
                     <span className={iconBox}><Mail className="h-4 w-4" /></span>
-                    <input type="text" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={input} placeholder="Enter your email or username" required autoComplete="username" />
+                    <input type="text" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={input} placeholder="Enter your email or school ID" required autoComplete="username" />
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-[#0b1a4a]">Password <span className="text-red-500">*</span></label>
+                  <label className="mb-1.5 block text-sm font-medium text-[#0b1a4a]">Password or one-time code <span className="text-red-500">*</span></label>
                   <div className={field}>
                     <span className={iconBox}><Lock className="h-4 w-4" /></span>
                     <input type={show ? 'text' : 'password'} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className={input} placeholder="Enter your password" required autoComplete="current-password" />
@@ -139,6 +139,7 @@ const verify = async (e: React.FormEvent) => {
                   </label>
                   <Link href="/auth/forgot-password" className="text-sm font-medium text-blue-600 hover:underline">Forgot password?</Link>
                 </div>
+                <p className="text-xs text-slate-500">First time signing in? Use your school ID and the one-time code from your school. You will then choose your own password.</p>
                 <button type="submit" disabled={loading} className={btn}><LogIn className="h-4 w-4" />{loading ? 'Signing in...' : 'Sign In'}</button>
               </form>
               <div className="my-6 flex items-center gap-3">

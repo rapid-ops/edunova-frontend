@@ -55,7 +55,7 @@ function Body({ loading, bad, empty, onRetry, children }: { loading: boolean; ba
 const linkCls = 'inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-blue-600 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded';
 
 const TOOLS = [
-  { icon: Users, label: 'Students', href: '/dashboard/students' },
+  { icon: Users, label: 'Students', href: '/school-admin/students' },
   { icon: UserCog, label: 'Course Assign', href: '/dashboard/course-assignments' },
   { icon: DollarSign, label: 'Fees', href: '/school-admin/fees' },
   { icon: ClipboardList, label: 'Attendance', href: '/dashboard/attendance' },
