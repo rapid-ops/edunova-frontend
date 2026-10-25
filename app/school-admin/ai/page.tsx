@@ -21,7 +21,7 @@ const greetingWord = () => {
 function Answer({ text, nav, go }: { text: string; nav: AdminNavItem[]; go: (i: AdminNavItem) => void }) {
   const keys = Array.from(new Set(Array.from(text.matchAll(MARKER)).map((m) => m[1].trim())));
   const known = keys.map((k) => nav.find((n) => String(n.key) === k)).filter(Boolean) as AdminNavItem[];
-  const body = text.replace(MARKER, '').trim();
+  const body = text.replace(/\[\[[^\]]*\]\]/g, '').trim();
   return (
     <div>
       <ReactMarkdown
