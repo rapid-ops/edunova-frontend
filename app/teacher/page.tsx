@@ -1,153 +1,134 @@
 'use client';
-import LoadingScreen from '@/components/LoadingScreen';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Users, ClipboardCheck, CalendarDays, Eye, BookOpen, Bot, ClipboardList, PenSquare } from 'lucide-react';
+import StatCard from '@/components/admin/StatCard';
+import StatusBadge from '@/components/admin/StatusBadge';
+import DonutChart from '@/components/admin/DonutChart';
 import { useAuthStore } from '@/store/auth.store';
-import { joinRoom, getSocket } from '@/lib/socket';
-import api from '@/lib/api';
-import { Bell, BookOpen, Trophy, ClipboardList, Calendar, MessageCircle, ChevronRight, FlaskConical, FileCheck, Lightbulb, RefreshCcw, Presentation, UserCog } from 'lucide-react';
+import { Card, EmptyBlock, PageError, PageSkeleton, Bar, usePortalData, greeting, firstName, fmtDate, hhmm, pctTone } from '@/components/portal/blocks';
+
+const STATE: Record<string, { label: string; tone: 'green' | 'blue' | 'gray' }> = {
+  now: { label: 'In progress', tone: 'green' },
+  next: { label: 'Upcoming', tone: 'blue' },
+  done: { label: 'Finished', tone: 'gray' },
+};
 
 export default function TeacherDashboard() {
-  const router = useRouter();
-  const { user } = useAuthStore();
-  const [courses, setCourses] = useState<any[]>([]);
-  const [sessions, setSessions] = useState<any[]>([]);
-  const [announcements, setAnnouncements] = useState<any[]>([]);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [todayClasses, setTodayClasses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const user = useAuthStore((s) => s.user);
+  const { data: d, loading, err, reload } = usePortalData(user ? '/portal/teacher/' + user.id : null);
 
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const today = days[new Date().getDay()];
+  if (err) return <PageError err={err} onRetry={reload} />;
+  if (loading || !d) return <PageSkeleton />;
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) { router.push('/auth/login'); return; }
-    if (user) {
-      joinRoom(user.id);
-      fetchData();
-      const socket = getSocket();
-      socket.on('new_notification', (n: any) => setNotifications(p => [n, ...p]));
-      return () => { socket.off('new_notification'); };
-    }
-  }, [user]);
-
-  const fetchData = async () => {
-    try {
-      const [assignedRes, notifRes, sessionsRes, announceRes, ttRes] = await Promise.all([
-        api.get(`/course-assignments/teacher/${user?.id}`),
-        api.get(`/notifications/${user?.id}`),
-        api.get(`/class-sessions/teacher/${user?.id}`),
-        api.get(`/announcements/teacher/${user?.id}/${user?.school_id}`),
-        api.get(`/timetable/school/${user?.school_id}`),
-      ]);
-      setCourses(assignedRes.data.courses || []);
-      setNotifications((notifRes.data.notifications || []).filter((n: any) => !n.is_read));
-      setSessions((sessionsRes.data.sessions || []).filter((s: any) => s.is_active));
-      setAnnouncements((announceRes.data.announcements || []).slice(0, 3));
-      setTodayClasses((ttRes.data.timetable || []).filter((t: any) => t.day_of_week === today && t.teacher_id === user?.id));
-    } catch (err) {}
-    setLoading(false);
-  };
-
-  if (loading) return <LoadingScreen />;
+  const s = d.stats || {};
+  const courses: any[] = d.courses || [];
+  const classes: any[] = d.classes || [];
+  const today: any[] = d.today || [];
+  const recent: any[] = d.recent_submissions || [];
+  const dist = d.distribution || { excellent: 0, good: 0, average: 0, poor: 0 };
+  const total = dist.excellent + dist.good + dist.average + dist.poor;
+  const avgs = courses.filter((c) => c.average_percent !== null).map((c) => Number(c.average_percent));
+  const overall = avgs.length ? Math.round((avgs.reduce((a, b) => a + b, 0) / avgs.length) * 10) / 10 : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 pb-24">
-      <div className="bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between">
-        <div><p className="text-xs text-gray-400">Teacher Portal</p><h1 className="text-lg font-bold text-gray-900">{user?.full_name?.split(' ')[0]}</h1></div>
-        <button onClick={() => router.push('/profile')} className="w-9 h-9 rounded-full bg-purple-600 text-white text-sm font-bold flex items-center justify-center">{user?.full_name?.[0]}</button>
+    <div className="mx-auto max-w-7xl space-y-4 p-4 lg:p-6">
+      <section className="rounded-2xl bg-gradient-to-r from-blue-50 to-sky-100 p-5 shadow-sm">
+        <h1 className="break-words text-xl font-bold text-[#0b1a4a] sm:text-2xl">{greeting()}, {firstName(d.teacher?.full_name || user?.full_name)}!</h1>
+        <p className="mt-1 text-sm text-slate-600">Here is your teaching overview for today.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link href="/teacher/assessments" className="flex min-h-11 items-center gap-2 rounded-full border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 hover:bg-blue-50"><PenSquare className="h-4 w-4" /> Create an assessment</Link>
+          <Link href="/teacher/attendance" className="flex min-h-11 items-center gap-2 rounded-full border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 hover:bg-blue-50"><ClipboardList className="h-4 w-4" /> Take attendance</Link>
+          <Link href={d.links?.ai_tools || '/teacher/ai-tools'} className="flex min-h-11 items-center gap-2 rounded-full border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 hover:bg-blue-50"><Bot className="h-4 w-4" /> AI tools</Link>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <StatCard label="My classes" value={s.classes ?? 0} icon={BookOpen} tone="blue" hint="From your timetable" />
+        <StatCard label="My students" value={s.students ?? 0} icon={Users} tone="purple" hint="Across your courses" />
+        <StatCard label="To be graded" value={s.pending_grading ?? 0} icon={ClipboardCheck} tone="orange" hint="Submissions waiting" />
+        <StatCard label="Lessons today" value={s.lessons_today ?? 0} icon={CalendarDays} tone="blue" hint="On your timetable" />
+        <StatCard label="Attendance" value={s.attendance_rate === null || s.attendance_rate === undefined ? '--' : s.attendance_rate + '%'} icon={Eye} tone="green" hint={s.attendance_rate === null || s.attendance_rate === undefined ? 'No records this week' : 'Last 7 days'} />
       </div>
 
-      <div className="px-4 py-4 space-y-4">
-        {notifications.length > 0 && (
-          <button onClick={() => router.push('/dashboard/notifications')} className="w-full bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3 text-left">
-            <Bell size={18} className="text-blue-600 shrink-0" />
-            <p className="text-blue-600 font-medium text-sm flex-1">{notifications.length} new notification{notifications.length > 1 ? 's' : ''}</p>
-            <ChevronRight size={16} className="text-blue-400 shrink-0" />
-          </button>
-        )}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card title="Today's schedule" href="/teacher/timetable" linkLabel="Full timetable">
+          {today.length === 0 ? (
+            <EmptyBlock text="You have no lessons on your timetable today. The school office adds lessons to the timetable." href="/teacher/timetable" cta="Open timetable" />
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {today.map((t) => { const m = STATE[t.state] || STATE.next; return (
+                <li key={t.id} className="flex items-center justify-between gap-3 py-3">
+                  <div className="min-w-0"><p className="text-xs font-semibold text-slate-500">{hhmm(t.start_time)} - {hhmm(t.end_time)}</p><p className="truncate text-sm font-semibold text-slate-800">{t.course_title}</p><p className="truncate text-xs text-slate-500">{t.class_name}</p></div>
+                  <StatusBadge tone={m.tone}>{m.label}</StatusBadge>
+                </li>
+              ); })}
+            </ul>
+          )}
+        </Card>
 
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white border border-gray-200 rounded-xl p-3 text-center"><p className="text-2xl font-bold text-purple-600">{courses.length}</p><p className="text-xs text-gray-400 mt-0.5">Courses</p></div>
-          <div className="bg-white border border-gray-200 rounded-xl p-3 text-center"><p className="text-2xl font-bold text-green-600">{sessions.length}</p><p className="text-xs text-gray-400 mt-0.5">Live Q&As</p></div>
-          <div className="bg-white border border-gray-200 rounded-xl p-3 text-center"><p className="text-2xl font-bold text-blue-600">{todayClasses.length}</p><p className="text-xs text-gray-400 mt-0.5">Today</p></div>
-        </div>
-
-        {todayClasses.length > 0 && (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100"><Calendar size={15} className="text-gray-400" /><h2 className="font-semibold text-sm text-gray-900">Today's Classes</h2></div>
-            {todayClasses.map((t: any, i: number) => (
-              <div key={i} className="flex items-center justify-between px-4 py-3 border-b border-gray-50 last:border-0">
-                <div><p className="text-sm font-medium text-gray-900">{t.course_title || `Course ${t.course_id}`}</p><p className="text-xs text-gray-400">{t.class_name || `Class ${t.class_id}`}</p></div>
-                <span className="text-xs text-gray-500 font-medium">{t.start_time?.slice(0,5)} – {t.end_time?.slice(0,5)}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {sessions.length > 0 && (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-              <div className="flex items-center gap-2"><Presentation size={15} className="text-green-500" /><h2 className="font-semibold text-sm text-gray-900">Live Q&A Sessions</h2></div>
-              <button onClick={() => router.push('/dashboard/class-sessions')} className="text-xs text-blue-600">Manage</button>
+        <Card title="Class performance" href="/teacher/analytics" linkLabel="Details">
+          {total === 0 ? (
+            <EmptyBlock text="Class results will show here after you grade your first submissions." href="/teacher/assessments" cta="Go to assessments" />
+          ) : (
+            <div className="flex flex-col items-center gap-4 sm:flex-row">
+              <DonutChart size={140} thickness={18} centerLabel={overall === null ? '--' : overall + '%'} centerSub="Average"
+                segments={[{ label: 'Excellent', value: dist.excellent, color: '#22c55e' }, { label: 'Good', value: dist.good, color: '#3b82f6' }, { label: 'Average', value: dist.average, color: '#f59e0b' }, { label: 'Poor', value: dist.poor, color: '#ef4444' }]} />
+              <ul className="w-full space-y-1.5 text-sm">
+                <li className="flex justify-between"><span className="text-slate-600">Excellent (80% and above)</span><b>{dist.excellent}</b></li>
+                <li className="flex justify-between"><span className="text-slate-600">Good (60% to 79%)</span><b>{dist.good}</b></li>
+                <li className="flex justify-between"><span className="text-slate-600">Average (40% to 59%)</span><b>{dist.average}</b></li>
+                <li className="flex justify-between"><span className="text-slate-600">Poor (below 40%)</span><b>{dist.poor}</b></li>
+              </ul>
             </div>
-            {sessions.map((s: any) => (
-              <button key={s.id} onClick={() => router.push('/dashboard/class-sessions')} className="w-full flex items-center justify-between px-4 py-3 border-b border-gray-50 last:border-0 text-left active:bg-gray-50">
-                <div><p className="text-sm font-medium text-gray-900">{s.title}</p><p className="text-xs text-gray-400">{s.question_count} questions</p></div>
-                <span className="font-mono font-bold text-blue-600 text-sm bg-blue-50 px-2 py-1 rounded-lg">{s.code}</span>
-              </button>
-            ))}
-          </div>
-        )}
+          )}
+        </Card>
 
-        {courses.length > 0 && (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-              <div className="flex items-center gap-2"><BookOpen size={15} className="text-gray-400" /><h2 className="font-semibold text-sm text-gray-900">My Courses</h2></div>
-              <button onClick={() => router.push('/dashboard/course-assignments')} className="text-xs text-blue-600">See all</button>
-            </div>
-            {courses.slice(0, 4).map((c: any) => (
-              <button key={c.id} onClick={() => router.push(`/dashboard/courses/${c.course_id}`)} className="w-full flex items-center justify-between px-4 py-3 border-b border-gray-50 last:border-0 text-left active:bg-gray-50">
-                <div><p className="text-sm font-medium text-gray-900">{c.title}</p><p className="text-xs text-gray-400">{c.class_name || 'No class assigned'}</p></div>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${c.is_published ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>{c.is_published ? 'Live' : 'Draft'}</span>
-              </button>
-            ))}
-          </div>
-        )}
+        <Card title="Waiting to be graded" href={d.links?.grading || '/teacher/assessments'} linkLabel="Grade now">
+          <p className="text-3xl font-bold text-orange-500">{s.pending_grading ?? 0}</p>
+          <p className="mb-2 text-xs text-slate-500">submissions need your marks</p>
+          {recent.length === 0 ? (
+            <EmptyBlock text="Student submissions will show here as they come in." />
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {recent.map((r) => (
+                <li key={r.id} className="flex items-center justify-between gap-2 py-2">
+                  <div className="min-w-0"><p className="truncate text-sm font-semibold text-slate-800">{r.student_name}</p><p className="truncate text-xs text-slate-500">{r.assessment_title} · {fmtDate(r.submitted_at)}</p></div>
+                  <StatusBadge tone={r.status === 'graded' ? 'green' : 'orange'}>{r.status === 'graded' ? 'Graded' : 'To grade'}</StatusBadge>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
 
-        {announcements.length > 0 && (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-              <div className="flex items-center gap-2"><Bell size={15} className="text-gray-400" /><h2 className="font-semibold text-sm text-gray-900">Announcements</h2></div>
-              <button onClick={() => router.push('/dashboard/announcements')} className="text-xs text-blue-600">See all</button>
-            </div>
-            {announcements.map(a => (
-              <div key={a.id} className="px-4 py-3 border-b border-gray-50 last:border-0">
-                <p className="text-sm font-medium text-gray-900">{a.title}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{a.author_name} · {new Date(a.created_at).toLocaleDateString()}</p>
-              </div>
-            ))}
-          </div>
-        )}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card title="My courses and class averages" href="/teacher/analytics" linkLabel="Analytics">
+          {courses.length === 0 ? (
+            <EmptyBlock text="Courses assigned to you will show here. Ask the school office to assign your courses." />
+          ) : (
+            <ul className="space-y-3">
+              {courses.map((c) => (
+                <li key={c.id}>
+                  <div className="flex items-center justify-between gap-2"><p className="min-w-0 truncate text-sm font-semibold text-slate-800">{c.title}</p><StatusBadge tone={pctTone(c.average_percent)}>{c.average_percent === null ? 'No marks yet' : c.average_percent + '%'}</StatusBadge></div>
+                  <p className="mb-1 text-xs text-slate-500">{c.students} {c.students === 1 ? 'student' : 'students'}{c.pending > 0 ? ' · ' + c.pending + ' to grade' : ''}</p>
+                  <Bar value={c.average_percent} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
 
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { icon: ClipboardList, label: 'Attendance', href: '/dashboard/attendance', color: 'text-blue-600' },
-            { icon: Trophy, label: 'Gradebook', href: '/dashboard/gradebook', color: 'text-yellow-600' },
-            { icon: Presentation, label: 'Start Q&A', href: '/dashboard/class-sessions', color: 'text-green-600' },
-            { icon: MessageCircle, label: 'Messages', href: '/dashboard/messages', color: 'text-purple-600' },
-            { icon: FlaskConical, label: 'Virtual Labs', href: '/dashboard/virtual-labs', color: 'text-teal-600' },
-            { icon: FileCheck, label: 'Proof of Work', href: '/dashboard/proof-of-work', color: 'text-orange-500' },
-            { icon: Lightbulb, label: 'Suggestions', href: '/dashboard/suggestions', color: 'text-yellow-500' },
-            { icon: RefreshCcw, label: 'Course Evolution', href: '/dashboard/course-evolution', color: 'text-indigo-600' },
-          ].map(({ icon: Icon, label, href, color }) => (
-            <button key={label} onClick={() => router.push(href)} className="bg-white border border-gray-200 active:bg-gray-50 flex items-center gap-3 px-4 py-3 rounded-xl text-left transition">
-              <Icon size={18} className={color} />
-              <span className="text-sm font-medium text-gray-900">{label}</span>
-            </button>
-          ))}
-        </div>
+        <Card title="My classes" href="/teacher/timetable" linkLabel="Timetable">
+          {classes.length === 0 ? (
+            <EmptyBlock text="The classes you teach appear here once the school office puts you on the timetable." />
+          ) : (
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {classes.map((c) => (
+                <li key={c.id} className="rounded-xl bg-blue-50/60 p-3"><p className="truncate text-sm font-semibold text-slate-800">{c.name}</p><p className="text-xs text-slate-500">{c.lessons_per_week} {c.lessons_per_week === 1 ? 'lesson' : 'lessons'} a week</p></li>
+              ))}
+            </ul>
+          )}
+        </Card>
       </div>
     </div>
   );
