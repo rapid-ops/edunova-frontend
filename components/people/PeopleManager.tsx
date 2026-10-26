@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
-import { Clock, UserCheck, UserPlus, Users } from 'lucide-react';
+import { Clock, UserCheck, UserPlus, Users, Upload } from 'lucide-react';
+import Link from 'next/link';
 import api from '@/lib/api';
 import PageHeader from '@/components/admin/PageHeader';
 import StatCard from '@/components/admin/StatCard';
@@ -141,7 +142,7 @@ export default function PeopleManager({ role, title, subtitle, tabs }: { role: '
 
   return (
     <div className="space-y-5 p-4 sm:p-6">
-      <PageHeader title={title} subtitle={subtitle} actions={<button type="button" onClick={() => setAdding(true)} className={primaryBtn}><UserPlus size={16} />Add {word}</button>} />
+      <PageHeader title={title} subtitle={subtitle} actions={<div className="flex flex-wrap gap-2"><Link href={`/dashboard/import?role=${role}`} className={ghostBtn}><Upload size={16} />Import from a spreadsheet</Link><button type="button" onClick={() => setAdding(true)} className={primaryBtn}><UserPlus size={16} />Add {word}</button></div>} />
       {tabs}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label={`Total ${word}s`} value={s.total ?? 0} icon={Users} tone="blue" loading={loading && !summary} />
@@ -150,7 +151,7 @@ export default function PeopleManager({ role, title, subtitle, tabs }: { role: '
         <StatCard label="Needs attention" value={attention} icon={Clock} tone="orange" hint="Invited, pending or suspended" loading={loading && !summary} />
       </div>
       {error ? <ErrorState message={error} onRetry={load} /> : empty ? (
-        <EmptyState title={`Add your first ${word}`} message="Add one person at a time. You will get their sign-in details to hand over." action={<button type="button" onClick={() => setAdding(true)} className={`${primaryBtn} min-h-14 px-6 text-base`}><UserPlus size={18} />Add your first {word}</button>} />
+        <EmptyState title={`Add your first ${word}`} message="Add one person at a time. You will get their sign-in details to hand over." action={<div className="flex flex-col items-center gap-3"><button type="button" onClick={() => setAdding(true)} className={`${primaryBtn} min-h-14 px-6 text-base`}><UserPlus size={18} />Add your first {word}</button><Link href={`/dashboard/import?role=${role}`} className={ghostBtn}><Upload size={16} />Import from a spreadsheet</Link></div>} />
       ) : (
         <>
           <FilterBar search={q} onSearch={setQ} placeholder="Search by name, email or school ID">

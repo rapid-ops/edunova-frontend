@@ -40,7 +40,7 @@ const navGroups: Record<string, { icon: any; label: string; href: string }[][]> 
   school_admin: [
     [
       { icon: LayoutDashboard, label: 'Home', href: '/school-admin' },
-      { icon: Users, label: 'Students', href: '/dashboard/students' },
+      { icon: Users, label: 'Students', href: '/school-admin/students' },
       { icon: BookOpen, label: 'Courses', href: '/dashboard/courses' },
       { icon: Megaphone, label: 'Announce', href: '/dashboard/announcements' },
       { icon: MessageCircle, label: 'Messages', href: '/dashboard/messages' },
