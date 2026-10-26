@@ -1,182 +1,172 @@
 'use client';
-import LoadingScreen from '@/components/LoadingScreen';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useState } from 'react';
+import { Eye, Star, Wallet, CalendarDays, MessageSquare } from 'lucide-react';
+import StatCard from '@/components/admin/StatCard';
+import StatusBadge from '@/components/admin/StatusBadge';
+import Avatar from '@/components/admin/Avatar';
 import { useAuthStore } from '@/store/auth.store';
-import { joinRoom, getSocket } from '@/lib/socket';
-import api from '@/lib/api';
-import { Bell, Trophy, ClipboardList, Calendar, MessageCircle, ChevronRight, DollarSign, BookOpen, AlertTriangle } from 'lucide-react';
+import { Card, EmptyBlock, PageError, PageSkeleton, Bar, usePortalData, greeting, firstName, fmtDate, naira, dueLabel, pctTone } from '@/components/portal/blocks';
+
+const MARK: Record<string, { label: string; dot: string; tone: 'green' | 'orange' | 'red' }> = {
+  present: { label: 'Present', dot: 'bg-green-500', tone: 'green' },
+  late: { label: 'Late', dot: 'bg-orange-400', tone: 'orange' },
+  absent: { label: 'Absent', dot: 'bg-red-500', tone: 'red' },
+};
 
 export default function ParentDashboard() {
-  const router = useRouter();
-  const { user } = useAuthStore();
-  const [children, setChildren] = useState<any[]>([]);
-  const [selected, setSelected] = useState<any>(null);
-  const [childData, setChildData] = useState<any>(null);
-  const [announcements, setAnnouncements] = useState<any[]>([]);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const user = useAuthStore((s) => s.user);
+  const [child, setChild] = useState<number | null>(null);
+  const path = user ? '/portal/parent/' + user.id + (child ? '?child=' + child : '') : null;
+  const { data: d, loading, err, reload } = usePortalData(path);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) { router.push('/auth/login'); return; }
-    if (user) {
-      joinRoom(user.id);
-      fetchData();
-      const socket = getSocket();
-      socket.on('new_notification', (n: any) => setNotifications(p => [n, ...p]));
-      return () => { socket.off('new_notification'); };
-    }
-  }, [user]);
+  if (err) return <PageError err={err} onRetry={reload} />;
+  if (!d) return <PageSkeleton />;
 
-  const fetchData = async () => {
-    try {
-      const [childrenRes, notifRes] = await Promise.all([
-        api.get(`/parent/children/${user?.id}`),
-        api.get(`/notifications/${user?.id}`),
-      ]);
-      const kids = childrenRes.data.children || [];
-      setChildren(kids);
-      setNotifications((notifRes.data.notifications || []).filter((n: any) => !n.is_read));
-      if (kids.length > 0) await loadChild(kids[0]);
-    } catch (err) {}
-    setLoading(false);
-  };
-
-  const loadChild = async (child: any) => {
-    setSelected(child);
-    try {
-      const [childRes, announceRes] = await Promise.all([
-        api.get(`/parent/child/${child.id}`),
-        api.get(`/announcements/student/${child.id}/${user?.school_id}`).catch(() => ({ data: { announcements: [] } })),
-      ]);
-      setChildData(childRes.data);
-      setAnnouncements((announceRes.data.announcements || []).slice(0, 3));
-    } catch (err) {}
-  };
-
-  const gradeInfo = (score: number, total: number) => {
-    const p = (score / total) * 100;
-    return p >= 70 ? { g: 'A', c: 'text-green-600' } : p >= 60 ? { g: 'B', c: 'text-blue-600' } : p >= 50 ? { g: 'C', c: 'text-yellow-600' } : p >= 45 ? { g: 'D', c: 'text-orange-500' } : { g: 'F', c: 'text-red-500' };
-  };
-
-  const totalDays = (childData?.attendance?.present || 0) + (childData?.attendance?.absent || 0) + (childData?.attendance?.late || 0);
-  const attendancePct = totalDays > 0 ? Math.round((childData?.attendance?.present / totalDays) * 100) : 0;
-  const pendingFees = childData?.fees?.filter((f: any) => f.status !== 'paid') || [];
-
-  if (loading) return <LoadingScreen />;
+  const kids: any[] = d.children || [];
+  const sel = d.selected_child;
+  const c = d.child;
+  const notices: any[] = d.announcements || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 pb-24">
-      <div className="bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between">
-        <div><p className="text-xs text-gray-400">Parent Portal</p><h1 className="text-lg font-bold text-gray-900">{user?.full_name?.split(' ')[0]}</h1></div>
-        <button onClick={() => router.push('/profile')} className="w-9 h-9 rounded-full bg-green-600 text-white text-sm font-bold flex items-center justify-center">{user?.full_name?.[0]}</button>
-      </div>
+    <div className={'mx-auto max-w-7xl space-y-4 p-4 lg:p-6 ' + (loading ? 'opacity-60' : '')}>
+      <section className="rounded-2xl bg-gradient-to-r from-blue-50 to-sky-100 p-5 shadow-sm">
+        <h1 className="break-words text-xl font-bold text-[#0b1a4a] sm:text-2xl">Welcome back, {firstName(d.parent?.full_name || user?.full_name)}!</h1>
+        <p className="mt-1 text-sm text-slate-600">Stay informed and support your child&apos;s success.</p>
+      </section>
 
-      <div className="px-4 py-4 space-y-4">
-        {notifications.length > 0 && (
-          <button onClick={() => router.push('/dashboard/notifications')} className="w-full bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3 text-left">
-            <Bell size={18} className="text-blue-600 shrink-0" />
-            <p className="text-blue-600 font-medium text-sm flex-1">{notifications.length} new notification{notifications.length > 1 ? 's' : ''}</p>
-            <ChevronRight size={16} className="text-blue-400 shrink-0" />
-          </button>
-        )}
+      {kids.length === 0 ? (
+        <Card title="Your children">
+          <EmptyBlock text="No child is linked to your account yet. Please ask the school office to link your child to your account." />
+        </Card>
+      ) : (
+        <>
+          <div className="flex gap-3 overflow-x-auto pb-1" role="tablist" aria-label="Choose a child">
+            {kids.map((k) => {
+              const on = sel && Number(sel.id) === Number(k.id);
+              return (
+                <button key={k.id} type="button" role="tab" aria-selected={!!on} onClick={() => setChild(k.id)}
+                  className={'flex min-h-14 shrink-0 items-center gap-3 rounded-2xl border bg-white px-4 text-left shadow-sm ' + (on ? 'border-blue-500 ring-2 ring-blue-100' : 'border-slate-100')}>
+                  <Avatar name={k.full_name} src={k.avatar_url} size={40} />
+                  <span className="max-w-[160px] truncate text-sm font-semibold text-slate-800">{k.full_name}</span>
+                </button>
+              );
+            })}
+          </div>
 
-        {children.length === 0 ? (
-          <div className="bg-white border border-gray-200 rounded-xl p-8 text-center"><p className="text-gray-400 text-sm">No children linked yet. Contact school admin.</p></div>
-        ) : (
-          <>
-            {children.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {children.map(c => (
-                  <button key={c.id} onClick={() => loadChild(c)} className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ${selected?.id === c.id ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-600'}`}>{c.full_name.split(' ')[0]}</button>
-                ))}
+          {c && (
+            <>
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <StatCard label="Attendance" value={c.attendance.rate === null ? '--' : c.attendance.rate + '%'} icon={Eye} tone="green" hint={c.attendance.rate === null ? 'No records yet' : 'Last 30 days'} />
+                <StatCard label="Average grade" value={c.grades.average_percent === null ? '--' : c.grades.average_percent + '%'} icon={Star} tone="purple" hint={c.grades.average_percent === null ? 'No marks yet' : 'All graded work'} />
+                <StatCard label="Outstanding fees" value={naira(c.fees.outstanding_total)} icon={Wallet} tone="red" hint={c.fees.outstanding_count === 0 ? 'Nothing to pay' : c.fees.outstanding_count + ' unpaid'} />
+                <StatCard label="Coming up" value={c.upcoming.length} icon={CalendarDays} tone="blue" hint="Assignments and quizzes" />
               </div>
-            )}
 
-            {selected && childData && (
-              <>
-                <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 font-bold text-lg flex items-center justify-center shrink-0">{selected.full_name?.[0]}</div>
-                  <div><p className="font-semibold text-gray-900">{selected.full_name}</p><p className="text-xs text-gray-400">{selected.email}</p></div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-white border border-gray-200 rounded-xl p-3 text-center"><p className="text-2xl font-bold text-green-600">{childData.attendance?.present || 0}</p><p className="text-xs text-gray-400 mt-0.5">Present</p></div>
-                  <div className="bg-white border border-gray-200 rounded-xl p-3 text-center"><p className="text-2xl font-bold text-red-500">{childData.attendance?.absent || 0}</p><p className="text-xs text-gray-400 mt-0.5">Absent</p></div>
-                  <div className="bg-white border border-gray-200 rounded-xl p-3 text-center"><p className="text-2xl font-bold text-blue-600">{attendancePct}%</p><p className="text-xs text-gray-400 mt-0.5">Rate</p></div>
-                </div>
-
-                {pendingFees.length > 0 && (
-                  <button onClick={() => router.push('/payment')} className="w-full bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-left">
-                    <div className="flex items-center gap-2 mb-2"><AlertTriangle size={16} className="text-yellow-600" /><p className="text-yellow-700 font-semibold text-sm">Pending School Fees</p></div>
-                    {pendingFees.map((f: any) => (
-                      <div key={f.id} className="flex items-center justify-between mt-1">
-                        <p className="text-sm text-gray-700">{f.description}</p>
-                        <p className="text-sm font-bold text-gray-900">₦{Number(f.amount).toLocaleString()}</p>
-                      </div>
-                    ))}
-                    <div className="flex items-center gap-1 mt-2"><span className="text-xs text-yellow-600 font-medium">Tap to pay</span><ChevronRight size={12} className="text-yellow-600" /></div>
-                  </button>
-                )}
-
-                {childData.results?.length > 0 && (
-                  <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-                    <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100"><Trophy size={15} className="text-gray-400" /><h2 className="font-semibold text-sm text-gray-900">Academic Results</h2></div>
-                    {childData.results.slice(0, 5).map((r: any) => {
-                      const { g, c } = gradeInfo(r.score, r.total_marks);
+              <div className="grid gap-4 lg:grid-cols-3">
+                <Card title="Attendance this week" className="lg:col-span-2">
+                  <ul className="grid grid-cols-5 gap-2">
+                    {c.attendance.week.map((w: any) => {
+                      const m = w.status ? MARK[String(w.status).toLowerCase()] : null;
                       return (
-                        <div key={r.id} className="flex items-center justify-between px-4 py-3 border-b border-gray-50 last:border-0">
-                          <div><p className="text-sm font-medium text-gray-900">{r.assessment_title}</p><p className="text-xs text-gray-400 capitalize">{r.type}</p></div>
-                          <div className="text-right"><p className="text-xs text-gray-400">{r.score}/{r.total_marks}</p><p className={`text-xl font-bold ${c}`}>{g}</p></div>
-                        </div>
+                        <li key={w.date} className="flex flex-col items-center gap-1 rounded-xl bg-slate-50 p-2 text-center">
+                          <span className="text-xs font-semibold text-slate-600">{w.day}</span>
+                          <span className={'h-3 w-3 rounded-full ' + (m ? m.dot : 'bg-slate-300')} aria-hidden="true" />
+                          <span className="text-[11px] text-slate-500">{m ? m.label : 'No record'}</span>
+                        </li>
                       );
                     })}
-                  </div>
-                )}
+                  </ul>
+                  {c.attendance.week.every((w: any) => !w.status) && <p className="mt-3 text-xs text-slate-500">Attendance will show here once the teacher takes the register.</p>}
+                </Card>
 
-                {childData.enrollments?.length > 0 && (
-                  <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-                    <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100"><BookOpen size={15} className="text-gray-400" /><h2 className="font-semibold text-sm text-gray-900">Enrolled Courses</h2></div>
-                    {childData.enrollments.map((e: any) => (
-                      <div key={e.id} className="px-4 py-3 border-b border-gray-50 last:border-0"><p className="text-sm text-gray-900">{e.course_title}</p></div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </>
-        )}
-
-        {announcements.length > 0 && (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-              <div className="flex items-center gap-2"><Bell size={15} className="text-gray-400" /><h2 className="font-semibold text-sm text-gray-900">School Notices</h2></div>
-              <button onClick={() => router.push('/dashboard/announcements')} className="text-xs text-blue-600">See all</button>
-            </div>
-            {announcements.map(a => (
-              <div key={a.id} className="px-4 py-3 border-b border-gray-50 last:border-0">
-                <p className="text-sm font-medium text-gray-900">{a.title}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{new Date(a.created_at).toLocaleDateString()}</p>
+                <Card title="Fees and payments" href="/parent/fees" linkLabel="Open fees">
+                  {c.fees.outstanding_count === 0 ? (
+                    <EmptyBlock text="There are no unpaid fees right now." />
+                  ) : (
+                    <>
+                      <p className="text-2xl font-bold text-red-600">{naira(c.fees.outstanding_total)}</p>
+                      <p className="text-xs text-slate-500">{c.fees.outstanding_count} unpaid {c.fees.outstanding_count === 1 ? 'fee' : 'fees'}</p>
+                      <ul className="mt-2 divide-y divide-slate-100">
+                        {c.fees.items.map((f: any) => (
+                          <li key={f.id} className="flex items-center justify-between gap-2 py-2 text-sm"><span className="min-w-0 truncate text-slate-700">{f.description || 'School fee'}</span><span className="shrink-0 font-semibold text-slate-800">{naira(f.amount)}</span></li>
+                        ))}
+                      </ul>
+                      <Link href={d.links?.fees || '/parent/fees'} className="mt-3 flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700">View fees and pay</Link>
+                    </>
+                  )}
+                </Card>
               </div>
-            ))}
-          </div>
-        )}
 
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { icon: MessageCircle, label: 'Message School', href: '/dashboard/messages', color: 'text-blue-600' },
-            { icon: DollarSign, label: 'Pay Fees', href: '/payment', color: 'text-green-600' },
-            { icon: Calendar, label: 'Timetable', href: '/dashboard/timetable', color: 'text-orange-500' },
-            { icon: Bell, label: 'Notifications', href: '/dashboard/notifications', color: 'text-purple-600' },
-          ].map(({ icon: Icon, label, href, color }) => (
-            <button key={label} onClick={() => router.push(href)} className="bg-white border border-gray-200 active:bg-gray-50 flex items-center gap-3 px-4 py-3 rounded-xl text-left transition">
-              <Icon size={18} className={color} />
-              <span className="text-sm font-medium text-gray-900">{label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+              <div className="grid gap-4 lg:grid-cols-3">
+                <Card title="Recent grades">
+                  {c.grades.recent.length === 0 ? (
+                    <EmptyBlock text="Marks will appear here after teachers grade your child's work." />
+                  ) : (
+                    <ul className="space-y-3">
+                      {c.grades.recent.map((g: any) => (
+                        <li key={g.assessment_id}>
+                          <div className="flex items-center justify-between gap-2"><p className="min-w-0 truncate text-sm font-semibold text-slate-800">{g.assessment_title}</p><StatusBadge tone={pctTone(g.percent)}>{g.percent === null ? '--' : g.percent + '%'}</StatusBadge></div>
+                          <p className="mb-1 truncate text-xs text-slate-500">{g.course_title}</p>
+                          <Bar value={g.percent} color={g.percent !== null && g.percent >= 70 ? 'bg-green-500' : g.percent !== null && g.percent >= 50 ? 'bg-orange-400' : 'bg-red-500'} />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Card>
+
+                <Card title="Upcoming assessments">
+                  {c.upcoming.length === 0 ? (
+                    <EmptyBlock text="Upcoming assignments and quizzes with a due date will show here." />
+                  ) : (
+                    <ul className="divide-y divide-slate-100">
+                      {c.upcoming.map((a: any) => { const due = dueLabel(a.due_date); return (
+                        <li key={a.type + a.id} className="flex items-center justify-between gap-3 py-3">
+                          <div className="min-w-0"><p className="truncate text-sm font-semibold text-slate-800">{a.title}</p><p className="truncate text-xs text-slate-500">{a.course_title} · {fmtDate(a.due_date)}</p></div>
+                          <StatusBadge tone={due.tone}>{due.text}</StatusBadge>
+                        </li>
+                      ); })}
+                    </ul>
+                  )}
+                </Card>
+
+                <Card title="Recent assignments">
+                  {c.recent_assignments.length === 0 ? (
+                    <EmptyBlock text="Assignments given to your child will show here." />
+                  ) : (
+                    <ul className="divide-y divide-slate-100">
+                      {c.recent_assignments.map((a: any) => (
+                        <li key={a.id} className="flex items-center justify-between gap-3 py-3">
+                          <div className="min-w-0"><p className="truncate text-sm font-semibold text-slate-800">{a.title}</p><p className="truncate text-xs text-slate-500">{a.course_title}{a.due_date ? ' · due ' + fmtDate(a.due_date) : ''}</p></div>
+                          <StatusBadge tone={a.submitted ? 'green' : 'orange'}>{a.submitted ? 'Submitted' : 'Pending'}</StatusBadge>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Card>
+              </div>
+            </>
+          )}
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Card title="School notices" href="/dashboard/announcements" className="lg:col-span-2">
+              {notices.length === 0 ? (
+                <EmptyBlock text="Notices from the school will show here." />
+              ) : (
+                <ul className="divide-y divide-slate-100">
+                  {notices.map((n) => (
+                    <li key={n.id} className="py-3"><p className="text-sm font-semibold text-slate-800">{n.title}</p>{n.body && <p className="line-clamp-2 text-xs text-slate-600">{n.body}</p>}<p className="mt-1 text-[11px] text-slate-400">{fmtDate(n.created_at)}{n.author_name ? ' · ' + n.author_name : ''}</p></li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+            <Card title="Messages">
+              <p className="text-sm text-slate-600">Send a message to your child&apos;s teachers or read their replies.</p>
+              <Link href={d.links?.messages || '/dashboard/messages'} className="mt-3 flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700"><MessageSquare className="h-4 w-4" /> Open messages</Link>
+            </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 }
