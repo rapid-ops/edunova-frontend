@@ -34,7 +34,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             <p className="text-gray-500 text-sm mb-6">{this.state.error?.message}</p>
             <button
               onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload(); }}
-              className="bg-blue-600 hover:bg-blue-700 text-gray-900 px-6 py-2 rounded-lg text-sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm"
             >
               Reload
             </button>

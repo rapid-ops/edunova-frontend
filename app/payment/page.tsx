@@ -69,7 +69,7 @@ function PaymentContent() {
                 <button
                   onClick={() => handlePay(f)}
                   disabled={paying === f.id}
-                  className="w-full bg-green-600 hover:bg-green-700 text-gray-900 py-3 rounded-lg text-sm font-medium disabled:opacity-50"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg text-sm font-medium disabled:opacity-50"
                 >
                   {paying === f.id ? 'Redirecting...' : 'Pay Now'}
                 </button>

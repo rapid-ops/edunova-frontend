@@ -74,7 +74,7 @@ export default function NotificationsPage() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${tab === t ? 'bg-blue-600 text-gray-900' : 'bg-white text-gray-500'}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${tab === t ? 'bg-blue-600 text-white' : 'bg-white text-gray-500'}`}
             >
               {t === 'broadcast' ? 'Broadcast to All' : 'Send to Person'}
             </button>
@@ -107,7 +107,7 @@ export default function NotificationsPage() {
               </div>
               <Toggle checked={broadcastForm.send_whatsapp} onChange={() => setBroadcastForm({ ...broadcastForm, send_whatsapp: !broadcastForm.send_whatsapp })} />
             </div>
-            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-gray-900 py-3 rounded-lg text-sm font-medium">Send to All</button>
+            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-medium">Send to All</button>
           </form>
         ) : (
           <form onSubmit={handleDirect} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
@@ -139,7 +139,7 @@ export default function NotificationsPage() {
               </div>
               <Toggle checked={directForm.send_whatsapp} onChange={() => setDirectForm({ ...directForm, send_whatsapp: !directForm.send_whatsapp })} />
             </div>
-            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-gray-900 py-3 rounded-lg text-sm font-medium">Send Notification</button>
+            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-medium">Send Notification</button>
           </form>
         )}
       </div>

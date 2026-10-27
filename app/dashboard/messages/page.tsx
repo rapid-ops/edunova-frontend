@@ -87,7 +87,7 @@ export default function MessagesPage() {
           <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-900">←</button>
           <h1 className="text-xl font-bold">Messages</h1>
         </div>
-        <button onClick={() => setShowContacts(!showContacts)} className="bg-blue-600 hover:bg-blue-700 text-gray-900 text-sm px-4 py-2 rounded-lg">+ New</button>
+        <button onClick={() => setShowContacts(!showContacts)} className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg">+ New</button>
       </div>
 
       {showContacts && (
@@ -130,7 +130,7 @@ export default function MessagesPage() {
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((m) => (
                   <div key={m.id} className={`flex ${m.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-xs px-4 py-2 rounded-2xl text-sm ${m.sender_id === user?.id ? 'bg-blue-600 text-gray-900' : 'bg-gray-100 text-gray-900'}`}>
+                    <div className={`max-w-xs px-4 py-2 rounded-2xl text-sm ${m.sender_id === user?.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'}`}>
                       <p>{m.content}</p>
                       <p className="text-xs opacity-60 mt-1">{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
@@ -140,7 +140,7 @@ export default function MessagesPage() {
               </div>
               <div className="border-t border-gray-200 p-4 flex gap-3">
                 <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKey} placeholder="Type a message..." className="flex-1 bg-gray-100 text-gray-900 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-                <button onClick={sendMessage} className="bg-blue-600 hover:bg-blue-700 text-gray-900 px-5 py-3 rounded-xl text-sm">Send</button>
+                <button onClick={sendMessage} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl text-sm">Send</button>
               </div>
             </>
           )}

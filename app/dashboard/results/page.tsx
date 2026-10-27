@@ -151,7 +151,7 @@ export default function ResultsPage() {
                   className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none resize-none"
                 />
               </div>
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-gray-900 px-6 py-2 rounded-lg text-sm">
+              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm">
                 Save Result
               </button>
             </form>

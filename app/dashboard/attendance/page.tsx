@@ -74,7 +74,7 @@ export default function AttendancePage() {
         <button
           onClick={handleSave}
           disabled={loading || students.length === 0}
-          className="bg-green-600 hover:bg-green-700 text-gray-900 text-sm px-4 py-2 rounded-lg disabled:opacity-50"
+          className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg disabled:opacity-50"
         >
           {saved ? 'Saved!' : loading ? 'Saving...' : 'Save'}
         </button>
@@ -121,8 +121,8 @@ export default function AttendancePage() {
                       onClick={() => setMarking({ ...marking, [s.id]: status })}
                       className={`text-xs px-3 py-1 rounded-full transition ${
                         marking[s.id] === status
-                          ? status === 'present' ? 'bg-green-600 text-gray-900'
-                          : status === 'absent' ? 'bg-red-600 text-gray-900'
+                          ? status === 'present' ? 'bg-green-600 text-white'
+                          : status === 'absent' ? 'bg-red-600 text-white'
                           : 'bg-yellow-600 text-gray-900'
                           : 'bg-gray-100 text-gray-500'
                       }`}

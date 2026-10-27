@@ -81,7 +81,7 @@ export default function FeesPage() {
           <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-900">←</button>
           <h1 className="text-xl font-bold">Fees</h1>
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="bg-blue-600 hover:bg-blue-700 text-gray-900 text-sm px-4 py-2 rounded-lg">+ Add Fee</button>
+        <button onClick={() => setShowForm(!showForm)} className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg">+ Add Fee</button>
       </div>
 
       <div className="max-w-4xl mx-auto p-6">
@@ -91,8 +91,8 @@ export default function FeesPage() {
             {error && <p className="text-red-400 text-sm">{error}</p>}
 
             <div className="flex gap-2">
-              <button type="button" onClick={() => setMode('class')} className={`px-4 py-2 rounded-lg text-sm ${mode === 'class' ? 'bg-blue-600 text-gray-900' : 'bg-gray-100 text-gray-500'}`}>By Class</button>
-              <button type="button" onClick={() => setMode('student')} className={`px-4 py-2 rounded-lg text-sm ${mode === 'student' ? 'bg-blue-600 text-gray-900' : 'bg-gray-100 text-gray-500'}`}>By Student</button>
+              <button type="button" onClick={() => setMode('class')} className={`px-4 py-2 rounded-lg text-sm ${mode === 'class' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'}`}>By Class</button>
+              <button type="button" onClick={() => setMode('student')} className={`px-4 py-2 rounded-lg text-sm ${mode === 'student' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'}`}>By Student</button>
             </div>
 
             {mode === 'class' ? (
@@ -126,7 +126,7 @@ export default function FeesPage() {
               <input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none" />
             </div>
             <div className="flex gap-3">
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-gray-900 px-6 py-2 rounded-lg text-sm">Create</button>
+              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm">Create</button>
               <button type="button" onClick={() => setShowForm(false)} className="text-gray-500 text-sm px-4 py-2">Cancel</button>
             </div>
           </form>

@@ -84,7 +84,7 @@ export default function TimetablePage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-blue-600 hover:bg-blue-700 text-gray-900 text-sm px-4 py-2 rounded-lg"
+          className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg"
         >
           + Add Entry
         </button>
@@ -162,7 +162,7 @@ export default function TimetablePage() {
               </div>
             </div>
             <div className="flex gap-3">
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-gray-900 px-6 py-2 rounded-lg text-sm">Save</button>
+              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm">Save</button>
               <button type="button" onClick={() => setShowForm(false)} className="text-gray-500 text-sm px-4 py-2">Cancel</button>
             </div>
           </form>

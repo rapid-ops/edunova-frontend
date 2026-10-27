@@ -72,7 +72,7 @@ export default function ClassesPage() {
           <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-900">←</button>
           <h1 className="text-xl font-bold">Classes</h1>
         </div>
-        <button onClick={() => { setEditing(null); setForm({ name: '', grade_level: '' }); setShowForm(!showForm); }} className="bg-blue-600 hover:bg-blue-700 text-gray-900 text-sm px-4 py-2 rounded-lg">+ Add Class</button>
+        <button onClick={() => { setEditing(null); setForm({ name: '', grade_level: '' }); setShowForm(!showForm); }} className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg">+ Add Class</button>
       </div>
 
       <div className="max-w-4xl mx-auto p-6">
@@ -89,7 +89,7 @@ export default function ClassesPage() {
               <input value={form.grade_level} onChange={(e) => setForm({ ...form, grade_level: e.target.value })} placeholder="e.g. JSS1, SS2, Grade 5" className="w-full bg-gray-100 text-gray-900 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div className="flex gap-3">
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-gray-900 px-6 py-2 rounded-lg text-sm">{editing ? 'Update' : 'Create'}</button>
+              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm">{editing ? 'Update' : 'Create'}</button>
               <button type="button" onClick={() => setShowForm(false)} className="text-gray-500 text-sm px-4 py-2">Cancel</button>
             </div>
           </form>
