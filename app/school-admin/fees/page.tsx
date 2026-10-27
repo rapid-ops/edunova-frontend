@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Bell, Clock, DollarSign, Plus, Wallet } from 'lucide-react';
+import Link from 'next/link';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
 import PageHeader from '@/components/admin/PageHeader';
@@ -22,6 +23,7 @@ type Panel = { type: 'create' } | { type: 'pay'; invoice: Invoice } | null;
 
 const PAGE = 20;
 const naira = (n: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 }).format(n);
+const nairaC = (n: number) => (n >= 1e9 ? '₦' + +(n / 1e9).toFixed(1) + 'B' : n >= 1e6 ? '₦' + +(n / 1e6).toFixed(1) + 'M' : naira(n));
 const fmtDate = (s: string) => new Intl.DateTimeFormat('en-NG', { timeZone: 'Africa/Lagos', dateStyle: 'medium' }).format(new Date(s));
 const todayLagos = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Lagos' }).format(new Date());
 const METHOD: Record<string, string> = { cash: 'Cash', bank_transfer: 'Bank transfer', pos: 'POS', cheque: 'Cheque', paystack: 'Online (Paystack)', other: 'Other' };
@@ -64,7 +66,7 @@ function CreateForm({ sid, onDone, onCancel }: { sid: number; onDone: () => void
     e.preventDefault();
     const x: Record<string, string> = {};
     const amt = Number(f.amount);
-    if (!f.student_id) x.student_id = 'Choose a student.';
+    if (!f.student_id) x.student_id = students.length ? 'Choose a student.' : 'Add students first';
     if (!f.amount || !Number.isFinite(amt) || amt <= 0) x.amount = 'Enter an amount greater than zero.';
     else if (amt > 99999999) x.amount = 'Amount is too large.';
     if (!f.description.trim()) x.description = 'Add a short description.';
@@ -83,10 +85,10 @@ function CreateForm({ sid, onDone, onCancel }: { sid: number; onDone: () => void
       {!sErr && !students && <Skeleton className="h-11 w-full" />}
       {!sErr && students && (
         <Field id="inv-student" label="Student" error={errs.student_id}>
-          <select id="inv-student" value={f.student_id} onChange={(e) => setF({ ...f, student_id: e.target.value })} className={`${selectClass} w-full`}>
-            <option value="">{students.length ? 'Select a student' : 'No students in this school yet'}</option>
+          <>{students.length === 0 && (<div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-blue-50 px-3 py-2"><p className="text-sm text-slate-700">There are no students in this school yet.</p><Link href="/school-admin/students" className="inline-flex min-h-11 items-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700">Add students</Link></div>)}<select id="inv-student" value={f.student_id} onChange={(e) => setF({ ...f, student_id: e.target.value })} className={`${selectClass} w-full`}>
+            <option value="">{students.length ? 'Select a student' : 'Add students first'}</option>
             {students.map((s) => <option key={s.id} value={s.id}>{s.full_name}</option>)}
-          </select>
+          </select></>
         </Field>
       )}
       <Field id="inv-amount" label="Amount (NGN)" error={errs.amount}>
@@ -222,10 +224,10 @@ export default function FeesFinancePage() {
       <div className="space-y-4 px-4 pt-3 lg:px-6">
         {notice && <p role="status" className={`rounded-xl px-4 py-3 text-sm font-medium ${notice.ok ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>{notice.text}</p>}
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard label="Total due" value={S ? naira(S.total_due) : ''} icon={DollarSign} tone="blue" loading={L} hint={S ? `${S.invoices} invoice${S.invoices === 1 ? '' : 's'}` : undefined} />
-          <StatCard label="Collected" value={S ? naira(S.collected) : ''} icon={Wallet} tone="green" loading={L} hint={S ? `${S.paid_count} paid` : undefined} />
-          <StatCard label="Outstanding" value={S ? naira(S.outstanding) : ''} icon={Clock} tone="orange" loading={L} hint={S ? `${S.unpaid_count} unpaid` : undefined} />
-          <StatCard label="Overdue" value={S ? naira(S.overdue_amount) : ''} icon={AlertTriangle} tone="red" loading={L} hint={S ? `${S.overdue_count} overdue` : undefined} />
+          <StatCard label="Total due" value={S ? nairaC(S.total_due) : ''} full={S ? naira(S.total_due) : undefined} icon={DollarSign} tone="blue" loading={L} hint={S ? `${S.invoices} invoice${S.invoices === 1 ? '' : 's'}` : undefined} />
+          <StatCard label="Collected" value={S ? nairaC(S.collected) : ''} full={S ? naira(S.collected) : undefined} icon={Wallet} tone="green" loading={L} hint={S ? `${S.paid_count} paid` : undefined} />
+          <StatCard label="Outstanding" value={S ? nairaC(S.outstanding) : ''} full={S ? naira(S.outstanding) : undefined} icon={Clock} tone="orange" loading={L} hint={S ? `${S.unpaid_count} unpaid` : undefined} />
+          <StatCard label="Overdue" value={S ? nairaC(S.overdue_amount) : ''} full={S ? naira(S.overdue_amount) : undefined} icon={AlertTriangle} tone="red" loading={L} hint={S ? `${S.overdue_count} overdue` : undefined} />
         </div>
 
         <div className={panel ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start lg:gap-4' : ''}>

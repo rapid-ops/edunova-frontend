@@ -116,7 +116,7 @@ export default function SchoolAdminDashboard() {
       {header}
       <div className="space-y-4 px-4 pt-3 lg:px-6">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard label="Students" value={t?.students ?? 0} icon={GraduationCap} tone="blue" loading={L} hint={t ? `${t.parents} parents` : undefined} />
+          <StatCard label="Students" value={t?.students ?? 0} icon={GraduationCap} tone="blue" loading={L} hint={t ? `${t.parents} ${t.parents === 1 ? 'parent' : 'parents'}` : undefined} />
           <StatCard label="Teachers" value={t?.teachers ?? 0} icon={UserCog} tone="purple" loading={L} />
           <StatCard label="Classes" value={t?.classes ?? 0} icon={School} tone="orange" loading={L} />
           <StatCard label="Courses" value={t?.courses ?? 0} icon={BookOpen} tone="green" loading={L} hint={t ? `${t.published_courses} published` : undefined} />
@@ -148,7 +148,7 @@ export default function SchoolAdminDashboard() {
           </Card>
           <div className="lg:col-span-2">
             <Card title="Attendance, last 7 days" action={<Link href="/dashboard/attendance" className={linkCls}>Open</Link>}>
-              <Body loading={L} bad={bad(trend)} onRetry={load} empty={trend && trend.length === 0 ? <EmptyState icon={ClipboardList} title="No attendance in the last 7 days" /> : null}>
+              <Body loading={L} bad={bad(trend)} onRetry={load} empty={trend && trend.length === 0 ? <p className="px-4 py-10 text-center text-sm text-slate-500">No attendance recorded in the last 7 days.</p> : null}>
                 {trend && <div className="p-4"><LineChart labels={trend.map((x) => fmtDay(x.date))} series={[{ name: 'Present rate', color: '#2563eb', values: trend.map((x) => (x.total ? Math.round((x.present / x.total) * 100) : null)) }]} /></div>}
               </Body>
             </Card>
