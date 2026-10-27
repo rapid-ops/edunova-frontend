@@ -159,7 +159,32 @@ export default function TakeQuizPage() {
                 {opt}
               </button>
             ))}
-            {q.type === 'short_answer' && (
+            {q.type === 'matching' && q.options && !Array.isArray(q.options) && (() => {
+              const mo = q.options as { lefts: string[]; rights: string[] };
+              const cur: Record<string, string> = {};
+              try {
+                (JSON.parse(answers[q.id] || '[]') as { left: string; right: string }[]).forEach(p => { cur[p.left] = p.right; });
+              } catch {}
+              const setPair = (left: string, right: string) => {
+                const next: Record<string, string> = { ...cur, [left]: right };
+                const arr = Object.keys(next).filter(k => next[k]).map(k => ({ left: k, right: next[k] }));
+                setAnswer(q.id, JSON.stringify(arr));
+              };
+              return (
+                <div className="space-y-3">
+                  {mo.lefts.map((l, i) => (
+                    <div key={i} className="space-y-1">
+                      <p className="text-sm text-gray-800">{l}</p>
+                      <select value={cur[l] || ''} onChange={e => setPair(l, e.target.value)} className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm">
+                        <option value="">Select...</option>
+                        {mo.rights.map((r, j) => <option key={j} value={r}>{r}</option>)}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+            {(q.type === 'short_answer' || q.type === 'fill_blank') && (
               <input value={answers[q.id] || ''} onChange={e => setAnswer(q.id, e.target.value)} placeholder="Type your answer"
                 className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm" />
             )}

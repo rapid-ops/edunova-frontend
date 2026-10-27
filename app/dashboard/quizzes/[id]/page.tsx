@@ -107,7 +107,7 @@ function StaffView({ id }: { id: string }) {
   const [settings, setSettings] = useState<QuizSettings | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
   const [adding, setAdding] = useState(false);
-  const [nq, setNq] = useState({ question: '', type: 'mcq', options: ['', '', '', ''], correctIdx: 0, tf: 'True', short: '', marks: '1' });
+  const [nq, setNq] = useState({ question: '', type: 'mcq', options: ['', '', '', ''], correctIdx: 0, tf: 'True', short: '', marks: '1', pairs: [{ left: '', right: '' }, { left: '', right: '' }] });
   const [savingQ, setSavingQ] = useState(false);
   const [confirmDel, setConfirmDel] = useState<number | null>(null);
 
@@ -162,12 +162,16 @@ function StaffView({ id }: { id: string }) {
       payload.correct_answer = (nq.options[nq.correctIdx] || '').trim();
     } else if (nq.type === 'true_false') {
       payload.correct_answer = nq.tf;
+    } else if (nq.type === 'matching') {
+      const pairs = nq.pairs.map(p => ({ left: p.left.trim(), right: p.right.trim() })).filter(p => p.left && p.right);
+      if (pairs.length < 2) { setError('Add at least 2 complete pairs'); setSavingQ(false); return; }
+      payload.options = pairs;
     } else {
       payload.correct_answer = nq.short;
     }
     try {
       await api.post('/quiz/questions', payload);
-      setNq({ question: '', type: 'mcq', options: ['', '', '', ''], correctIdx: 0, tf: 'True', short: '', marks: '1' });
+      setNq({ question: '', type: 'mcq', options: ['', '', '', ''], correctIdx: 0, tf: 'True', short: '', marks: '1', pairs: [{ left: '', right: '' }, { left: '', right: '' }] });
       setAdding(false);
       await load();
     } catch (e: any) {
@@ -242,6 +246,8 @@ function StaffView({ id }: { id: string }) {
                 <option value="mcq">Multiple choice</option>
                 <option value="true_false">True / False</option>
                 <option value="short_answer">Short answer</option>
+                <option value="fill_blank">Fill in the blank</option>
+                <option value="matching">Matching</option>
               </select>
               <input type="number" min={1} value={nq.marks} onChange={e => setNq({ ...nq, marks: e.target.value })} placeholder="Marks" className={input} />
             </div>
@@ -263,10 +269,29 @@ function StaffView({ id }: { id: string }) {
                 <option value="False">Correct answer: False</option>
               </select>
             )}
-            {nq.type === 'short_answer' && (
+            {(nq.type === 'short_answer' || nq.type === 'fill_blank') && (
               <div>
                 <input value={nq.short} onChange={e => setNq({ ...nq, short: e.target.value })} placeholder="Correct answer" className={input} />
                 <p className="text-xs text-gray-400 mt-1">Accept several answers by separating them with |</p>
+              </div>
+            )}
+            {nq.type === 'matching' && (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-400">Enter each item with its correct match. Students see the matches shuffled.</p>
+                {nq.pairs.map((p, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input value={p.left} onChange={e => { const ps = [...nq.pairs]; ps[i] = { ...ps[i], left: e.target.value }; setNq({ ...nq, pairs: ps }); }}
+                      placeholder={'Item ' + (i + 1)} className={input} />
+                    <input value={p.right} onChange={e => { const ps = [...nq.pairs]; ps[i] = { ...ps[i], right: e.target.value }; setNq({ ...nq, pairs: ps }); }}
+                      placeholder="Match" className={input} />
+                    {nq.pairs.length > 2 && (
+                      <button onClick={() => setNq({ ...nq, pairs: nq.pairs.filter((_, idx) => idx !== i) })} className="text-gray-400 shrink-0"><Trash2 size={16} /></button>
+                    )}
+                  </div>
+                ))}
+                {nq.pairs.length < 8 && (
+                  <button onClick={() => setNq({ ...nq, pairs: [...nq.pairs, { left: '', right: '' }] })} className="flex items-center gap-1 text-sm text-blue-600 font-medium"><Plus size={14} /> Add pair</button>
+                )}
               </div>
             )}
             <div className="flex gap-2">
@@ -295,7 +320,10 @@ function StaffView({ id }: { id: string }) {
                 {o === q.correct_answer ? '✓ ' : '· '}{o}
               </p>
             ))}
-            {q.type !== 'mcq' && <p className="text-sm text-green-600 font-medium">Answer: {q.correct_answer}</p>}
+            {q.type === 'matching' && (Array.isArray(q.options) ? q.options : []).map((p: any, pi: number) => (
+              <p key={pi} className="text-sm text-green-600 font-medium">{p.left} → {p.right}</p>
+            ))}
+            {q.type !== 'mcq' && q.type !== 'matching' && <p className="text-sm text-green-600 font-medium">Answer: {q.correct_answer}</p>}
             {confirmDel === q.id && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
                 <p className="text-sm text-red-600">Delete this question?</p>
