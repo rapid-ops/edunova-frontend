@@ -10,7 +10,7 @@ export default function DashboardFrame({ children }: { children: React.ReactNode
   return (
     <RoleGate>
       {user?.role === 'school_admin'
-        ? <AdminShell><div className="[&>div]:min-h-0">{children}</div></AdminShell>
+        ? <AdminShell><div className="[&>div]:min-h-[calc(100dvh-124px)] lg:[&>div]:min-h-[calc(100dvh-68px)]">{children}</div></AdminShell>
         : <div className="min-h-screen bg-gray-50 pb-20">{children}<BottomNav /></div>}
     </RoleGate>
   );

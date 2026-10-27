@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/auth.store';
 
 const ROLE: Record<string, string> = { school_admin: 'School Administrator', super_admin: 'Super Administrator' };
 const focus = 'outline-none focus-visible:ring-2 focus-visible:ring-blue-500';
+const SHORT: Record<string, string> = { communication: 'Messages', assessments: 'Tests', examinations: 'Exams', announcements: 'Notices', alerts: 'Alerts', teaching: 'Teaching', departments: 'Depts', reportcards: 'Report cards', coupons: 'Discounts', automations: 'Automatic', dropout: 'At risk', reset: 'Reset' };
 
 function NavLink({ i, pathname, onNavigate }: { i: AdminNavItem; pathname: string; onNavigate?: () => void }) {
   const Icon = i.icon;
@@ -79,10 +80,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const results = term ? [...enabledNav(), ...moreNav].filter((i) => i.label.toLowerCase().includes(term)) : [];
   const go = (href: string) => { setQ(''); router.push(href); };
 
-  const nav = enabledNav();
+  const nav: AdminNavItem[] = [...enabledNav(), ...moreNav];
   const active = nav.find((i) => isActive(pathname, i.href));
   const keys = ['dashboard', 'students', 'courses', 'reports'];
-  if (active && !keys.includes(active.key)) keys[2] = active.key;
+  if (active && !keys.includes(active.key)) keys[3] = active.key;
   const bottom = keys.map((k) => nav.find((i) => i.key === k)).filter(Boolean) as AdminNavItem[];
 
   const signOut = () => { logout(); router.push('/auth/login'); };
@@ -142,7 +143,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           const on = isActive(pathname, i.href);
           return (
             <Link key={i.key} href={i.href} aria-current={on ? 'page' : undefined} className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[10px] font-medium ${focus} ${on ? 'text-blue-600' : 'text-slate-500'}`}>
-              <Icon className="h-5 w-5" /><span className="max-w-full truncate px-1">{i.short || i.label}</span>
+              <Icon className="h-5 w-5" /><span className="max-w-full px-0.5 text-center leading-tight">{SHORT[i.key] || i.short || i.label}</span>
             </Link>
           );
         })}
