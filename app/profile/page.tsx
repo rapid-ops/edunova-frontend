@@ -5,6 +5,8 @@ import { useAuthStore } from '@/store/auth.store';
 import api from '@/lib/api';
 import { ArrowLeft, Camera, Save, Lock, LogOut, Shield, QrCode } from 'lucide-react';
 import LoadingScreen from '@/components/LoadingScreen';
+import ProfilePhoto from '@/components/profile/ProfilePhoto';
+import Avatar from '@/components/admin/Avatar';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -15,6 +17,7 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [photoError, setPhotoError] = useState('');
   const [mfaStep, setMfaStep] = useState<'idle'|'setup'|'verify'>('idle');
   const [mfaQR, setMfaQR] = useState('');
   const [mfaSecret, setMfaSecret] = useState('');
@@ -38,24 +41,31 @@ export default function ProfilePage() {
     setMfaEnabled(!!(user as any)?.totp_enabled);
   }, [user]);
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setAvatarUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await api.post('/upload/avatar', fd);
-      const url = res.data.url;
-      const updated = { ...user!, avatar_url: url };
-      setAuth(updated, localStorage.getItem('token')!, localStorage.getItem('session_only') !== '1');
-      setSuccess('Profile photo updated');
-    } catch {
-      setError('Failed to upload photo');
-    } finally {
-      setAvatarUploading(false);
-    }
+  const readKind = async (f: File) => {
+    const b = new Uint8Array(await f.slice(0, 12).arrayBuffer());
+    if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'jpg';
+    if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return 'png';
+    if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return 'webp';
+    return null;
   };
+
+  const shrink = async (f: File): Promise<Blob> => {
+    const bmp = await createImageBitmap(f);
+    const scale = Math.min(1, 512 / Math.max(bmp.width, bmp.height));
+    const w = Math.max(1, Math.round(bmp.width * scale));
+    const h = Math.max(1, Math.round(bmp.height * scale));
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    if (!ctx) throw new Error('canvas');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(bmp, 0, 0, w, h);
+    bmp.close();
+    return new Promise<Blob>((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('blob'))), 'image/jpeg', 0.85));
+  };
+
+  const photoMsg = (err: any) => err.response ? (err.response.data?.error || 'We could not save your photo. Please try again.') : err.request ? 'No connection. Check your internet and try again.' : 'We could not read that photo. Try a different one.';
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,24 +136,7 @@ export default function ProfilePage() {
         {success && <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-xl">{success}</div>}
         {error && <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl">{error}</div>}
 
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-xl font-bold overflow-hidden text-white">
-                {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="avatar" /> : user.full_name?.[0]?.toUpperCase()}
-              </div>
-              <label className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer border-2 border-white">
-                {avatarUploading ? <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" /> : <Camera size={10} className="text-white" />}
-                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-              </label>
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900">{user.full_name}</p>
-              <p className="text-sm text-gray-400 capitalize">{user.role?.replace('_', ' ')}</p>
-              <p className="text-xs text-gray-400">{user.email}</p>
-            </div>
-          </div>
-        </div>
+        <ProfilePhoto />
 
         <form onSubmit={handleProfileUpdate} className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
           <h2 className="font-semibold text-gray-900">Personal Information</h2>
