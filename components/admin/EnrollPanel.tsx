@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import api from '@/lib/api';
@@ -45,6 +45,8 @@ export default function EnrollPanel({ courseId, requireManage = false, backHref 
   const [classes, setClasses] = useState<ClassRow[]>([]);
   const [classId, setClassId] = useState('');
   const canManage = !!course?.can_manage;
+  const noteRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (notice && noteRef.current) noteRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, [notice]);
 
   const loadRoster = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -147,7 +149,7 @@ export default function EnrollPanel({ courseId, requireManage = false, backHref 
     <div className="pb-10">
       <PageHeader title={course?.title || 'Course students'} subtitle="Add or remove the students who take this course." actions={back} />
       <div className="space-y-4 px-4 lg:px-6">
-        {notice && (<div role="status" aria-live="polite" className={`rounded-xl px-4 py-3 text-sm ${notice.ok ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>{notice.text}</div>)}
+        {notice && (<div ref={noteRef} role="status" aria-live="polite" className={`rounded-xl px-4 py-3 text-sm ${notice.ok ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>{notice.text}</div>)}
         {!canManage && (<div className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700">You can look at this list, but only the course teacher or a school administrator can change it.</div>)}
 
         {canManage && course && (

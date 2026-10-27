@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpen, UserCheck, UserX } from 'lucide-react';
+import Link from 'next/link';
+import { BookOpen, Users, UserCheck, UserX } from 'lucide-react';
 import api from '@/lib/api';
 import { friendlyError } from '@/lib/friendly-error';
 import { useAuthStore } from '@/store/auth.store';
@@ -126,6 +127,7 @@ export default function CourseTeachersPage() {
                     <h2 className="break-words text-base font-bold text-[#0b1a4a]">{c.title}</h2>
                     <StatusBadge tone={c.is_published ? 'green' : 'gray'}>{c.is_published ? 'Published' : 'Draft'}</StatusBadge>
                     {c.class_name && <StatusBadge tone="blue">{c.class_name}</StatusBadge>}
+                    <Link href={`/school-admin/courses/${c.id}/students`} className={`${btn} ml-auto border border-blue-200 text-blue-600`}><Users className="mr-2 h-4 w-4" />Manage students</Link>
                   </div>
                   <div className="mt-3">
                     {c.teachers.length === 0 ? (
