@@ -33,6 +33,7 @@ export default function TeacherAssessments() {
   const [cMarks, setCMarks] = useState('100');
   const [cRubric, setCRubric] = useState<RubricRow[]>([]);
   const [creating, setCreating] = useState(false);
+  const [counts, setCounts] = useState<Record<number, { submission_count: number; graded_count: number }>>({});
 
   const rub = selected?.rubric && selected.rubric.length > 0 ? selected.rubric : null;
   const maxScore = Number(selected?.total_marks) || 100;
@@ -58,6 +59,12 @@ export default function TeacherAssessments() {
           } catch {}
         }));
         setAssessments(all);
+        try {
+          const sr = await api.get('/assessments/school-stats');
+          const m: Record<number, { submission_count: number; graded_count: number }> = {};
+          (sr.data.assessments || []).forEach((x: any) => { m[x.id] = { submission_count: Number(x.submission_count) || 0, graded_count: Number(x.graded_count) || 0 }; });
+          setCounts(m);
+        } catch {}
       } catch {}
     })();
   }, [user]);
@@ -365,6 +372,12 @@ export default function TeacherAssessments() {
                   <p className="text-xs text-gray-400 capitalize">{a.type}{a.due_date && ` • Due ${new Date(a.due_date).toLocaleDateString()}`}</p>
                   {a.rubric && a.rubric.length > 0 && (
                     <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">Rubric</span>
+                  )}
+                  {counts[a.id] && (
+                    <span className="text-xs text-gray-400">{counts[a.id].submission_count} submitted</span>
+                  )}
+                  {counts[a.id] && counts[a.id].submission_count - counts[a.id].graded_count > 0 && (
+                    <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-medium">{counts[a.id].submission_count - counts[a.id].graded_count} ungraded</span>
                   )}
                 </div>
               </div>
