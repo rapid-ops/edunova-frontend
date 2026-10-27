@@ -9,6 +9,7 @@ export interface QuizSettings {
   pass_percent: string;
   randomize_questions: boolean;
   awards_certificate: boolean;
+  scheduled_at?: string;
 }
 
 export const emptySettings: QuizSettings = {
@@ -20,6 +21,7 @@ export const emptySettings: QuizSettings = {
   pass_percent: '50',
   randomize_questions: false,
   awards_certificate: false,
+  scheduled_at: '',
 };
 
 export const toLocalInput = (iso: string | null | undefined) => {
@@ -39,6 +41,7 @@ export const settingsToPayload = (s: QuizSettings) => ({
   pass_percent: s.pass_percent === '' ? 50 : Number(s.pass_percent),
   randomize_questions: s.randomize_questions,
   awards_certificate: s.awards_certificate,
+  scheduled_at: s.scheduled_at ? new Date(s.scheduled_at).toISOString() : null,
 });
 
 export default function QuizSettingsForm({ value, onChange }: { value: QuizSettings; onChange: (v: QuizSettings) => void }) {
@@ -49,6 +52,10 @@ export default function QuizSettingsForm({ value, onChange }: { value: QuizSetti
     <div className="space-y-3">
       <input value={value.title} onChange={e => set({ title: e.target.value })} placeholder="Quiz title" className={input} />
       <textarea value={value.instructions} onChange={e => set({ instructions: e.target.value })} rows={3} placeholder="Instructions (optional)" className={input} />
+      <div>
+        <label className={label}>Opens on (optional, students cannot start before this)</label>
+        <input type="datetime-local" value={value.scheduled_at || ''} onChange={e => set({ scheduled_at: e.target.value })} className={input} />
+      </div>
       <div>
         <label className={label}>Closes on (optional)</label>
         <input type="datetime-local" value={value.due_date} onChange={e => set({ due_date: e.target.value })} className={input} />

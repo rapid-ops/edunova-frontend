@@ -136,6 +136,7 @@ function StaffView({ id }: { id: string }) {
       pass_percent: String(quiz.pass_percent),
       randomize_questions: !!quiz.randomize_questions,
       awards_certificate: !!quiz.awards_certificate,
+      scheduled_at: toLocalInput(quiz.scheduled_at),
     });
     setEditing(true);
     setError('');
