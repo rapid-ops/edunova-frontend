@@ -6,26 +6,42 @@ import { Search, Menu, X, MessageSquare, ChevronDown, LogOut, User as UserIcon, 
 import Logo from '@/components/Logo';
 import NotificationBell from '@/components/NotificationBell';
 import Avatar from '@/components/admin/Avatar';
-import { enabledNav, isActive, type AdminNavItem } from '@/lib/admin-nav';
+import { enabledNav, isActive, moreNav, moreGroups, type AdminNavItem } from '@/lib/admin-nav';
 import { useAuthStore } from '@/store/auth.store';
 
 const ROLE: Record<string, string> = { school_admin: 'School Administrator', super_admin: 'Super Administrator' };
 const focus = 'outline-none focus-visible:ring-2 focus-visible:ring-blue-500';
 
+function NavLink({ i, pathname, onNavigate }: { i: AdminNavItem; pathname: string; onNavigate?: () => void }) {
+  const Icon = i.icon;
+  const on = isActive(pathname, i.href);
+  return (
+    <Link href={i.href} onClick={onNavigate} aria-current={on ? 'page' : undefined}
+      className={`flex min-h-11 items-center gap-3 rounded-lg px-4 text-sm font-medium ${focus} ${on ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-700 hover:bg-blue-50'}`}>
+      <Icon className="h-[18px] w-[18px] shrink-0" />{i.label}
+    </Link>
+  );
+}
+
 function NavList({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
   return (
-    <nav aria-label="Main" className="space-y-1">
-      {enabledNav().map((i) => {
-        const Icon = i.icon;
-        const on = isActive(pathname, i.href);
-        return (
-          <Link key={i.key} href={i.href} onClick={onNavigate} aria-current={on ? 'page' : undefined}
-            className={`flex min-h-11 items-center gap-3 rounded-lg px-4 text-sm font-medium ${focus} ${on ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-700 hover:bg-blue-50'}`}>
-            <Icon className="h-[18px] w-[18px]" />{i.label}
-          </Link>
-        );
-      })}
-    </nav>
+    <>
+      <nav aria-label="Main" className="space-y-1">
+        {enabledNav().map((i) => <NavLink key={i.key} i={i} pathname={pathname} onNavigate={onNavigate} />)}
+      </nav>
+      <nav aria-label="More" className="mt-4 space-y-4 border-t border-slate-100 pt-4">
+        {moreGroups.map((g) => {
+          const items = moreNav.filter((i) => i.group === g && i.enabled);
+          if (!items.length) return null;
+          return (
+            <div key={g}>
+              <p className="px-4 pb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">{g}</p>
+              <div className="space-y-1">{items.map((i) => <NavLink key={i.key} i={i} pathname={pathname} onNavigate={onNavigate} />)}</div>
+            </div>
+          );
+        })}
+      </nav>
+    </>
   );
 }
 
@@ -60,7 +76,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   }, []);
 
   const term = q.trim().toLowerCase();
-  const results = term ? enabledNav().filter((i) => i.label.toLowerCase().includes(term)) : [];
+  const results = term ? [...enabledNav(), ...moreNav].filter((i) => i.label.toLowerCase().includes(term)) : [];
   const go = (href: string) => { setQ(''); router.push(href); };
 
   const nav = enabledNav();
@@ -76,8 +92,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen bg-[#f4f8ff] lg:pl-64">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-slate-100 bg-white lg:flex">
         <div className="flex h-[68px] items-center px-5"><Logo size={34} /></div>
-        <div className="flex-1 overflow-y-auto px-3 py-2"><NavList pathname={pathname} /></div>
-        <div className="space-y-4 p-3"><AiCard /><div className="px-2 pb-1"><Logo size={26} /></div></div>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-2 pb-6"><NavList pathname={pathname} /><div className="mt-4 space-y-4"><AiCard /><div className="px-2 pb-1"><Logo size={26} /></div></div></div>
+        
       </aside>
 
       <header className="sticky top-0 z-30 flex h-[68px] items-center gap-2 border-b border-slate-100 bg-white/90 px-3 backdrop-blur lg:px-6">
@@ -136,10 +152,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       {drawer && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button type="button" aria-label="Close menu" onClick={() => setDrawer(false)} className="absolute inset-0 bg-slate-900/40" />
-          <div className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-white shadow-2xl">
+          <div className="absolute left-0 top-0 flex h-[100dvh] w-72 max-w-[85vw] flex-col bg-white shadow-2xl">
             <div className="flex h-[68px] items-center justify-between px-4"><Logo size={32} /><button type="button" onClick={() => setDrawer(false)} aria-label="Close menu" className={`flex h-11 w-11 items-center justify-center rounded-lg hover:bg-blue-50 ${focus}`}><X className="h-5 w-5" /></button></div>
-            <div className="flex-1 overflow-y-auto px-3 py-2"><NavList pathname={pathname} onNavigate={() => setDrawer(false)} /></div>
-            <div className="p-3"><AiCard onNavigate={() => setDrawer(false)} /></div>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-2 pb-8"><NavList pathname={pathname} onNavigate={() => setDrawer(false)} /><div className="mt-4"><AiCard onNavigate={() => setDrawer(false)} /></div></div>
+            
           </div>
         </div>
       )}
