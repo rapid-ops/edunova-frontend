@@ -94,7 +94,11 @@ export default function SchoolAdminDashboard() {
   useEffect(() => { load(); }, [load]);
 
   const first = (user?.full_name || '').trim().split(/\s+/)[0];
-  const header = <PageHeader title="Dashboard" subtitle={first ? `Welcome back, ${first}` : 'Welcome back'} />;
+  const lagosHour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Africa/Lagos', hour: '2-digit', hourCycle: 'h23' }).format(new Date()));
+  const part = lagosHour < 12 ? 'Good morning' : lagosHour < 17 ? 'Good afternoon' : 'Good evening';
+  const todayText = new Intl.DateTimeFormat('en-NG', { timeZone: 'Africa/Lagos', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+  const schoolName = (data as any)?.school_name as string | undefined;
+  const header = <PageHeader title={first ? `${part}, ${first}` : part} subtitle={`${schoolName ? schoolName + ' - ' : ''}${todayText}`} />;
 
   if (user && !schoolId) {
     return <>{header}<div className="px-4 lg:px-6"><EmptyState title="No school selected" message="This account is not linked to a school, so there is no school dashboard to show." /></div></>;
