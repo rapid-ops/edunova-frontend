@@ -4,7 +4,7 @@ import { useRouter, useParams } from 'next/navigation';
 import LoadingScreen from '@/components/LoadingScreen';
 import VideoPlayer from '@/components/VideoPlayer';
 import { uploadLessonFile } from '@/lib/lesson-upload';
-import { ArrowLeft, Plus, Trash2, Video, FileText, BookOpen, Eye, EyeOff, ChevronRight, Clock, CheckCircle, Lock, PlayCircle, Star, Bookmark, BookmarkCheck } from 'lucide-react';
+import { Users, ArrowLeft, Plus, Trash2, Video, FileText, BookOpen, Eye, EyeOff, ChevronRight, Clock, CheckCircle, Lock, PlayCircle, Star, Bookmark, BookmarkCheck } from 'lucide-react';
 
 const API = 'https://edunova-backend-2x7h.onrender.com/api';
 
@@ -158,11 +158,12 @@ export default function CourseDetailPage() {
         </div>
         <h1 className="text-xl font-bold text-gray-900">{course?.title}</h1>
         {course?.description && <p className="text-sm text-gray-400 mt-1">{course.description}</p>}
-        <div className="flex items-center gap-4 mt-2">
+        <div className="flex flex-wrap items-center gap-4 mt-2">
           <div className="flex items-center gap-1 text-xs text-gray-400"><BookOpen size={12} />{lessons.length} lessons</div>
           <div className="flex items-center gap-1 text-xs text-gray-400"><Clock size={12} />~{estimatedMinutes} min</div>
           {course?.teacher_name && <div className="flex items-center gap-1 text-xs text-gray-400"><Star size={12} />{course.teacher_name}</div>}
           <button onClick={() => router.push(`/dashboard/courses/${id}/reviews`)} className="flex items-center gap-1 text-xs text-blue-600 font-medium"><Star size={12} />Ratings and reviews</button>
+          {isTeacherOrAdmin && <button onClick={() => router.push(`${user.role === 'teacher' ? '/teacher' : '/school-admin'}/courses/${id}/students`)} className="flex min-h-11 items-center gap-1 rounded-lg px-2 text-xs font-medium text-blue-600"><Users size={12} />Manage students</button>}
         </div>
       </div>
 
