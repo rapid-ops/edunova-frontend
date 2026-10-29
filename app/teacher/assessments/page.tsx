@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CheckCircle, ClipboardList, Users, Plus, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
@@ -343,15 +344,17 @@ export default function TeacherAssessments() {
       </div>
       {tab === 'quizzes' && (
         <div className="space-y-3">
+          <Link href="/dashboard/quizzes/new" className="mb-1 inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-2 rounded-lg"><Plus size={15}/>New quiz</Link>
           {quizzes.length === 0 && <p className="text-gray-400 text-sm">No quizzes found.</p>}
           {quizzes.map(q => (
             <div key={q.id} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-4">
               <div>
-                <p className="font-medium text-gray-900">{q.title}</p>
+                <Link href={`/dashboard/quizzes/${q.id}`} className="font-medium text-blue-600">{q.title}</Link>
                 <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
                   <span className="flex items-center gap-1"><ClipboardList size={11}/>{q.question_count ?? 0} questions</span>
                   <span className="flex items-center gap-1"><Users size={11}/>{q.students_attempted ?? 0} attempted</span>
                   {q.due_date && <span>Due {new Date(q.due_date).toLocaleDateString()}</span>}
+                  <Link href={`/dashboard/quizzes/${q.id}`} className="text-blue-600 font-medium">View / edit</Link>
                 </div>
               </div>
             </div>
