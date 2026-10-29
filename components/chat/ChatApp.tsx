@@ -56,6 +56,15 @@ export default function ChatApp() {
   const inputRef = useRef<HTMLInputElement>(null);
   peerRef.current = peer;
 
+  // overscroll-lock: on phones the page behind the chat must not scroll or shift.
+  useEffect(() => {
+    if (!window.matchMedia('(max-width: 767px)').matches) return;
+    const html = document.documentElement, body = document.body;
+    const prevH = html.style.overflow, prevB = body.style.overflow;
+    html.style.overflow = 'hidden'; body.style.overflow = 'hidden';
+    return () => { html.style.overflow = prevH; body.style.overflow = prevB; };
+  }, []);
+
   // Phone: follow the visible area so the input stays above the keyboard.
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
