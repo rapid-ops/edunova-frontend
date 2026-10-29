@@ -33,6 +33,8 @@ export default function TeacherAssessments() {
   const [cDue, setCDue] = useState('');
   const [cMarks, setCMarks] = useState('100');
   const [cRubric, setCRubric] = useState<RubricRow[]>([]);
+  const [cInstr, setCInstr] = useState('');
+  const [cFile, setCFile] = useState<File | null>(null);
   const [creating, setCreating] = useState(false);
   const [counts, setCounts] = useState<Record<number, { submission_count: number; graded_count: number }>>({});
 
@@ -137,7 +139,7 @@ export default function TeacherAssessments() {
 
   const resetCreate = () => {
     setCCourse(''); setCTitle(''); setCType('assignment'); setCDue('');
-    setCMarks('100'); setCRubric([]); setError('');
+    setCMarks('100'); setCRubric([]); setCInstr(''); setCFile(null); setError('');
   };
 
   const setRow = (i: number, patch: Partial<RubricRow>) =>
@@ -161,8 +163,12 @@ export default function TeacherAssessments() {
         due_date: cDue ? new Date(cDue).toISOString() : undefined,
         total_marks: total,
         rubric: rubric.length > 0 ? rubric : undefined,
+        instructions: cInstr.trim() || undefined,
       });
+      let upErr = '';
+      if (cFile) { try { const fd = new FormData(); fd.append('file', cFile); await api.post(`/assignments/${res.data.assessment.id}/attachment`, fd, { headers: { 'Content-Type': 'multipart/form-data' } }); } catch (e2: any) { upErr = e2.response?.data?.error || 'File upload failed'; } }
       setAssessments(prev => [res.data.assessment, ...prev]);
+      if (upErr) alert('Assignment created, but the file was not uploaded: ' + upErr);
       resetCreate(); setTab('assignments'); setView('list');
     } catch (e: any) { setError(e.response?.data?.error || 'Failed to create'); }
     finally { setCreating(false); }
@@ -191,6 +197,11 @@ export default function TeacherAssessments() {
         </select>
         <label className="text-xs text-gray-400 block mb-1">Due date (optional)</label>
         <input type="datetime-local" value={cDue} onChange={e => setCDue(e.target.value)} className="w-full border border-gray-200 rounded-xl p-3 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                <textarea value={cInstr} onChange={e => setCInstr(e.target.value)} rows={4} placeholder="Instructions for students (optional)" className="w-full border border-gray-200 rounded-xl p-3 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+        <label className="text-xs text-gray-400 block mb-1">Attach a file (optional)</label>
+        <input type="file" onChange={e => setCFile(e.target.files?.[0] || null)} className="w-full border border-gray-200 rounded-xl p-3 text-sm mb-1 bg-white"/>
+        {cFile && <p className="text-xs text-gray-500 mb-3 truncate">{cFile.name}</p>}
+        {!cFile && <div className="mb-3"/>}
         {!hasRows && (
           <input type="number" value={cMarks} onChange={e => setCMarks(e.target.value)} placeholder="Total marks" min={1} max={1000} className="w-full border border-gray-200 rounded-xl p-3 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
         )}

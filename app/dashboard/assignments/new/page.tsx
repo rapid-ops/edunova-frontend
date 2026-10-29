@@ -16,6 +16,8 @@ function Form() {
   const [totalMarks, setTotalMarks] = useState('100');
   const [allowLate, setAllowLate] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [createdId, setCreatedId] = useState<number | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -33,17 +35,19 @@ function Form() {
     if (!courseId || !title.trim()) { setError('Course and title are required'); return; }
     setSaving(true);
     try {
-      await api.post('/assignments', {
+      let id = createdId;
+      if (!id) { const res = await api.post('/assignments', {
         course_id: Number(courseId),
         title: title.trim(),
         instructions: instructions.trim(),
         due_date: dueDate ? new Date(dueDate).toISOString() : null,
         total_marks: Number(totalMarks) || 100,
         allow_late: allowLate,
-      });
+      }); id = res.data.assignment.id; setCreatedId(id); }
+      if (file && id) { const fd = new FormData(); fd.append('file', file); await api.post(`/assignments/${id}/attachment`, fd, { headers: { 'Content-Type': 'multipart/form-data' } }); }
       router.push('/dashboard/assignments');
     } catch (e: any) {
-      setError(e.response?.data?.error || 'Could not create assignment');
+      setError(e.response?.data?.error || 'Could not complete. Please tap Create again.');
       setSaving(false);
     }
   };
@@ -79,6 +83,11 @@ function Form() {
           <input type="checkbox" checked={allowLate} onChange={e => setAllowLate(e.target.checked)} className="accent-blue-600" />
           Allow late submissions
         </label>
+                <div>
+          <label className="text-xs text-gray-400">Attach a file (optional)</label>
+          <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} className={input} />
+          {file && <p className="text-xs text-gray-500 mt-1 truncate">{file.name}</p>}
+        </div>
         {error && <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl p-3">{error}</div>}
         <button onClick={save} disabled={saving} className="w-full bg-blue-600 text-white font-medium py-3 rounded-xl disabled:opacity-50">
           {saving ? 'Saving...' : 'Create assignment'}
