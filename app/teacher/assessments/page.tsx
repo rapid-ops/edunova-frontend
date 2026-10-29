@@ -165,6 +165,7 @@ export default function TeacherAssessments() {
         rubric: rubric.length > 0 ? rubric : undefined,
         instructions: cInstr.trim() || undefined,
       });
+      try { await api.post(`/assessments/${res.data.assessment.id}/publish`); } catch {}
       let upErr = '';
       if (cFile) { try { const fd = new FormData(); fd.append('file', cFile); await api.post(`/assignments/${res.data.assessment.id}/attachment`, fd, { headers: { 'Content-Type': 'multipart/form-data' } }); } catch (e2: any) { upErr = e2.response?.data?.error || 'File upload failed'; } }
       setAssessments(prev => [res.data.assessment, ...prev]);
