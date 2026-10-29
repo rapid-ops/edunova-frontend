@@ -1,6 +1,6 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Check, CheckCheck, Search, Send } from 'lucide-react';
 import api from '@/lib/api';
 import { getSocket, joinRoom } from '@/lib/socket';
@@ -37,6 +37,8 @@ function Avatar({ id, name, size }: { id: number; name: string; size: number }) 
 
 export default function ChatApp() {
   const router = useRouter();
+  const sp = useSearchParams();
+  const chatId = Number(sp.get('chat')) || null;
   const user = useAuthStore((s) => s.user);
   const uid = user?.id;
   const [convs, setConvs] = useState<Conv[]>([]);
@@ -52,6 +54,7 @@ export default function ChatApp() {
   const [sending, setSending] = useState(false);
   const [vv, setVv] = useState<{ h: number; top: number } | null>(null);
   const peerRef = useRef<Peer | null>(null);
+  const pushing = useRef(false);
   const box = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   peerRef.current = peer;
@@ -98,7 +101,8 @@ export default function ChatApp() {
     return api.patch(`/messages/read/${otherId}/${uid}`).then(() => { window.dispatchEvent(new Event('messages-read')); }).catch(() => {});
   }, [uid]);
 
-  const open = (p: Peer) => { setPeer(p); setError(''); setMsgs([]); setThreadReady(false); loadThread(p.id); markRead(p.id); };
+  const show = (p: Peer) => { setPeer(p); setError(''); setMsgs([]); setThreadReady(false); loadThread(p.id); markRead(p.id); };
+  const open = (p: Peer) => { pushing.current = true; show(p); router.push(`/dashboard/messages?chat=${p.id}`); };
 
   useEffect(() => {
     if (!uid) return;
@@ -154,6 +158,16 @@ export default function ChatApp() {
   const term = filter.trim().toLowerCase();
   const shown = term ? rows.filter((r) => r.name.toLowerCase().includes(term)) : rows;
 
+  // The open chat lives in the address, so the device Back button returns to the list.
+  useEffect(() => {
+    if (!chatId) { if (peerRef.current && !pushing.current) setPeer(null); return; }
+    pushing.current = false;
+    if (peerRef.current && peerRef.current.id === chatId) return;
+    const r = rows.find((x) => x.id === chatId);
+    if (r) show({ id: r.id, name: r.name, role: r.role });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatId, rows]);
+
   const goBack = () => { if (window.history.length > 1) router.back(); else router.push(HOME[user?.role || ''] || '/'); };
 
   return (
@@ -206,7 +220,7 @@ export default function ChatApp() {
         ) : (
           <>
             <div className="flex h-14 shrink-0 items-center gap-2 border-b border-slate-100 bg-white px-2">
-              <button type="button" onClick={() => setPeer(null)} aria-label="Back to chats" className={`flex h-11 w-11 items-center justify-center rounded-full text-slate-700 hover:bg-blue-50 md:hidden ${ring}`}><ArrowLeft className="h-5 w-5" /></button>
+              <button type="button" onClick={() => { if (window.history.length > 1) router.back(); else { setPeer(null); router.replace('/dashboard/messages'); } }} aria-label="Back to chats" className={`flex h-11 w-11 items-center justify-center rounded-full text-slate-700 hover:bg-blue-50 md:hidden ${ring}`}><ArrowLeft className="h-5 w-5" /></button>
               <Avatar id={peer.id} name={peer.name} size={38} />
               <div className="min-w-0"><p className="truncate text-[15px] font-semibold text-[#0b1a4a]">{peer.name}</p><p className="text-xs text-slate-500">{roleLabel(peer.role)}</p></div>
             </div>

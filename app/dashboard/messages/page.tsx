@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Viewport } from 'next';
 import ChatApp from '@/components/chat/ChatApp';
 
@@ -5,5 +6,5 @@ import ChatApp from '@/components/chat/ChatApp';
 export const viewport: Viewport = { interactiveWidget: 'resizes-content' };
 
 export default function MessagesPage() {
-  return <ChatApp />;
+  return <Suspense fallback={null}><ChatApp /></Suspense>;
 }
