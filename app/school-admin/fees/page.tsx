@@ -66,7 +66,7 @@ function CreateForm({ sid, onDone, onCancel }: { sid: number; onDone: () => void
     e.preventDefault();
     const x: Record<string, string> = {};
     const amt = Number(f.amount);
-    if (!f.student_id) x.student_id = students.length ? 'Choose a student.' : 'Add students first';
+    if (!f.student_id) x.student_id = students?.length ? 'Choose a student.' : 'Add students first';
     if (!f.amount || !Number.isFinite(amt) || amt <= 0) x.amount = 'Enter an amount greater than zero.';
     else if (amt > 99999999) x.amount = 'Amount is too large.';
     if (!f.description.trim()) x.description = 'Add a short description.';
