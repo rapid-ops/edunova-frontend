@@ -4,7 +4,7 @@ import { useRouter, useParams } from 'next/navigation';
 import LoadingScreen from '@/components/LoadingScreen';
 import VideoPlayer from '@/components/VideoPlayer';
 import { uploadLessonFile } from '@/lib/lesson-upload';
-import { Users, ArrowLeft, Plus, Trash2, Video, FileText, BookOpen, Eye, EyeOff, ChevronRight, Clock, CheckCircle, Lock, PlayCircle, Star, Bookmark, BookmarkCheck } from 'lucide-react';
+import { Users, ArrowLeft, Plus, Trash2, Video, FileText, BookOpen, Eye, EyeOff, ChevronRight, Clock, CheckCircle, Lock, PlayCircle, Star, Bookmark, BookmarkCheck, Upload } from 'lucide-react';
 
 const API = 'https://edunova-backend-2x7h.onrender.com/api';
 
@@ -227,7 +227,26 @@ export default function CourseDetailPage() {
             )}
             <div>
               <label className="text-xs text-gray-400 mb-1 block">Or upload a file (optional)</label>
-              <input type="file" accept=".mp4,.mov,.webm,.pdf,.docx,.pptx,.jpg,.jpeg,.png,.gif,.webp" onChange={e => setFile(e.target.files?.[0] || null)} className="w-full text-sm text-gray-600" />
+              <>
+                <input id="lesson-file" type="file" accept=".mp4,.mov,.webm,.pdf,.docx,.pptx,.jpg,.jpeg,.png,.gif,.webp" onChange={e => setFile(e.target.files?.[0] || null)} className="sr-only" />
+                {!file ? (
+                  <label htmlFor="lesson-file" className="flex min-h-[56px] cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-600 hover:border-blue-400 hover:text-blue-600">
+                    <Upload size={18} />Tap to choose a file
+                  </label>
+                ) : (
+                  <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-3">
+                    <CheckCircle size={22} className="shrink-0 text-green-600" />
+                    <div className="min-w-0 flex-1">
+                      <p className="break-all text-sm font-medium text-gray-900">{file.name}</p>
+                      <p className="text-xs text-green-700">{file.size < 1048576 ? Math.max(1, Math.round(file.size / 1024)) + ' KB' : (file.size / 1048576).toFixed(1) + ' MB'} - Ready. It uploads when you press Save Lesson.</p>
+                      {file.size > 52428800 && <p className="mt-1 text-xs text-amber-700">This file is over 50 MB, so it may not upload. For long videos, paste a video link instead.</p>}
+                    </div>
+                    {!saving && (
+                      <button type="button" onClick={() => { setFile(null); const el = document.getElementById('lesson-file') as HTMLInputElement | null; if (el) el.value = ''; }} className="min-h-[44px] shrink-0 px-2 text-sm font-medium text-red-600">Remove</button>
+                    )}
+                  </div>
+                )}
+              </>
               <p className="text-xs text-gray-400 mt-1">Videos, PDF, Word, PowerPoint and pictures up to 50 MB. For longer videos, paste a video link above instead.</p>
               {file && saving && (
                 <div className="mt-2">

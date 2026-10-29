@@ -213,7 +213,7 @@ export default function TeacherCoursesPage() {
             <li key={c.id} className="rounded-2xl border border-gray-200 bg-white p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                  <h3 className="break-words text-base font-semibold text-gray-900">{c.title}</h3>
+                  <h3 className="break-words text-base font-semibold text-gray-900"><Link href={'/teacher/courses/' + c.id} className="hover:underline">{c.title}</Link></h3>
                   {c.class_name && <p className="mt-0.5 text-xs text-gray-500">Class: {c.class_name}</p>}
                 </div>
                 <StatusBadge tone={c.is_published ? 'green' : 'orange'}>{c.is_published ? 'Published' : 'Draft'}</StatusBadge>
