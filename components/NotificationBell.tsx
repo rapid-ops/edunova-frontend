@@ -102,7 +102,7 @@ export default function NotificationBell() {
               <p className="text-[11px] text-slate-400">{when(n.created_at)}</p>
             </div>
           ))}
-          <Link href="/dashboard/notifications" onClick={() => setOpen(false)} className="flex min-h-11 items-center justify-center text-sm font-medium text-blue-600">View all</Link>
+          <Link href="/dashboard/notifications/inbox" onClick={() => setOpen(false)} className="flex min-h-11 items-center justify-center text-sm font-medium text-blue-600">View all</Link>
         </div>
       )}
     </div>

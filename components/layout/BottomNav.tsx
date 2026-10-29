@@ -35,7 +35,7 @@ const navGroups: Record<string, { icon: any; label: string; href: string }[][]> 
       { icon: Bot, label: 'AI Studio', href: '/dashboard/ai-studio' },
       { icon: Zap, label: 'Automations', href: '/dashboard/automations' },
       { icon: Megaphone, label: 'Announce', href: '/dashboard/announcements' },
-      { icon: Bell, label: 'Alerts', href: '/dashboard/notifications' },
+      { icon: Bell, label: 'Alerts', href: '/dashboard/notifications/inbox' },
       { icon: User, label: 'Profile', href: '/profile' },
     ],
   ],
@@ -65,7 +65,7 @@ const navGroups: Record<string, { icon: any; label: string; href: string }[][]> 
       { icon: Zap, label: 'Automations', href: '/dashboard/automations' },
       { icon: TrendingDown, label: 'Dropout', href: '/dashboard/dropout-risk' },
       { icon: Tag, label: 'Coupons', href: '/dashboard/coupons' },
-      { icon: Bell, label: 'Alerts', href: '/dashboard/notifications' },
+      { icon: Bell, label: 'Alerts', href: '/dashboard/notifications/inbox' },
       { icon: User, label: 'Profile', href: '/profile' },
     ],
   ],
@@ -87,7 +87,7 @@ const navGroups: Record<string, { icon: any; label: string; href: string }[][]> 
     [
       { icon: FileCheck, label: 'Proof', href: '/dashboard/proof-of-work' },
       { icon: Lightbulb, label: 'Suggest', href: '/dashboard/suggestions' },
-      { icon: Bell, label: 'Alerts', href: '/dashboard/notifications' },
+      { icon: Bell, label: 'Alerts', href: '/dashboard/notifications/inbox' },
       { icon: RefreshCcw, label: 'Evolution', href: '/dashboard/course-evolution' },
       { icon: User, label: 'Profile', href: '/profile' },
     ],
@@ -134,7 +134,7 @@ const navGroups: Record<string, { icon: any; label: string; href: string }[][]> 
       { icon: CreditCard, label: 'Pay Fees', href: '/payment' },
       { icon: FileBarChart, label: 'Report', href: '/dashboard/reportcard' },
       { icon: CalendarDays, label: 'Timetable', href: '/dashboard/timetable' },
-      { icon: Bell, label: 'Alerts', href: '/dashboard/notifications' },
+      { icon: Bell, label: 'Alerts', href: '/dashboard/notifications/inbox' },
       { icon: User, label: 'Profile', href: '/profile' },
     ],
   ],
@@ -190,7 +190,7 @@ export default function BottomNav() {
                 onClick={() => router.push(item.href)}
                 className={`flex flex-col items-center gap-0.5 py-2 px-1 flex-1 transition-colors ${active ? 'text-blue-600' : 'text-gray-400'}`}
               >
-                <span className="relative"><Icon size={21} strokeWidth={active ? 2.2 : 1.7} />{item.href === '/dashboard/messages' && <MsgBadge />}{item.href === '/dashboard/notifications' && <NotifBadge />}</span>
+                <span className="relative"><Icon size={21} strokeWidth={active ? 2.2 : 1.7} />{item.href === '/dashboard/messages' && <MsgBadge />}{item.href === '/dashboard/notifications/inbox' && <NotifBadge />}</span>
                 <span className="text-[9px] font-medium truncate w-full text-center leading-tight">{item.label}</span>
               </button>
             );

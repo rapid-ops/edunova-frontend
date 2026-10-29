@@ -1,5 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
+import NotificationSenderSettings from '@/components/NotificationSenderSettings';
+const sid = () => { try { return JSON.parse(localStorage.getItem('user') || '{}').school_id; } catch { return undefined; } };
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import api from '@/lib/api';
@@ -20,7 +22,7 @@ export default function NotificationsPage() {
 
   const fetchUsers = async () => {
     try {
-      const res = await api.get('/auth/users/1');
+      const res = await api.get(`/auth/users/${sid()}`);
       setUsers(res.data.users.filter((u: any) => u.id !== user?.id));
     } catch (err) {}
   };
@@ -29,7 +31,7 @@ export default function NotificationsPage() {
     e.preventDefault();
     setError(''); setSuccess('');
     try {
-      await api.post('/notifications/broadcast', { school_id: 1, ...broadcastForm });
+      await api.post('/notifications/broadcast', { school_id: sid(), ...broadcastForm });
       setSuccess(`Broadcast sent${broadcastForm.send_whatsapp ? ' via app + WhatsApp' : ''}`);
       setBroadcastForm({ title: '', body: '', type: 'general', send_whatsapp: false });
     } catch (err: any) {
@@ -41,7 +43,7 @@ export default function NotificationsPage() {
     e.preventDefault();
     setError(''); setSuccess('');
     try {
-      await api.post('/notifications', { school_id: 1, ...directForm });
+      await api.post('/notifications', { school_id: sid(), ...directForm });
       setSuccess(`Notification sent${directForm.send_whatsapp ? ' via app + WhatsApp' : ''}`);
       setDirectForm({ user_id: '', title: '', body: '', type: 'general', send_whatsapp: false });
     } catch (err: any) {
@@ -84,7 +86,7 @@ export default function NotificationsPage() {
         {success && <div className="bg-green-500/10 border border-green-500/30 text-green-400 text-sm px-4 py-3 rounded-lg mb-4">{success}</div>}
         {error && <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-lg mb-4">{error}</div>}
 
-        {tab === 'broadcast' ? (
+        <NotificationSenderSettings />{tab === 'broadcast' ? (
           <form onSubmit={handleBroadcast} className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
             <div>
               <label className="text-gray-500 text-sm mb-1 block">Type</label>
