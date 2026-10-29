@@ -34,7 +34,7 @@ export default function TakeQuizPage() {
     setSubmitting(true);
     setError('');
     try {
-      const res = await api.post(`/quiz/${id}/submit`, { answers: answersRef.current });
+      const res = await api.post(`/quizzes/${id}/submit`, { answers: answersRef.current });
       try {
         sessionStorage.setItem(`quiz_result_${id}`, JSON.stringify(res.data));
         localStorage.removeItem(storeKey.current);
@@ -55,7 +55,7 @@ export default function TakeQuizPage() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) { router.push('/auth/login'); return; }
-    api.post(`/quiz/${id}/start`)
+    api.post(`/quizzes/${id}/start`)
       .then(res => {
         const d = res.data;
         setQuiz(d.quiz);

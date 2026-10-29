@@ -4,7 +4,8 @@ import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import LoadingScreen from '@/components/LoadingScreen';
 import QuizSettingsForm, { QuizSettings, settingsToPayload, toLocalInput } from '@/components/QuizSettingsForm';
-import { ChevronLeft, Clock, CheckCircle, Trash2, Plus, Award, XCircle } from 'lucide-react';
+import QuizReview from '@/components/QuizReview';
+import { ChevronLeft, Clock, CheckCircle, Trash2, Plus, Award, XCircle, ArrowUp, ArrowDown, Pencil, Sparkles, Copy } from 'lucide-react';
 
 const fmt = (d: string | null) =>
   d ? new Date(d).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'No closing date';
@@ -21,7 +22,7 @@ function StudentView({ id }: { id: string }) {
       const raw = sessionStorage.getItem(`quiz_result_${id}`);
       if (raw) { setResult(JSON.parse(raw)); sessionStorage.removeItem(`quiz_result_${id}`); }
     } catch {}
-    api.get(`/quiz/${id}/info`)
+    api.get(`/quizzes/${id}/info`)
       .then(res => setData(res.data))
       .catch(e => setError(e.response?.data?.error || 'Could not load quiz'))
       .finally(() => setLoading(false));
@@ -33,7 +34,7 @@ function StudentView({ id }: { id: string }) {
   const quiz = data.quiz;
   const att = data.attempt;
   const left = (quiz.max_attempts || 1) - (att?.attempts_used || 0);
-  const closed = quiz.due_date && new Date(quiz.due_date) < new Date();
+  const closed = quiz.status === 'closed';
   const inProgress = att?.status === 'in_progress';
 
   let label = 'Start quiz';
@@ -60,6 +61,7 @@ function StudentView({ id }: { id: string }) {
             {result.certificate_issued && (
               <p className="text-sm text-green-700 mt-1 flex items-center gap-1"><Award size={14} /> Your certificate has been issued</p>
             )}
+            {result.review && <QuizReview review={result.review} />}
           </div>
         )}
         {result?.expired && (
@@ -75,6 +77,7 @@ function StudentView({ id }: { id: string }) {
             {quiz.time_limit_minutes ? `${quiz.time_limit_minutes} minutes. The timer starts when you press Start.` : 'No time limit'}
           </p>
           <p className="text-sm text-gray-600">Pass mark {quiz.pass_percent}% · {att?.attempts_used || 0} of {quiz.max_attempts} attempts used</p>
+          {quiz.negative_marking > 0 && <p className="text-xs text-gray-500">A wrong answer loses {Math.round(quiz.negative_marking * 100)}% of that question's marks.</p>}
           {quiz.due_date && <p className="text-xs text-gray-400">Closes {fmt(quiz.due_date)}</p>}
         </div>
 
@@ -96,6 +99,15 @@ function StudentView({ id }: { id: string }) {
   );
 }
 
+const blankQ = () => ({ question: '', type: 'mcq', options: ['', '', '', ''], correctIdx: 0, tf: 'True', short: '', marks: '1', explanation: '', pairs: [{ left: '', right: '' }, { left: '', right: '' }] });
+
+const STATUS: Record<string, { label: string; cls: string }> = {
+  draft: { label: 'Draft: students cannot see it yet', cls: 'bg-yellow-50 text-yellow-800 border-yellow-200' },
+  scheduled: { label: 'Scheduled: opens later', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
+  open: { label: 'Open to students', cls: 'bg-green-50 text-green-700 border-green-200' },
+  closed: { label: 'Closed', cls: 'bg-gray-100 text-gray-600 border-gray-200' },
+};
+
 function StaffView({ id }: { id: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -103,20 +115,30 @@ function StaffView({ id }: { id: string }) {
   const [questions, setQuestions] = useState<any[]>([]);
   const [attempts, setAttempts] = useState<any[]>([]);
   const [error, setError] = useState('');
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState(false);
   const [settings, setSettings] = useState<QuizSettings | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
   const [adding, setAdding] = useState(false);
-  const [nq, setNq] = useState({ question: '', type: 'mcq', options: ['', '', '', ''], correctIdx: 0, tf: 'True', short: '', marks: '1', pairs: [{ left: '', right: '' }, { left: '', right: '' }] });
+  const [editId, setEditId] = useState<number | null>(null);
+  const [nq, setNq] = useState<any>(blankQ());
   const [savingQ, setSavingQ] = useState(false);
   const [confirmDel, setConfirmDel] = useState<number | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [ai, setAi] = useState({ topic: '', n: '10', difficulty: 'medium' });
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiQs, setAiQs] = useState<any[] | null>(null);
+  const [aiPick, setAiPick] = useState<Set<number>>(new Set());
+
+  const locked = attempts.length > 0;
 
   const load = async () => {
     try {
-      const m = await api.get(`/quiz/manage/${id}`);
+      const m = await api.get(`/quizzes/manage/${id}`);
       setQuiz(m.data.quiz);
       setQuestions(m.data.questions || []);
-      const a = await api.get(`/quiz/attempts/${id}`);
+      const a = await api.get(`/quizzes/attempts/${id}`);
       setAttempts(a.data.attempts || []);
     } catch (e: any) {
       setError(e.response?.data?.error || 'Could not load quiz');
@@ -137,6 +159,8 @@ function StaffView({ id }: { id: string }) {
       randomize_questions: !!quiz.randomize_questions,
       awards_certificate: !!quiz.awards_certificate,
       scheduled_at: toLocalInput(quiz.scheduled_at),
+      show_answers: !!quiz.show_answers,
+      negative_marking: String(quiz.negative_marking ?? 0),
     });
     setEditing(true);
     setError('');
@@ -146,7 +170,7 @@ function StaffView({ id }: { id: string }) {
     if (!settings) return;
     setError(''); setSavingSettings(true);
     try {
-      await api.put(`/quiz/settings/${id}`, settingsToPayload(settings));
+      await api.put(`/quizzes/settings/${id}`, settingsToPayload(settings));
       setEditing(false);
       await load();
     } catch (e: any) {
@@ -155,28 +179,75 @@ function StaffView({ id }: { id: string }) {
     setSavingSettings(false);
   };
 
-  const addQuestion = async () => {
+  const act = async (path: string) => {
+    setError(''); setNote(''); setBusy(true);
+    try {
+      const r = await api.post(`/assessments/${id}/${path}`);
+      await load();
+      if (path === 'publish') setNote(r.data.notified ? `Published. ${r.data.notified} students were notified.` : 'Published. Students can see it now.');
+      if (path === 'close') setNote('Closed. Students can no longer start it.');
+      if (path === 'reopen') setNote('Reopened.');
+      if (path === 'unpublish') setNote('Moved back to draft.');
+    } catch (e: any) {
+      setError(e.response?.data?.error || 'Something went wrong. Please try again.');
+    }
+    setBusy(false);
+  };
+
+  const duplicate = async () => {
+    setError(''); setNote(''); setBusy(true);
+    try {
+      const r = await api.post(`/assessments/${id}/duplicate`);
+      const nid = r.data?.assessment?.id ?? r.data?.quiz?.id;
+      router.push(nid ? `/dashboard/quizzes/${nid}` : '/dashboard/quizzes');
+    } catch (e: any) {
+      setError(e.response?.data?.error || 'Could not duplicate the quiz');
+      setBusy(false);
+    }
+  };
+
+  const startEdit = (q: any) => {
+    let qo: any = q.options;
+    if (typeof qo === 'string') { try { qo = JSON.parse(qo); } catch { qo = null; } }
+    let opts = ['', '', '', ''];
+    let idx = 0;
+    let pairs = [{ left: '', right: '' }, { left: '', right: '' }];
+    if (q.type === 'mcq' && Array.isArray(qo)) { opts = [...qo]; while (opts.length < 4) opts.push(''); idx = Math.max(0, qo.indexOf(q.correct_answer)); }
+    if (q.type === 'matching' && Array.isArray(qo)) pairs = qo.map((p: any) => ({ left: String(p.left), right: String(p.right) }));
+    setNq({
+      question: q.question, type: q.type, options: opts, correctIdx: idx,
+      tf: q.correct_answer === 'False' ? 'False' : 'True',
+      short: q.type === 'short_answer' || q.type === 'fill_blank' ? q.correct_answer || '' : '',
+      marks: String(q.marks), explanation: q.explanation || '', pairs,
+    });
+    setEditId(q.id); setAdding(true); setAiOpen(false); setError('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const closeForm = () => { setAdding(false); setEditId(null); setNq(blankQ()); };
+
+  const saveQuestion = async () => {
     setError(''); setSavingQ(true);
-    const payload: any = { assessment_id: Number(id), question: nq.question, type: nq.type, marks: Number(nq.marks) || 1 };
+    const payload: any = { question: nq.question, type: nq.type, marks: Number(nq.marks) || 1, explanation: nq.explanation || undefined };
     if (nq.type === 'mcq') {
-      payload.options = nq.options.map(o => o.trim()).filter(Boolean);
+      payload.options = nq.options.map((o: string) => o.trim()).filter(Boolean);
       payload.correct_answer = (nq.options[nq.correctIdx] || '').trim();
     } else if (nq.type === 'true_false') {
       payload.correct_answer = nq.tf;
     } else if (nq.type === 'matching') {
-      const pairs = nq.pairs.map(p => ({ left: p.left.trim(), right: p.right.trim() })).filter(p => p.left && p.right);
+      const pairs = nq.pairs.map((p: any) => ({ left: p.left.trim(), right: p.right.trim() })).filter((p: any) => p.left && p.right);
       if (pairs.length < 2) { setError('Add at least 2 complete pairs'); setSavingQ(false); return; }
       payload.options = pairs;
     } else {
       payload.correct_answer = nq.short;
     }
     try {
-      await api.post('/quiz/questions', payload);
-      setNq({ question: '', type: 'mcq', options: ['', '', '', ''], correctIdx: 0, tf: 'True', short: '', marks: '1', pairs: [{ left: '', right: '' }, { left: '', right: '' }] });
-      setAdding(false);
+      if (editId) await api.put(`/quizzes/questions/${editId}`, payload);
+      else await api.post('/quizzes/questions', { assessment_id: Number(id), ...payload });
+      closeForm();
       await load();
     } catch (e: any) {
-      setError(e.response?.data?.error || 'Could not add question');
+      setError(e.response?.data?.error || 'Could not save the question');
     }
     setSavingQ(false);
   };
@@ -184,7 +255,7 @@ function StaffView({ id }: { id: string }) {
   const removeQuestion = async (qid: number) => {
     setError('');
     try {
-      await api.delete(`/quiz/questions/${qid}`);
+      await api.delete(`/quizzes/questions/${qid}`);
       setConfirmDel(null);
       await load();
     } catch (e: any) {
@@ -192,10 +263,55 @@ function StaffView({ id }: { id: string }) {
     }
   };
 
+  const move = async (i: number, d: number) => {
+    const j = i + d;
+    if (j < 0 || j >= questions.length) return;
+    const order = questions.map(q => q.id);
+    [order[i], order[j]] = [order[j], order[i]];
+    try {
+      const r = await api.put(`/quizzes/${id}/reorder`, { order });
+      setQuestions(r.data.questions || []);
+    } catch (e: any) {
+      setError(e.response?.data?.error || 'Could not change the order');
+    }
+  };
+
+  const generate = async () => {
+    setError(''); setNote(''); setAiBusy(true); setAiQs(null);
+    try {
+      const r = await api.post('/ai/generate-quiz', { assessment_id: Number(id), topic: ai.topic, num_questions: Number(ai.n), difficulty: ai.difficulty });
+      const qs = r.data.questions || [];
+      setAiQs(qs);
+      setAiPick(new Set(qs.map((_: any, i: number) => i)));
+    } catch (e: any) {
+      setError(e.response?.data?.error || 'The assistant could not write questions just now. Please try again.');
+    }
+    setAiBusy(false);
+  };
+
+  const addPicked = async () => {
+    const list = (aiQs || []).filter((_, i) => aiPick.has(i)).map(q => ({
+      question: q.question, type: 'mcq', options: q.options, correct_answer: q.correct_answer, marks: q.marks || 1, explanation: q.explanation || undefined,
+    }));
+    if (!list.length) return;
+    setError(''); setBusy(true);
+    try {
+      await api.post(`/quizzes/${id}/questions/bulk`, { questions: list });
+      setAiQs(null); setAiOpen(false);
+      await load();
+      setNote(`${list.length} question${list.length === 1 ? '' : 's'} added.`);
+    } catch (e: any) {
+      setError(e.response?.data?.error || 'Could not add the questions');
+    }
+    setBusy(false);
+  };
+
   if (loading) return <LoadingScreen />;
   if (!quiz) return <div className="p-6 text-sm text-red-600">{error || 'Not found'}</div>;
 
   const input = 'w-full bg-white border border-gray-200 rounded-xl p-3 text-sm text-gray-900';
+  const st = STATUS[quiz.status] || STATUS.draft;
+  const btn = 'text-sm font-medium py-2 px-3 rounded-lg disabled:opacity-40';
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 pb-28">
@@ -205,6 +321,28 @@ function StaffView({ id }: { id: string }) {
       </div>
       <div className="px-4 py-4 space-y-4">
         {error && <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl p-3">{error}</div>}
+        {note && <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl p-3">{note}</div>}
+
+        <div className={`border rounded-xl p-4 space-y-3 ${st.cls}`}>
+          <p className="text-sm font-semibold">{st.label}</p>
+          <div className="flex flex-wrap gap-2">
+            {quiz.status === 'draft' && (
+              <button onClick={() => act('publish')} disabled={busy || questions.length === 0} className={`${btn} bg-blue-600 text-white`}>
+                {questions.length === 0 ? 'Add a question to publish' : 'Publish to students'}
+              </button>
+            )}
+            {(quiz.status === 'open' || quiz.status === 'scheduled') && (
+              <button onClick={() => act('close')} disabled={busy} className={`${btn} bg-white border border-gray-300 text-gray-800`}>Close now</button>
+            )}
+            {quiz.status === 'closed' && (
+              <button onClick={() => act('reopen')} disabled={busy} className={`${btn} bg-blue-600 text-white`}>Reopen</button>
+            )}
+            {quiz.is_published && !locked && (
+              <button onClick={() => act('unpublish')} disabled={busy} className={`${btn} bg-white border border-gray-300 text-gray-800`}>Back to draft</button>
+            )}
+            <button onClick={duplicate} disabled={busy} className={`${btn} bg-white border border-gray-300 text-gray-800 flex items-center gap-1`}><Copy size={14} /> Duplicate</button>
+          </div>
+        </div>
 
         <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-2">
           {editing && settings ? (
@@ -223,24 +361,75 @@ function StaffView({ id }: { id: string }) {
                 {quiz.time_limit_minutes ? `${quiz.time_limit_minutes} min` : 'No time limit'} · {quiz.max_attempts} attempt{quiz.max_attempts === 1 ? '' : 's'} · pass {quiz.pass_percent}% · {quiz.total_marks} marks
               </p>
               <p className="text-xs text-gray-400">
-                {quiz.randomize_questions ? 'Questions are shuffled. ' : ''}{quiz.awards_certificate ? 'Passing gives the course certificate. ' : ''}Closes {fmt(quiz.due_date)}
+                {quiz.randomize_questions ? 'Questions are shuffled. ' : ''}{quiz.awards_certificate ? 'Passing gives the course certificate. ' : ''}
+                {quiz.negative_marking > 0 ? `Wrong answers lose ${Math.round(quiz.negative_marking * 100)}% of the marks. ` : ''}
+                {quiz.show_answers ? 'Students see the correct answers after submitting. ' : 'Students do not see the correct answers. '}
+                Closes {fmt(quiz.due_date)}
               </p>
               <button onClick={openEdit} className="text-sm text-blue-600 font-medium">Edit settings</button>
             </>
           )}
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <p className="text-sm font-semibold">Questions ({questions.length})</p>
-          {!adding && (
-            <button onClick={() => { setAdding(true); setError(''); }} className="flex items-center gap-1 text-sm text-blue-600 font-medium">
-              <Plus size={16} /> Add question
-            </button>
+          {!adding && !locked && (
+            <div className="flex items-center gap-3">
+              <button onClick={() => { setAiOpen(!aiOpen); setError(''); }} className="flex items-center gap-1 text-sm text-blue-600 font-medium"><Sparkles size={16} /> Write with AI</button>
+              <button onClick={() => { setAdding(true); setEditId(null); setNq(blankQ()); setAiOpen(false); setError(''); }} className="flex items-center gap-1 text-sm text-blue-600 font-medium">
+                <Plus size={16} /> Add question
+              </button>
+            </div>
           )}
         </div>
 
+        {locked && (
+          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-xl p-3">
+            Students have started this quiz, so its questions cannot be changed. Use Duplicate to make a new version.
+          </div>
+        )}
+
+        {aiOpen && !adding && (
+          <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+            <input value={ai.topic} onChange={e => setAi({ ...ai, topic: e.target.value })} placeholder="Topic, for example Fractions" className={input} />
+            <div className="grid grid-cols-2 gap-2">
+              <select value={ai.n} onChange={e => setAi({ ...ai, n: e.target.value })} className={input}>
+                {['5', '10', '15', '20'].map(n => <option key={n} value={n}>{n} questions</option>)}
+              </select>
+              <select value={ai.difficulty} onChange={e => setAi({ ...ai, difficulty: e.target.value })} className={input}>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+            <button onClick={generate} disabled={aiBusy || !ai.topic.trim()} className="w-full bg-blue-600 text-white text-sm font-medium py-2 rounded-lg disabled:opacity-50">
+              {aiBusy ? 'Writing questions...' : 'Write questions'}
+            </button>
+            {aiQs && (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-400">Untick any question you do not want, then add the rest. You can edit them afterwards.</p>
+                {aiQs.map((q, i) => (
+                  <label key={i} className="flex items-start gap-2 border border-gray-200 rounded-lg p-3 text-sm">
+                    <input type="checkbox" checked={aiPick.has(i)} onChange={() => { const s = new Set(aiPick); if (s.has(i)) s.delete(i); else s.add(i); setAiPick(s); }} className="accent-blue-600 mt-1" />
+                    <span>
+                      <span className="font-medium block">{q.question}</span>
+                      {q.options.map((o: string, oi: number) => (
+                        <span key={oi} className={`block ${o === q.correct_answer ? 'text-green-600 font-medium' : 'text-gray-500'}`}>{o === q.correct_answer ? '✓ ' : '· '}{o}</span>
+                      ))}
+                    </span>
+                  </label>
+                ))}
+                <button onClick={addPicked} disabled={busy || aiPick.size === 0} className="w-full bg-blue-600 text-white text-sm font-medium py-2 rounded-lg disabled:opacity-50">
+                  Add {aiPick.size} to this quiz
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {adding && (
           <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+            <p className="text-sm font-semibold">{editId ? 'Edit question' : 'New question'}</p>
             <textarea value={nq.question} onChange={e => setNq({ ...nq, question: e.target.value })} rows={2} placeholder="Question" className={input} />
             <div className="grid grid-cols-2 gap-2">
               <select value={nq.type} onChange={e => setNq({ ...nq, type: e.target.value })} className={input}>
@@ -255,13 +444,16 @@ function StaffView({ id }: { id: string }) {
             {nq.type === 'mcq' && (
               <div className="space-y-2">
                 <p className="text-xs text-gray-400">Fill the options, then tap the circle beside the correct one</p>
-                {nq.options.map((o, i) => (
+                {nq.options.map((o: string, i: number) => (
                   <div key={i} className="flex items-center gap-2">
                     <input type="radio" name="correct" checked={nq.correctIdx === i} onChange={() => setNq({ ...nq, correctIdx: i })} className="accent-blue-600" />
                     <input value={o} onChange={e => { const opts = [...nq.options]; opts[i] = e.target.value; setNq({ ...nq, options: opts }); }}
                       placeholder={`Option ${i + 1}`} className={input} />
                   </div>
                 ))}
+                {nq.options.length < 8 && (
+                  <button onClick={() => setNq({ ...nq, options: [...nq.options, ''] })} className="flex items-center gap-1 text-sm text-blue-600 font-medium"><Plus size={14} /> Add option</button>
+                )}
               </div>
             )}
             {nq.type === 'true_false' && (
@@ -279,14 +471,12 @@ function StaffView({ id }: { id: string }) {
             {nq.type === 'matching' && (
               <div className="space-y-2">
                 <p className="text-xs text-gray-400">Enter each item with its correct match. Students see the matches shuffled.</p>
-                {nq.pairs.map((p, i) => (
+                {nq.pairs.map((p: any, i: number) => (
                   <div key={i} className="flex items-center gap-2">
-                    <input value={p.left} onChange={e => { const ps = [...nq.pairs]; ps[i] = { ...ps[i], left: e.target.value }; setNq({ ...nq, pairs: ps }); }}
-                      placeholder={'Item ' + (i + 1)} className={input} />
-                    <input value={p.right} onChange={e => { const ps = [...nq.pairs]; ps[i] = { ...ps[i], right: e.target.value }; setNq({ ...nq, pairs: ps }); }}
-                      placeholder="Match" className={input} />
+                    <input value={p.left} onChange={e => { const ps = [...nq.pairs]; ps[i] = { ...ps[i], left: e.target.value }; setNq({ ...nq, pairs: ps }); }} placeholder={'Item ' + (i + 1)} className={input} />
+                    <input value={p.right} onChange={e => { const ps = [...nq.pairs]; ps[i] = { ...ps[i], right: e.target.value }; setNq({ ...nq, pairs: ps }); }} placeholder="Match" className={input} />
                     {nq.pairs.length > 2 && (
-                      <button onClick={() => setNq({ ...nq, pairs: nq.pairs.filter((_, idx) => idx !== i) })} className="text-gray-400 shrink-0"><Trash2 size={16} /></button>
+                      <button onClick={() => setNq({ ...nq, pairs: nq.pairs.filter((_: any, idx: number) => idx !== i) })} className="text-gray-400 shrink-0"><Trash2 size={16} /></button>
                     )}
                   </div>
                 ))}
@@ -295,25 +485,31 @@ function StaffView({ id }: { id: string }) {
                 )}
               </div>
             )}
+            <input value={nq.explanation} onChange={e => setNq({ ...nq, explanation: e.target.value })} placeholder="Explanation shown after submitting (optional)" className={input} />
             <div className="flex gap-2">
-              <button onClick={addQuestion} disabled={savingQ} className="flex-1 bg-blue-600 text-white text-sm font-medium py-2 rounded-lg disabled:opacity-50">
+              <button onClick={saveQuestion} disabled={savingQ} className="flex-1 bg-blue-600 text-white text-sm font-medium py-2 rounded-lg disabled:opacity-50">
                 {savingQ ? 'Saving...' : 'Save question'}
               </button>
-              <button onClick={() => setAdding(false)} className="flex-1 bg-white border border-gray-200 text-sm py-2 rounded-lg">Cancel</button>
+              <button onClick={closeForm} className="flex-1 bg-white border border-gray-200 text-sm py-2 rounded-lg">Cancel</button>
             </div>
           </div>
         )}
 
         {questions.length === 0 && !adding && (
-          <div className="bg-white border border-gray-200 rounded-xl p-6 text-center text-sm text-gray-400">No questions yet</div>
+          <div className="bg-white border border-gray-200 rounded-xl p-6 text-center text-sm text-gray-400">No questions yet. Add one, or let the assistant write them.</div>
         )}
 
         {questions.map((q, i) => (
           <div key={q.id} className="bg-white border border-gray-200 rounded-xl p-4 space-y-2">
             <div className="flex items-start gap-2">
               <p className="flex-1 text-sm font-medium">{i + 1}. {q.question} <span className="text-xs text-gray-400">({q.marks} mark{q.marks === 1 ? '' : 's'})</span></p>
-              {confirmDel !== q.id && (
-                <button onClick={() => setConfirmDel(q.id)} className="text-gray-400 shrink-0"><Trash2 size={16} /></button>
+              {!locked && confirmDel !== q.id && (
+                <div className="flex items-center gap-2 shrink-0 text-gray-400">
+                  <button onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up" className="disabled:opacity-30"><ArrowUp size={16} /></button>
+                  <button onClick={() => move(i, 1)} disabled={i === questions.length - 1} aria-label="Move down" className="disabled:opacity-30"><ArrowDown size={16} /></button>
+                  <button onClick={() => startEdit(q)} aria-label="Edit question"><Pencil size={16} /></button>
+                  <button onClick={() => setConfirmDel(q.id)} aria-label="Delete question"><Trash2 size={16} /></button>
+                </div>
               )}
             </div>
             {q.type === 'mcq' && (q.options || []).map((o: string, oi: number) => (
@@ -325,6 +521,7 @@ function StaffView({ id }: { id: string }) {
               <p key={pi} className="text-sm text-green-600 font-medium">{p.left} → {p.right}</p>
             ))}
             {q.type !== 'mcq' && q.type !== 'matching' && <p className="text-sm text-green-600 font-medium">Answer: {q.correct_answer}</p>}
+            {q.explanation && <p className="text-xs text-gray-400">Explanation: {q.explanation}</p>}
             {confirmDel === q.id && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
                 <p className="text-sm text-red-600">Delete this question?</p>

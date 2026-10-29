@@ -1,4 +1,5 @@
 'use client';
+import QuizReview from '@/components/QuizReview';
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Clock, ChevronLeft, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
@@ -197,6 +198,7 @@ export default function QuizPage() {
           <div className="flex justify-between"><span className="text-gray-500">Best score</span><span className="font-bold">{result.best_score}</span></div>
           <div className="flex justify-between"><span className="text-gray-500">Attempts used</span><span className="font-bold">{result.attempts_used}/{result.attempts_allowed}</span></div>
           {result.certificate_issued && <p className="text-green-600 font-medium pt-2 border-t border-gray-200">Certificate issued!</p>}
+{(result as any).review && <QuizReview review={(result as any).review} />}
         </div>
       )}
       <button onClick={() => router.push('/student/assessments')} className="mt-6 w-full border border-gray-200 rounded-xl py-2.5 text-sm text-gray-600 hover:bg-gray-50">Back to Assessments</button>

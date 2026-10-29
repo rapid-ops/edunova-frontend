@@ -10,6 +10,8 @@ export interface QuizSettings {
   randomize_questions: boolean;
   awards_certificate: boolean;
   scheduled_at?: string;
+  show_answers: boolean;
+  negative_marking: string;
 }
 
 export const emptySettings: QuizSettings = {
@@ -22,6 +24,8 @@ export const emptySettings: QuizSettings = {
   randomize_questions: false,
   awards_certificate: false,
   scheduled_at: '',
+  show_answers: false,
+  negative_marking: '0',
 };
 
 export const toLocalInput = (iso: string | null | undefined) => {
@@ -42,6 +46,8 @@ export const settingsToPayload = (s: QuizSettings) => ({
   randomize_questions: s.randomize_questions,
   awards_certificate: s.awards_certificate,
   scheduled_at: s.scheduled_at ? new Date(s.scheduled_at).toISOString() : null,
+  show_answers: s.show_answers,
+  negative_marking: s.negative_marking === '' ? 0 : Number(s.negative_marking),
 });
 
 export default function QuizSettingsForm({ value, onChange }: { value: QuizSettings; onChange: (v: QuizSettings) => void }) {
@@ -74,6 +80,19 @@ export default function QuizSettingsForm({ value, onChange }: { value: QuizSetti
           <input type="number" min={1} max={100} value={value.pass_percent} onChange={e => set({ pass_percent: e.target.value })} className={input} />
         </div>
       </div>
+      <div>
+        <label className={label}>Wrong answers</label>
+        <select value={value.negative_marking} onChange={e => set({ negative_marking: e.target.value })} className={input}>
+          <option value="0">No penalty</option>
+          <option value="0.25">Lose a quarter of the marks</option>
+          <option value="0.5">Lose half of the marks</option>
+          <option value="1">Lose the full marks</option>
+        </select>
+      </div>
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" checked={value.show_answers} onChange={e => set({ show_answers: e.target.checked })} className="accent-blue-600 mt-0.5" />
+        <span>After submitting, show students the correct answers and explanations</span>
+      </label>
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={value.randomize_questions} onChange={e => set({ randomize_questions: e.target.checked })} className="accent-blue-600" />
         Shuffle question order for each student

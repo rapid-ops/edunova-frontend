@@ -28,7 +28,7 @@ export default function QuizzesPage() {
     try { u = JSON.parse(localStorage.getItem('user') || '{}'); } catch {}
     setUser(u);
     if (u.role === 'student') {
-      api.get('/quiz/me')
+      api.get('/quizzes/me')
         .then(res => setItems(res.data.quizzes || []))
         .catch(() => setError('Could not load quizzes'))
         .finally(() => setLoading(false));
@@ -45,7 +45,7 @@ export default function QuizzesPage() {
   useEffect(() => {
     if (!isStaff || !courseId) return;
     setError('');
-    api.get(`/quiz/course/${courseId}`)
+    api.get(`/quizzes/course/${courseId}`)
       .then(res => setItems(res.data.quizzes || []))
       .catch(() => setError('Could not load quizzes for that course'));
   }, [courseId, role]);

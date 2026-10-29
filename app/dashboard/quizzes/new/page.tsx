@@ -30,7 +30,7 @@ function Form() {
     if (!courseId || !settings.title.trim()) { setError('Course and title are required'); return; }
     setSaving(true);
     try {
-      const res = await api.post('/quiz', { course_id: Number(courseId), ...settingsToPayload(settings) });
+      const res = await api.post('/quizzes', { course_id: Number(courseId), ...settingsToPayload(settings) });
       router.replace(`/dashboard/quizzes/${res.data.quiz.id}`);
     } catch (e: any) {
       setError(e.response?.data?.error || 'Could not create quiz');
