@@ -162,7 +162,7 @@ export default function ChatApp() {
 
       <section aria-label="Chats" className={`${peer ? 'hidden md:flex' : 'flex'} min-h-0 w-full flex-1 flex-col md:w-80 md:flex-none md:shrink-0 md:border-r md:border-slate-200`}>
         <div className="flex h-14 shrink-0 items-center gap-1 border-b border-slate-100 bg-white px-2">
-          <button type="button" onClick={goBack} aria-label="Go back" className={`flex h-11 w-11 items-center justify-center rounded-full text-slate-700 hover:bg-blue-50 md:hidden ${ring}`}><ArrowLeft className="h-5 w-5" /></button>
+          <button type="button" onClick={goBack} aria-label="Go back" className={`flex h-11 w-11 items-center justify-center rounded-full text-slate-700 hover:bg-blue-50 ${ring}`}><ArrowLeft className="h-5 w-5" /></button>
           <h1 className="flex-1 px-2 text-lg font-bold text-[#0b1a4a]">Messages</h1>
         </div>
         <div className="shrink-0 border-b border-slate-100 p-2">
