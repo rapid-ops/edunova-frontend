@@ -59,7 +59,7 @@ export default function MessagesPage() {
   const fetchMessages = async () => {
     if (!user || !selectedUser) return;
     try {
-      const res = await api.get(`/messages/${user.id}/${selectedUser.id}`);
+      const res = await api.get(`/messages/${user.id}/${selectedUser.id}`); api.patch(`/messages/read/${selectedUser.id}/${user.id}`).then(() => window.dispatchEvent(new Event('messages-read'))).catch(() => {});
       setMessages(res.data.messages);
     } catch (err) {}
   };

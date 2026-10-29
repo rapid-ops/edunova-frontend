@@ -16,6 +16,7 @@ export default function NotificationBell() {
   const [items, setItems] = useState<N[]>([]);
   const [open, setOpen] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [openId, setOpenId] = useState<number | null>(null);
   const box = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tries = useRef(0);
@@ -65,6 +66,14 @@ export default function NotificationBell() {
     if (next && failed) { tries.current = 0; load(); }
   };
 
+  const readMore = async (n: N) => {
+    setOpenId((cur) => (cur === n.id ? null : n.id));
+    if (!n.is_read) {
+      setItems((p) => p.map((x) => (x.id === n.id ? { ...x, is_read: true } : x)));
+      try { await api.patch(`/notifications/item/${n.id}/read`); } catch {}
+    }
+  };
+
   const markAll = async () => {
     if (!user || unread === 0) return;
     try { await api.patch(`/notifications/read/${user.id}`); setItems((p) => p.map((n) => ({ ...n, is_read: true }))); } catch {}
@@ -88,8 +97,9 @@ export default function NotificationBell() {
           {items.slice(0, 8).map((n) => (
             <div key={n.id} className={`border-b border-slate-50 px-4 py-3 ${n.is_read ? '' : 'bg-blue-50/50'}`}>
               <p className="text-sm font-medium text-[#0b1a4a]">{n.title}</p>
-              {n.body && <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{n.body}</p>}
-              <p className="mt-1 text-[11px] text-slate-400">{when(n.created_at)}</p>
+              {n.body && <p className={`mt-0.5 whitespace-pre-line break-words text-xs text-slate-500 ${openId === n.id ? '' : 'line-clamp-2'}`}>{n.body}</p>}
+              <button type="button" onClick={() => readMore(n)} aria-expanded={openId === n.id} className="mt-1 min-h-9 text-xs font-semibold text-blue-600 outline-none focus-visible:ring-2 focus-visible:ring-blue-500">{openId === n.id ? 'Show less' : 'Read more'}</button>
+              <p className="text-[11px] text-slate-400">{when(n.created_at)}</p>
             </div>
           ))}
           <Link href="/dashboard/notifications" onClick={() => setOpen(false)} className="flex min-h-11 items-center justify-center text-sm font-medium text-blue-600">View all</Link>
