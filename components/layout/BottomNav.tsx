@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useUnreadMessages } from '@/components/MessageBell';
+import { useUnreadNotifications } from '@/components/useUnreadNotifications';
 import { FileText, KeyRound, ClipboardCheck } from 'lucide-react';
 import {
   LayoutDashboard, School, BookOpen, Users, ClipboardList,
@@ -146,6 +148,10 @@ navGroups.parent.push([assignmentsItem]);
 navGroups.school_admin.push([assignmentsItem, quizzesItem, { icon: KeyRound, label: 'Reset', href: '/dashboard/reset-passwords' }]);
 navGroups.super_admin.push([assignmentsItem, quizzesItem]);
 
+const badgeCls = 'absolute -right-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white';
+function MsgBadge() { const c = useUnreadMessages(); return c ? <span className={badgeCls}>{c > 99 ? '99+' : c}</span> : null; }
+function NotifBadge() { const c = useUnreadNotifications(); return c ? <span className={badgeCls}>{c > 99 ? '99+' : c}</span> : null; }
+
 export default function BottomNav() {
   const router = useRouter();
   const pathname = usePathname();
@@ -184,7 +190,7 @@ export default function BottomNav() {
                 onClick={() => router.push(item.href)}
                 className={`flex flex-col items-center gap-0.5 py-2 px-1 flex-1 transition-colors ${active ? 'text-blue-600' : 'text-gray-400'}`}
               >
-                <Icon size={21} strokeWidth={active ? 2.2 : 1.7} />
+                <span className="relative"><Icon size={21} strokeWidth={active ? 2.2 : 1.7} />{item.href === '/dashboard/messages' && <MsgBadge />}{item.href === '/dashboard/notifications' && <NotifBadge />}</span>
                 <span className="text-[9px] font-medium truncate w-full text-center leading-tight">{item.label}</span>
               </button>
             );

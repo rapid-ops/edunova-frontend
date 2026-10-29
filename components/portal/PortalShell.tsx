@@ -2,9 +2,10 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { Search, Menu, X, MessageSquare, ChevronDown, LogOut, User as UserIcon, MoreHorizontal, Bot, ArrowRight } from 'lucide-react';
+import { Search, Menu, X, ChevronDown, LogOut, User as UserIcon, MoreHorizontal, Bot, ArrowRight } from 'lucide-react';
 import Logo from '@/components/Logo';
 import NotificationBell from '@/components/NotificationBell';
+import MessageBell from '@/components/MessageBell';
 import Avatar from '@/components/admin/Avatar';
 import { portalNav, portalBottom, portalLabel, portalAi, isActive, type PortalRole, type PortalNavItem } from '@/lib/portal-nav';
 import { useAuthStore } from '@/store/auth.store';
@@ -101,7 +102,7 @@ export default function PortalShell({ role, children }: { role: PortalRole; chil
 
         <div className="ml-auto flex items-center gap-1">
           <NotificationBell />
-          <Link href="/dashboard/messages" aria-label="Messages" className={`flex h-11 w-11 items-center justify-center rounded-full text-slate-600 hover:bg-blue-50 ${focus}`}><MessageSquare className="h-5 w-5" /></Link>
+          <MessageBell href="/dashboard/messages" />
           <div ref={menuRef} className="relative">
             <button type="button" onClick={() => setMenu(!menu)} aria-label="Account menu" aria-expanded={menu} className={`flex min-h-11 items-center gap-2 rounded-full pl-1 pr-2 hover:bg-blue-50 ${focus}`}>
               <Avatar name={name} src={user?.avatar_url} size={36} />

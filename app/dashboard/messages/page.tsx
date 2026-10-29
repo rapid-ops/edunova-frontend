@@ -105,7 +105,7 @@ export default function MessagesPage() {
       )}
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/3 border-r border-gray-200 overflow-y-auto">
+        <div className="w-1/3 shrink-0 border-r border-gray-200 overflow-y-auto">
           {users.length === 0 ? (
             <p className="text-gray-600 text-sm p-4">No users yet</p>
           ) : (
@@ -118,7 +118,7 @@ export default function MessagesPage() {
           )}
         </div>
 
-        <div className="flex-1 flex flex-col">
+        <div className="min-w-0 flex-1 flex flex-col">
           {!selectedUser ? (
             <div className="flex-1 flex items-center justify-center text-gray-600">Select a person to message</div>
           ) : (
@@ -130,7 +130,7 @@ export default function MessagesPage() {
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((m) => (
                   <div key={m.id} className={`flex ${m.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-xs px-4 py-2 rounded-2xl text-sm ${m.sender_id === user?.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'}`}>
+                    <div className={`max-w-xs break-words px-4 py-2 rounded-2xl text-sm ${m.sender_id === user?.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'}`}>
                       <p>{m.content}</p>
                       <p className="text-xs opacity-60 mt-1">{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
@@ -139,7 +139,7 @@ export default function MessagesPage() {
                 <div ref={bottomRef} />
               </div>
               <div className="border-t border-gray-200 p-4 flex gap-3">
-                <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKey} placeholder="Type a message..." className="flex-1 bg-gray-100 text-gray-900 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+                <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKey} placeholder="Type a message..." className="min-w-0 flex-1 bg-gray-100 text-gray-900 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                 <button onClick={sendMessage} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl text-sm">Send</button>
               </div>
             </>

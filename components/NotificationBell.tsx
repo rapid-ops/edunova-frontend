@@ -70,13 +70,13 @@ export default function NotificationBell() {
     setOpenId((cur) => (cur === n.id ? null : n.id));
     if (!n.is_read) {
       setItems((p) => p.map((x) => (x.id === n.id ? { ...x, is_read: true } : x)));
-      try { await api.patch(`/notifications/item/${n.id}/read`); } catch {}
+      try { await api.patch(`/notifications/item/${n.id}/read`); window.dispatchEvent(new Event('notifications-read')); } catch {}
     }
   };
 
   const markAll = async () => {
     if (!user || unread === 0) return;
-    try { await api.patch(`/notifications/read/${user.id}`); setItems((p) => p.map((n) => ({ ...n, is_read: true }))); } catch {}
+    try { await api.patch(`/notifications/read/${user.id}`); setItems((p) => p.map((n) => ({ ...n, is_read: true }))); window.dispatchEvent(new Event('notifications-read')); } catch {}
   };
 
   return (
