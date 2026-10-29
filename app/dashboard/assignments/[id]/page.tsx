@@ -1,4 +1,5 @@
 'use client';
+import { goBack } from '@/lib/nav';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
@@ -126,7 +127,7 @@ export default function AssignmentDetail() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 pb-24">
       <div className="bg-white border-b border-gray-100 px-4 py-4 flex items-center gap-2">
-        <button onClick={() => router.push('/dashboard/assignments')} className="text-blue-600"><ChevronLeft size={22} /></button>
+        <button onClick={() => goBack(router, '/dashboard/assignments')} className="text-blue-600"><ChevronLeft size={22} /></button>
         <h1 className="text-lg font-bold truncate">{assignment.title}</h1>
       </div>
 

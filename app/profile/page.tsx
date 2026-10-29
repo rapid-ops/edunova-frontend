@@ -1,4 +1,5 @@
 'use client';
+import { goBack } from '@/lib/nav';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
@@ -128,7 +129,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 pb-8">
       <div className="bg-white border-b border-gray-100 px-5 py-4 flex items-center gap-3">
-        <button onClick={() => router.push(getRoleRoute())}><ArrowLeft size={20} className="text-gray-500" /></button>
+        <button onClick={() => goBack(router, getRoleRoute())}><ArrowLeft size={20} className="text-gray-500" /></button>
         <h1 className="text-lg font-bold">Profile Settings</h1>
       </div>
 

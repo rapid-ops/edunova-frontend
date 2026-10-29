@@ -1,4 +1,5 @@
 'use client';
+import { goBack } from '@/lib/nav';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
@@ -39,7 +40,7 @@ export default function AssignmentsPage() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
-        <button onClick={() => router.push('/student')} className="text-gray-500 hover:text-gray-900">←</button>
+        <button onClick={() => goBack(router, '/student')} className="text-gray-500 hover:text-gray-900">←</button>
         <h1 className="text-xl font-bold">Assignments</h1>
       </div>
 
