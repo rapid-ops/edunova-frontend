@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Search, Menu, X, ChevronDown, LogOut, User as UserIcon, MoreHorizontal, Bot, ArrowRight } from 'lucide-react';
 import Logo from '@/components/Logo';
 import NotificationBell from '@/components/NotificationBell';
-import MessageBell from '@/components/MessageBell';
+import MessageBell, { UnreadPill } from '@/components/MessageBell';
 import Avatar from '@/components/admin/Avatar';
 import { enabledNav, isActive, moreNav, moreGroups, type AdminNavItem } from '@/lib/admin-nav';
 import { useAuthStore } from '@/store/auth.store';
@@ -20,7 +20,7 @@ function NavLink({ i, pathname, onNavigate }: { i: AdminNavItem; pathname: strin
   return (
     <Link href={i.href} onClick={onNavigate} aria-current={on ? 'page' : undefined}
       className={`flex min-h-11 items-center gap-3 rounded-lg px-4 text-sm font-medium ${focus} ${on ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-700 hover:bg-blue-50'}`}>
-      <Icon className="h-[18px] w-[18px] shrink-0" />{i.label}
+      <Icon className="h-[18px] w-[18px] shrink-0" />{i.label}{i.key === 'communication' && <UnreadPill />}
     </Link>
   );
 }

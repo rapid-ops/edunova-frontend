@@ -7,8 +7,8 @@ import api from '@/lib/api';
 import { joinRoom, getSocket } from '@/lib/socket';
 import { useAuthStore } from '@/store/auth.store';
 
-// Message icon with a red count of unread messages. Updates live and when messages are read.
-export default function MessageBell({ href }: { href: string }) {
+// Number of unread messages. Updates live, when a chat is read, on page change and every 90 seconds.
+export function useUnreadMessages(): number {
   const user = useAuthStore((s) => s.user);
   const pathname = usePathname();
   const [count, setCount] = useState(0);
@@ -44,6 +44,17 @@ export default function MessageBell({ href }: { href: string }) {
     };
   }, [user, load]);
 
+  return count;
+}
+
+export function UnreadPill() {
+  const count = useUnreadMessages();
+  if (!count) return null;
+  return <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold text-white">{count > 99 ? '99+' : count}</span>;
+}
+
+export default function MessageBell({ href }: { href: string }) {
+  const count = useUnreadMessages();
   return (
     <Link href={href} aria-label={`Messages${count ? `, ${count} unread` : ''}`}
       className="relative flex h-11 w-11 items-center justify-center rounded-full text-slate-600 outline-none hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500">

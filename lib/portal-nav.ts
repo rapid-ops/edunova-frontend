@@ -15,7 +15,7 @@ export const portalNav: Record<PortalRole, PortalNavItem[]> = {
     { key: 'timetable', label: 'Timetable', icon: CalendarDays, href: '/student/timetable' },
     { key: 'timetable', label: 'Timetable', icon: CalendarDays, href: '/student/timetable' },
     { key: 'ai', label: 'AI Tutor', icon: Bot, href: '/student/ai-tutor' },
-    { key: 'messages', label: 'Messages', icon: MessageSquare, href: '/student/messages' },
+    { key: 'messages', label: 'Messages', icon: MessageSquare, href: '/dashboard/messages' },
   ],
   teacher: [
     { key: 'dashboard', label: 'Dashboard', short: 'Home', icon: LayoutDashboard, href: '/teacher' },
@@ -25,13 +25,13 @@ export const portalNav: Record<PortalRole, PortalNavItem[]> = {
     { key: 'timetable', label: 'Timetable', icon: CalendarDays, href: '/teacher/timetable' },
     { key: 'analytics', label: 'Class Analytics', short: 'Analytics', icon: BarChart3, href: '/teacher/analytics' },
     { key: 'ai', label: 'AI Teaching Tools', short: 'AI Tools', icon: Bot, href: '/teacher/ai-tools' },
-    { key: 'messages', label: 'Messages', icon: MessageSquare, href: '/teacher/messages' },
+    { key: 'messages', label: 'Messages', icon: MessageSquare, href: '/dashboard/messages' },
   ],
   parent: [
     { key: 'dashboard', label: 'Dashboard', short: 'Home', icon: LayoutDashboard, href: '/parent' },
     { key: 'children', label: 'My Children', short: 'Children', icon: Users, href: '/parent/children' },
     { key: 'fees', label: 'Fees and Payments', short: 'Fees', icon: Wallet, href: '/parent/fees' },
-    { key: 'messages', label: 'Messages', icon: MessageSquare, href: '/parent/messages' },
+    { key: 'messages', label: 'Messages', icon: MessageSquare, href: '/dashboard/messages' },
     { key: 'notices', label: 'School Notices', short: 'Notices', icon: Megaphone, href: '/dashboard/announcements' },
   ],
 };
