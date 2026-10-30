@@ -1,4 +1,4 @@
-import { Megaphone, Bell, Building2, CalendarDays, Trophy, FileBarChart, ScrollText, Tag, Zap, TrendingDown, Upload, KeyRound, User } from 'lucide-react';
+import { Megaphone, Bell, Building2, CalendarDays, Trophy, FileBarChart, ScrollText, Tag, Zap, TrendingDown, Upload, KeyRound, User, Globe } from 'lucide-react';
 import { LayoutDashboard, Users, UserCog, School, BookOpen, ClipboardCheck, ClipboardList, FileText, Award, Wallet, MessageSquare, BarChart3, Bot, Settings, type LucideIcon } from 'lucide-react';
 
 export interface AdminNavItem { key: string; label: string; short?: string; icon: LucideIcon; href: string; enabled: boolean }
@@ -32,6 +32,7 @@ export const moreNav: (AdminNavItem & { group: string })[] = [
   { key: 'announcements', label: 'Announcements', icon: Megaphone, href: '/dashboard/announcements', enabled: true, group: 'People' },
   { key: 'alerts', label: 'Send an alert', icon: Bell, href: '/dashboard/notifications', enabled: true, group: 'People' },
   { key: 'teaching', label: 'Who teaches what', icon: UserCog, href: '/dashboard/course-assignments', enabled: true, group: 'School' },
+  { key: 'mysite', label: 'My website', icon: Globe, href: '/school-admin/website', enabled: true, group: 'School' },
   { key: 'departments', label: 'Departments', icon: Building2, href: '/dashboard/departments', enabled: true, group: 'School' },
   { key: 'timetable', label: 'Timetable', icon: CalendarDays, href: '/dashboard/timetable', enabled: true, group: 'School' },
   { key: 'assignments', label: 'Assignments', icon: FileText, href: '/dashboard/assignments', enabled: true, group: 'School' },
