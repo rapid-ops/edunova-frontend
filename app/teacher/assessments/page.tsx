@@ -178,6 +178,7 @@ export default function TeacherAssessments() {
 
   const quizzes = assessments.filter(a => a.type === 'quiz');
   const assignments = assessments.filter(a => a.type !== 'quiz');
+  const pendingGrade = assignments.reduce((s, a) => s + Math.max(0, (counts[a.id]?.submission_count || 0) - (counts[a.id]?.graded_count || 0)), 0);
 
   if (view === 'create') {
     const rubricSum = cRubric
@@ -351,7 +352,7 @@ export default function TeacherAssessments() {
         {(['quizzes', 'assignments'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-colors ${tab === t ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-            {t}
+            {t}{t === 'assignments' && pendingGrade > 0 && <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold text-white">{pendingGrade}</span>}
           </button>
         ))}
       </div>
