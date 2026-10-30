@@ -5,8 +5,8 @@ import api from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
 import { preparePhoto, PhotoError } from '@/lib/imageprep';
 
-type FieldDef = { key: string; label: string; type: string; required?: boolean; default?: string };
-type ListDef = { key: string; label: string; max?: number; fields: FieldDef[] };
+type FieldDef = { key: string; label: string; type: string; required?: boolean; default?: string; has_sample?: boolean };
+type ListDef = { key: string; label: string; max?: number; fields: FieldDef[]; has_sample?: boolean };
 type Schema = { slug: string; name: string; description: string; fields: FieldDef[]; lists: ListDef[] };
 type Tpl = { slug: string; name: string; description: string; primary_color?: string; accent_color?: string };
 type Vals = Record<string, string>;
@@ -87,7 +87,7 @@ function Field({ def, value, onChange, schoolId }: { def: FieldDef; value: strin
 function FieldRow({ def, value, onChange, schoolId }: { def: FieldDef; value: string; onChange: (v: string) => void; schoolId: unknown }) {
   return (
     <div>
-      <p className="mb-1 text-sm font-medium text-gray-700">{def.label}{def.required ? ' *' : ''}</p>
+      <p className="mb-1 text-sm font-medium text-gray-700">{def.label}{def.required ? ' *' : ''}{def.has_sample && !value && <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">Sample shown</span>}</p>
       <Field def={def} value={value} onChange={onChange} schoolId={schoolId} />
     </div>
   );
@@ -110,7 +110,7 @@ function ListEditor({ def, items, onChange, schoolId }: { def: ListDef; items: V
         <p className="text-sm font-semibold text-gray-900">{def.label} <span className="font-normal text-gray-400">({items.length} of {max})</span></p>
         <button type="button" onClick={() => onChange([...items, blank()])} disabled={items.length >= max} className={`${btn} bg-blue-600 text-white`}><Plus size={16} />Add</button>
       </div>
-      {items.length === 0 && <p className="text-sm text-gray-500">Nothing added yet.</p>}
+      {items.length === 0 && <p className="text-sm text-gray-500">{def.has_sample ? 'Sample items are shown on your site until you add your own.' : 'Nothing added yet.'}</p>}
       {items.map((it, i) => (
         <div key={i} className="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-3">
           <div className="flex items-center justify-end gap-1">
@@ -206,6 +206,7 @@ export default function MyWebsitePage() {
   const setList = (k: string, items: Vals[]) => { setData((d) => (d ? { ...d, lists: { ...d.lists, [k]: items } } : d)); setDirty(true); };
 
   const missing = (schema?.fields || []).filter((f) => f.required && !(data?.fields[f.key] || '').trim()).map((f) => f.label);
+  const sampleLabels = schema ? [...schema.fields.filter((f) => f.has_sample && !(data?.fields[f.key] || '').trim()).map((f) => f.label), ...schema.lists.filter((l) => l.has_sample && !(data?.lists[l.key] || []).length).map((l) => l.label)] : [];
 
   const save = async (): Promise<boolean> => {
     if (!schema || !data) return false;
@@ -311,6 +312,11 @@ export default function MyWebsitePage() {
             <button type="button" onClick={() => setStep('styles')} className={`${btn} border border-gray-300 bg-white text-gray-800`}>Change style</button>
           </div>
 
+          {sampleLabels.length > 0 && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+              Still showing sample content: {sampleLabels.join(', ')}. Add your own in Details and the sample content is replaced automatically.
+            </div>
+          )}
           <div className="flex gap-2">
             <button type="button" onClick={() => setView('edit')} className={tab(view === 'edit')}><Pencil size={16} />Details</button>
             <button type="button" onClick={() => setView('preview')} className={tab(view === 'preview')}><Eye size={16} />Preview</button>
