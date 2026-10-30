@@ -1,4 +1,5 @@
 'use client';
+import { fileHref } from '@/lib/fileurl';
 import { goBack } from '@/lib/nav';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -38,7 +39,7 @@ function SubmissionCard({ sub, total, onSaved }: { sub: any; total: number; onSa
       <p className="text-xs text-gray-400">Submitted {fmt(sub.submitted_at)}</p>
       {sub.text_answer && <p className="text-sm whitespace-pre-wrap bg-gray-50 rounded-lg p-3">{sub.text_answer}</p>}
       {sub.file_url && (
-        <a href={sub.file_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm text-blue-600">
+        <a href={fileHref(sub.file_url)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm text-blue-600">
           <Paperclip size={14} /> View attached file
         </a>
       )}
@@ -138,7 +139,7 @@ export default function AssignmentDetail() {
           </p>
           {assignment.instructions && <p className="text-sm whitespace-pre-wrap">{assignment.instructions}</p>}
           {assignment.attachment_url && (
-            <a href={assignment.attachment_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm text-blue-600">
+            <a href={fileHref(assignment.attachment_url)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm text-blue-600">
               <Paperclip size={14} /> Assignment file
             </a>
           )}
@@ -160,7 +161,7 @@ export default function AssignmentDetail() {
               </div>
             )}
             {mySub?.file_url && (
-              <a href={mySub.file_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm text-blue-600">
+              <a href={fileHref(mySub.file_url)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm text-blue-600">
                 <Paperclip size={14} /> Your uploaded file
               </a>
             )}

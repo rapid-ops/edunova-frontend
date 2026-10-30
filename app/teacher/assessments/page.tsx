@@ -1,4 +1,5 @@
 'use client';
+import { fileHref } from '@/lib/fileurl';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CheckCircle, ClipboardList, Users, Plus, Trash2 } from 'lucide-react';
@@ -242,7 +243,7 @@ export default function TeacherAssessments() {
           <div className="bg-gray-50 rounded-xl p-4 mb-4 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto">{sub.text_answer}</div>
         )}
         {sub?.file_url && (
-          <a href={sub.file_url} target="_blank" rel="noreferrer" className="text-blue-600 text-sm underline mb-4 block">View attached file</a>
+          <a href={fileHref(sub.file_url)} target="_blank" rel="noreferrer" className="text-blue-600 text-sm underline mb-4 block">View attached file</a>
         )}
         {!sub?.text_answer && !sub?.file_url && (
           <p className="text-gray-400 text-sm mb-4 italic">No content submitted</p>
