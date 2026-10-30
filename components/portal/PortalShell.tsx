@@ -6,13 +6,14 @@ import { Search, Menu, X, ChevronDown, LogOut, User as UserIcon, MoreHorizontal,
 import Logo from '@/components/Logo';
 import NotificationBell from '@/components/NotificationBell';
 import MessageBell from '@/components/MessageBell';
+import { UngradedPill, UngradedDot } from '@/components/useUngraded';
 import Avatar from '@/components/admin/Avatar';
 import { portalNav, portalBottom, portalLabel, portalAi, isActive, type PortalRole, type PortalNavItem } from '@/lib/portal-nav';
 import { useAuthStore } from '@/store/auth.store';
 
 const focus = 'outline-none focus-visible:ring-2 focus-visible:ring-blue-500';
 
-function NavList({ items, pathname, onNavigate }: { items: PortalNavItem[]; pathname: string; onNavigate?: () => void }) {
+function NavList({ items, pathname, onNavigate, role }: { items: PortalNavItem[]; pathname: string; onNavigate?: () => void; role?: PortalRole }) {
   return (
     <nav aria-label="Main" className="space-y-1">
       {items.map((i) => {
@@ -21,7 +22,7 @@ function NavList({ items, pathname, onNavigate }: { items: PortalNavItem[]; path
         return (
           <Link key={i.key} href={i.href} onClick={onNavigate} aria-current={on ? 'page' : undefined}
             className={`flex min-h-11 items-center gap-3 rounded-lg px-4 text-sm font-medium ${focus} ${on ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-700 hover:bg-blue-50'}`}>
-            <Icon className="h-[18px] w-[18px]" />{i.label}
+            <Icon className="h-[18px] w-[18px]" />{i.label}{role === 'teacher' && i.key === 'assessments' && <UngradedPill />}
           </Link>
         );
       })}
@@ -78,7 +79,7 @@ export default function PortalShell({ role, children }: { role: PortalRole; chil
     <div className="min-h-screen bg-[#f4f8ff] lg:pl-64">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-slate-100 bg-white lg:flex">
         <div className="flex h-[68px] items-center px-5"><Logo size={34} /></div>
-        <div className="flex-1 overflow-y-auto px-3 py-2"><NavList items={nav} pathname={pathname} /></div>
+        <div className="flex-1 overflow-y-auto px-3 py-2"><NavList items={nav} pathname={pathname} role={role} /></div>
         <div className="space-y-4 p-3"><AiCard role={role} /><div className="px-2 pb-1"><Logo size={26} /></div></div>
       </aside>
 
@@ -128,7 +129,7 @@ export default function PortalShell({ role, children }: { role: PortalRole; chil
           const on = isActive(pathname, i.href);
           return (
             <Link key={i.key} href={i.href} aria-current={on ? 'page' : undefined} className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[10px] font-medium ${focus} ${on ? 'text-blue-600' : 'text-slate-500'}`}>
-              <Icon className="h-5 w-5" /><span className="max-w-full truncate px-1">{i.short || i.label}</span>
+              <span className="relative"><Icon className="h-5 w-5" />{role === 'teacher' && i.key === 'assessments' && <UngradedDot />}</span><span className="max-w-full truncate px-1">{i.short || i.label}</span>
             </Link>
           );
         })}
@@ -140,7 +141,7 @@ export default function PortalShell({ role, children }: { role: PortalRole; chil
           <button type="button" aria-label="Close menu" onClick={() => setDrawer(false)} className="absolute inset-0 bg-slate-900/40" />
           <div className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-white shadow-2xl">
             <div className="flex h-[68px] items-center justify-between px-4"><Logo size={32} /><button type="button" onClick={() => setDrawer(false)} aria-label="Close menu" className={`flex h-11 w-11 items-center justify-center rounded-lg hover:bg-blue-50 ${focus}`}><X className="h-5 w-5" /></button></div>
-            <div className="flex-1 overflow-y-auto px-3 py-2"><NavList items={nav} pathname={pathname} onNavigate={() => setDrawer(false)} /></div>
+            <div className="flex-1 overflow-y-auto px-3 py-2"><NavList items={nav} pathname={pathname} onNavigate={() => setDrawer(false)} role={role} /></div>
             <div className="p-3"><AiCard role={role} onNavigate={() => setDrawer(false)} /></div>
           </div>
         </div>

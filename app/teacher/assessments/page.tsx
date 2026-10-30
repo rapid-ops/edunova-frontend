@@ -131,7 +131,7 @@ export default function TeacherAssessments() {
       setSubmissions(prev => prev.map(s =>
         s.id === gradingId ? { ...s, status: 'graded', score: finalScore, feedback: finalFeedback } : s
       ));
-      setView('submissions'); setScore(''); setFeedback('');
+      setView('submissions'); setScore(''); setFeedback(''); window.dispatchEvent(new Event('grading-changed'));
       setRubricScores({}); setGradingId(null);
     } catch (e: any) { setError(e.response?.data?.error || 'Failed'); }
     finally { setSubmitting(false); }
@@ -380,10 +380,10 @@ export default function TeacherAssessments() {
           </button>
           {assignments.length === 0 && <p className="text-gray-400 text-sm">No assignments found.</p>}
           {assignments.map(a => (
-            <div key={a.id} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-4">
+            <div key={a.id} className="bg-white border border-gray-200 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="font-medium text-gray-900">{a.title}</p>
-                <div className="flex items-center gap-2 mt-0.5">
+                <div className="flex flex-wrap items-center gap-2 mt-0.5">
                   <p className="text-xs text-gray-400 capitalize">{a.type}{a.due_date && ` • Due ${new Date(a.due_date).toLocaleDateString()}`}</p>
                   {a.rubric && a.rubric.length > 0 && (
                     <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">Rubric</span>

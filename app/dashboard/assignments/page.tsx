@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import LoadingScreen from '@/components/LoadingScreen';
 import { FileText, Plus, ChevronRight, Clock, CheckCircle } from 'lucide-react';
@@ -10,6 +10,7 @@ const fmt = (d: string | null) =>
 
 export default function AssignmentsPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<any[]>([]);
@@ -129,7 +130,7 @@ export default function AssignmentsPage() {
           return (
             <button
               key={a.id}
-              onClick={() => { if (!isParent) router.push(`/dashboard/assignments/${a.id}`); }}
+              onClick={() => { if (!isParent) router.push(`${pathname.startsWith('/student') ? '/student/assignments' : '/dashboard/assignments'}/${a.id}`); }}
               className="w-full bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3 text-left"
             >
               <FileText size={20} className="text-blue-600 shrink-0" />
