@@ -358,7 +358,10 @@ export default function TeacherAssessments() {
       </div>
       {tab === 'quizzes' && (
         <div className="space-y-3">
-          <Link href="/dashboard/quizzes/new" className="mb-1 inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-2 rounded-lg"><Plus size={15}/>New quiz</Link>
+          <div className="flex flex-wrap gap-2">
+<Link href="/dashboard/quizzes/new" className="mb-1 inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-2 rounded-lg"><Plus size={15}/>New quiz</Link>
+<Link href="/teacher/ai-tools" className="mb-1 inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-2 rounded-lg"><Plus size={15}/>New exam with AI</Link>
+</div>
           {quizzes.length === 0 && <p className="text-gray-400 text-sm">No quizzes found.</p>}
           {quizzes.map(q => (
             <div key={q.id} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-4">

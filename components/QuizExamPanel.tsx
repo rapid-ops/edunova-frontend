@@ -55,7 +55,9 @@ export default function QuizExamPanel({ quizId, onAdded }: { quizId: string; onA
 
   const generate = async () => {
     setError(''); setNote(''); setResult(null); setBusy(true);
-    const slots = buildSlots(Number(total), types, diff);
+    const nq = Math.round(Number(total));
+    if (!total.trim() || !Number.isFinite(nq) || nq < 1 || nq > 40) { setError('Choose a number of questions from 1 to 40.'); setBusy(false); return; }
+    const slots = buildSlots(nq, types, diff);
     const out: Q[] = [];
     let objectives: string[] = [];
     let lost = 0;
@@ -123,9 +125,7 @@ export default function QuizExamPanel({ quizId, onAdded }: { quizId: string; onA
           <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Topic, for example Simultaneous equations" aria-label="Topic" className={box} />
           <input value={level} onChange={(e) => setLevel(e.target.value)} placeholder="Class level, for example JSS3 (optional)" aria-label="Class level" className={box} />
           <div className="grid grid-cols-2 gap-2">
-            <select value={total} onChange={(e) => setTotal(e.target.value)} aria-label="Number of questions" className={box}>
-              {['10', '20', '30', '40'].map((n) => <option key={n} value={n}>{n} questions</option>)}
-            </select>
+            <input type="number" inputMode="numeric" min={1} max={40} value={total} onChange={(e) => setTotal(e.target.value)} placeholder="How many questions? (1 to 40)" aria-label="Number of questions (1 to 40)" className={box} />
             <select value={diff} onChange={(e) => setDiff(e.target.value)} aria-label="Difficulty" className={box}>
               <option value="mixed">Mixed (30% easy, 50% medium, 20% hard)</option>
               <option value="easy">All easy</option>
