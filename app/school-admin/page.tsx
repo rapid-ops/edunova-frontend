@@ -60,7 +60,6 @@ const TOOLS = [
   { icon: DollarSign, label: 'Fees', href: '/school-admin/fees' },
   { icon: ClipboardList, label: 'Attendance', href: '/dashboard/attendance' },
   { icon: BarChart2, label: 'Analytics', href: '/dashboard/analytics' },
-  { icon: Calendar, label: 'Timetable', href: '/dashboard/timetable' },
   { icon: Trophy, label: 'Gradebook', href: '/dashboard/gradebook' },
   { icon: ScrollText, label: 'Transcripts', href: '/dashboard/transcripts' },
   { icon: Zap, label: 'Automations', href: '/dashboard/automations' },

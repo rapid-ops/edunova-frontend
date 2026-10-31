@@ -34,7 +34,6 @@ export const moreNav: (AdminNavItem & { group: string })[] = [
   { key: 'teaching', label: 'Who teaches what', icon: UserCog, href: '/dashboard/course-assignments', enabled: true, group: 'School' },
   { key: 'mysite', label: 'My website', icon: Globe, href: '/school-admin/website', enabled: true, group: 'School' },
   { key: 'departments', label: 'Departments', icon: Building2, href: '/dashboard/departments', enabled: true, group: 'School' },
-  { key: 'timetable', label: 'Timetable', icon: CalendarDays, href: '/dashboard/timetable', enabled: true, group: 'School' },
   { key: 'assignments', label: 'Assignments', icon: FileText, href: '/dashboard/assignments', enabled: true, group: 'School' },
   { key: 'quizzes', label: 'Quizzes', icon: ClipboardCheck, href: '/dashboard/quizzes', enabled: true, group: 'School' },
   { key: 'gradebook', label: 'Gradebook', icon: Trophy, href: '/dashboard/gradebook', enabled: true, group: 'School' },
