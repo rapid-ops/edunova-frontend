@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import LoadingScreen from '@/components/LoadingScreen';
 import QuizSettingsForm, { QuizSettings, settingsToPayload, toLocalInput } from '@/components/QuizSettingsForm';
 import QuizReview from '@/components/QuizReview';
+import QuizExamPanel from '@/components/QuizExamPanel';
 import { ChevronLeft, Clock, CheckCircle, Trash2, Plus, Award, XCircle, ArrowUp, ArrowDown, Pencil, Sparkles, Copy } from 'lucide-react';
 
 const fmt = (d: string | null) =>
@@ -390,6 +391,7 @@ function StaffView({ id }: { id: string }) {
           </div>
         )}
 
+        {!locked && !adding && <QuizExamPanel quizId={id} onAdded={load} />}
         {aiOpen && !adding && (
           <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
             <input value={ai.topic} onChange={e => setAi({ ...ai, topic: e.target.value })} placeholder="Topic, for example Fractions" className={input} />
