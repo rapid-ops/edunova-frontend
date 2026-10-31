@@ -1,5 +1,5 @@
-import ClassesHub from '@/components/classes/ClassesHub';
+import MyClass from '@/components/classes/MyClass';
 
-export default function ClassesPage() {
-  return <ClassesHub />;
+export default function ClassPage() {
+  return <MyClass />;
 }

@@ -7,7 +7,7 @@ export const portalNav: Record<PortalRole, PortalNavItem[]> = {
   student: [
     { key: 'dashboard', label: 'Dashboard', short: 'Home', icon: LayoutDashboard, href: '/student' },
     { key: 'courses', label: 'My Courses', short: 'Courses', icon: BookOpen, href: '/student/courses' },
-    { key: 'classes', label: 'Classes', icon: School, href: '/student/classes' },
+    { key: 'classes', label: 'My Class', icon: School, href: '/student/classes' },
     { key: 'assignments', label: 'Assignments', icon: ClipboardList, href: '/student/assignments' },
     { key: 'assessments', label: 'Quizzes and Exams', short: 'Quizzes', icon: ClipboardCheck, href: '/student/assessments' },
     { key: 'grades', label: 'Grades', icon: Award, href: '/student/results' },
@@ -31,7 +31,7 @@ export const portalNav: Record<PortalRole, PortalNavItem[]> = {
   parent: [
     { key: 'dashboard', label: 'Dashboard', short: 'Home', icon: LayoutDashboard, href: '/parent' },
     { key: 'children', label: 'My Children', short: 'Children', icon: Users, href: '/parent/children' },
-    { key: 'classes', label: 'Classes', icon: School, href: '/parent/classes' },
+    { key: 'classes', label: 'Class', icon: School, href: '/parent/classes' },
     { key: 'fees', label: 'Fees and Payments', short: 'Fees', icon: Wallet, href: '/parent/fees' },
     { key: 'messages', label: 'Messages', icon: MessageSquare, href: '/dashboard/messages' },
     { key: 'notices', label: 'School Notices', short: 'Notices', icon: Megaphone, href: '/dashboard/announcements' },

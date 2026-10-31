@@ -1,5 +1,5 @@
-import ClassesHub from '@/components/classes/ClassesHub';
+import AdminClasses from '@/components/classes/AdminClasses';
 
 export default function ClassesPage() {
-  return <ClassesHub />;
+  return <AdminClasses />;
 }
