@@ -36,7 +36,7 @@ function Preview({ q }: { q: Q }) {
 }
 
 export default function QuizExamPanel({ quizId, onAdded }: { quizId: string; onAdded: () => void | Promise<void> }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('exam') === '1');
   const [topic, setTopic] = useState('');
   const [level, setLevel] = useState('');
   const [total, setTotal] = useState('20');

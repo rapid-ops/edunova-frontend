@@ -25,13 +25,13 @@ function Form() {
     }
   }, []);
 
-  const save = async () => {
+  const save = async (exam: boolean) => {
     setError('');
     if (!courseId || !settings.title.trim()) { setError('Course and title are required'); return; }
     setSaving(true);
     try {
       const res = await api.post('/quizzes', { course_id: Number(courseId), ...settingsToPayload(settings) });
-      router.replace(`/dashboard/quizzes/${res.data.quiz.id}`);
+      router.replace(`/dashboard/quizzes/${res.data.quiz.id}${exam ? '?exam=1' : ''}`);
     } catch (e: any) {
       setError(e.response?.data?.error || 'Could not create quiz');
       setSaving(false);
@@ -57,8 +57,11 @@ function Form() {
         )}
         <QuizSettingsForm value={settings} onChange={setSettings} />
         {error && <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl p-3">{error}</div>}
-        <button onClick={save} disabled={saving} className="w-full bg-blue-600 text-white font-medium py-3 rounded-xl disabled:opacity-50">
-          {saving ? 'Creating...' : 'Create and add questions'}
+        <button onClick={() => save(true)} disabled={saving} className="w-full bg-blue-600 text-white font-medium py-3 rounded-xl disabled:opacity-50">
+          {saving ? 'Creating...' : 'Create and write the exam with AI'}
+        </button>
+        <button onClick={() => save(false)} disabled={saving} className="w-full bg-white border border-gray-300 text-gray-800 font-medium py-3 rounded-xl disabled:opacity-50">
+          Create and add questions myself
         </button>
       </div>
     </div>
