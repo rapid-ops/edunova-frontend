@@ -20,6 +20,7 @@ const navGroups: Record<string, { icon: any; label: string; href: string }[][]> 
     [
       { icon: LayoutDashboard, label: 'Home', href: '/dashboard' },
       { icon: School, label: 'Schools', href: '/dashboard/schools' },
+      { icon: CreditCard, label: 'Billing', href: '/dashboard/billing' },
       { icon: BarChart2, label: 'Analytics', href: '/dashboard/analytics' },
       { icon: Headphones, label: 'Support', href: '/dashboard/b2b-support' },
       { icon: ScrollText, label: 'Audit', href: '/dashboard/audit-logs' },
